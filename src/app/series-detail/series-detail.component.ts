@@ -46,6 +46,7 @@ export class SeriesDetailComponent implements OnInit {
 
   hasSpecials = false;
   specials: Array<Chapter> = [];
+  activeTabId = 2;
 
   seriesSummary: string = '';
   userReview: string = '';

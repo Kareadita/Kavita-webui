@@ -61,8 +61,8 @@
     </div>
 
     <div *ngIf="hasSpecials; else noSpecials">
-        <ul ngbNav #nav="ngbNav" class="nav-tabs">
-            <li ngbNavItem>
+        <ul ngbNav #nav="ngbNav" [(activeId)]="activeTabId" class="nav-tabs" [destroyOnHide]="false">
+            <li [ngbNavItem]="1">
               <a ngbNavLink>Specials</a>
               <ng-template ngbNavContent>
                 <div class="row">
@@ -74,7 +74,7 @@
                 </div>
               </ng-template>
             </li>
-            <li ngbNavItem>
+            <li [ngbNavItem]="2">
               <a ngbNavLink>Volumes/Chapters</a>
               <ng-template ngbNavContent>
                   <div class="row">
@@ -96,7 +96,7 @@
     </div>
 
       <ng-template #noSpecials>
-        <h4>Volumes</h4>
+        <h4>Volumes/Chapters</h4>
         <div class="row">
             <div *ngFor="let volume of volumes">
                 <app-card-item class="col-auto" *ngIf="volume.number != 0" [entity]="volume" [title]="'Volume ' + volume.name" (click)="openVolume(volume)"
