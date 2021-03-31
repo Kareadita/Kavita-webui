@@ -32,14 +32,13 @@ export class SeriesDetailComponent implements OnInit {
   chapters: Chapter[] = [];
   libraryId = 0;
   isAdmin = false;
+  isLoading = true;
+  showBook = true;
 
   currentlyReadingVolume: Volume | undefined = undefined;
   currentlyReadingChapter: Chapter | undefined = undefined;
   hasReadingProgress = false;
 
-  testMap: any;
-  showBook = false;
-  isLoading = true;
 
   seriesActions: ActionItem<Series>[] = [];
   volumeActions: ActionItem<Volume>[] = [];
@@ -47,6 +46,9 @@ export class SeriesDetailComponent implements OnInit {
 
   hasSpecials = false;
   specials: Array<Chapter> = [];
+
+  seriesSummary: string = '';
+  userReview: string = '';
 
 
   constructor(private route: ActivatedRoute, private seriesService: SeriesService,
@@ -86,7 +88,7 @@ export class SeriesDetailComponent implements OnInit {
   handleSeriesActionCallback(action: Action, series: Series) {
     switch(action) {
       case(Action.MarkAsRead):
-        this.markSeriesAsRead(series); // TODO: I can probably move this into a series completely self-contained
+        this.markSeriesAsRead(series);
         break;
       case(Action.MarkAsUnread):
         this.markSeriesAsUnread(series);
@@ -170,6 +172,8 @@ export class SeriesDetailComponent implements OnInit {
   loadSeries(seriesId: number) {
     this.seriesService.getSeries(seriesId).subscribe(series => {
       this.series = series;
+      this.seriesSummary = (series.summary === null ? '' : series.summary).replace(/\n/g, '<br>');
+      this.userReview = (series.userReview === null ? '' : series.userReview).replace(/\n/g, '<br>');
 
       this.seriesService.getVolumes(this.series.id).subscribe(volumes => {
         this.chapters = volumes.filter(v => !v.isSpecial && v.number === 0).map(v => v.chapters || []).flat().sort(this.utilityService.sortChapters);
