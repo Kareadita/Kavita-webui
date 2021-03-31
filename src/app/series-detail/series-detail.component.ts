@@ -178,7 +178,10 @@ export class SeriesDetailComponent implements OnInit {
         this.setContinuePoint();
         this.hasSpecials = this.chapters.filter(c => c.isSpecial).length > 0 ;
         if (this.hasSpecials) {
-          this.specials = this.volumes.filter(v => v.number === 0).map(v => v.chapters || []).flat().filter(c => c.isSpecial)
+          this.specials = this.volumes.filter(v => v.number === 0).map(v => v.chapters || []).flat().filter(c => c.isSpecial).map(c => {
+            c.range = c.range.replace(/_/g, ' ');
+            return c;
+          });
         }
 
         this.isLoading = false;
