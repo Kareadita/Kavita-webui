@@ -176,12 +176,12 @@ export class SeriesDetailComponent implements OnInit {
         this.volumes = volumes.sort(this.utilityService.sortVolumes);
 
         this.setContinuePoint();
-        this.isLoading = false;
-        this.hasSpecials = (this.volumes.length >= 1 && this.volumes[volumes.length - 1].number === 0 && this.chapters.length === 0) || this.chapters.filter(c => c.range === '0').length > 0;
-        this.hasSpecials = this.chapters.filter(c => c.isSpecial).length > 0 || this.hasSpecials;
+        this.hasSpecials = this.chapters.filter(c => c.isSpecial).length > 0 ;
         if (this.hasSpecials) {
-          this.specials.push(...this.volumes.filter(v => v.number === 0).map(v => v.chapters || []).flat().filter(c => c.isSpecial));
+          this.specials = this.volumes.filter(v => v.number === 0).map(v => v.chapters || []).flat().filter(c => c.isSpecial)
         }
+
+        this.isLoading = false;
       });
     });
   }

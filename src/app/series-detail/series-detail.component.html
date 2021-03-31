@@ -67,7 +67,7 @@
               <ng-template ngbNavContent>
                 <div class="row">
                     <div *ngFor="let chapter of specials">
-                        <app-card-item class="col-auto" *ngIf="chapter.range !== '0'" [entity]="chapter" [title]="chapter.range === '0' ? 'Specials' : 'Chapter ' + chapter.range" (click)="openChapter(chapter)"
+                        <app-card-item class="col-auto" *ngIf="chapter.range !== '0'" [entity]="chapter" [title]="chapter.range" (click)="openChapter(chapter)"
                         [imageUrl]="imageService.getChapterCoverImage(chapter.id)"
                         [read]="chapter.pagesRead" [total]="chapter.pages" [actions]="chapterActions"></app-card-item>
                     </div>
