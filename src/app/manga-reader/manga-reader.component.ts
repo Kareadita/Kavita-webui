@@ -369,12 +369,14 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
       event.preventDefault();
     }
 
-    if ((this.pageNum + 1 >= this.maxPages && this.currentImageSplitPart !== (this.isSplitLeftToRight() ? SPLIT_PAGE_PART.LEFT_PART : SPLIT_PAGE_PART.RIGHT_PART)) || this.isLoading) {
+    const notInSplit = this.currentImageSplitPart !== (this.isSplitLeftToRight() ? SPLIT_PAGE_PART.LEFT_PART : SPLIT_PAGE_PART.RIGHT_PART);
+
+    if ((this.pageNum + 1 >= this.maxPages && notInSplit) || this.isLoading) {
       return;
     }
 
     this.pagingDirection = PAGING_DIRECTION.FORWARD;
-    if (this.isNoSplit() || this.currentImageSplitPart !== (this.isSplitLeftToRight() ? SPLIT_PAGE_PART.LEFT_PART : SPLIT_PAGE_PART.RIGHT_PART)) {
+    if (this.isNoSplit() || notInSplit) {
       this.pageNum++;
       this.canvasImage = this.cachedImages.next();
     }
@@ -387,12 +389,15 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
       event.stopPropagation();
       event.preventDefault();
     }
-    if ((this.pageNum - 1 < 0 && this.currentImageSplitPart !== (this.isSplitLeftToRight() ? SPLIT_PAGE_PART.RIGHT_PART : SPLIT_PAGE_PART.LEFT_PART)) || this.isLoading) {
+
+    const notInSplit = this.currentImageSplitPart !== (this.isSplitLeftToRight() ? SPLIT_PAGE_PART.RIGHT_PART : SPLIT_PAGE_PART.LEFT_PART);
+
+    if ((this.pageNum - 1 < 0 && notInSplit) || this.isLoading) {
       return;
     }
 
     this.pagingDirection = PAGING_DIRECTION.BACKWARDS;
-    if (this.isNoSplit() || this.currentImageSplitPart !== (this.isSplitLeftToRight() ? SPLIT_PAGE_PART.RIGHT_PART : SPLIT_PAGE_PART.LEFT_PART)) {
+    if (this.isNoSplit() || notInSplit) {
       this.pageNum--;
       this.canvasImage = this.cachedImages.prev();
     }
