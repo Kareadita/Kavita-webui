@@ -493,6 +493,12 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
     //   page += 1;
     // }
 
+    if (page > this.pageNum) {
+      this.pagingDirection = PAGING_DIRECTION.FORWARD;
+    } else {
+      this.pagingDirection = PAGING_DIRECTION.BACKWARDS;
+    }
+
     this.pageNum = page;
     this.loadPage();
 
