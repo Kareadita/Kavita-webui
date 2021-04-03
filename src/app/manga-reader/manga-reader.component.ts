@@ -369,7 +369,7 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
       event.preventDefault();
     }
 
-    if (this.pageNum + 1 >= this.maxPages || this.isLoading) {
+    if ((this.pageNum + 1 >= this.maxPages && this.currentImageSplitPart !== (this.isSplitLeftToRight() ? SPLIT_PAGE_PART.LEFT_PART : SPLIT_PAGE_PART.RIGHT_PART)) || this.isLoading) {
       return;
     }
 
@@ -481,13 +481,17 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
       page = parseInt(goToPageNum.trim(), 10);
     }
 
-    if (page === undefined) { return; }
+    if (page === undefined || this.pageNum === page) { return; }
 
     if (page >= this.maxPages) {
       page = this.maxPages - 1;
     } else if (page < 0) {
       page = 0;
     }
+    
+    // if (page !== 0 || page !== this.maxPages - 1) {
+    //   page += 1;
+    // }
 
     this.pageNum = page;
     this.loadPage();
