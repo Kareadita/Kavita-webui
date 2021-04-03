@@ -334,7 +334,7 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
           this.currentImageSplitPart = this.isSplitLeftToRight() ? SPLIT_PAGE_PART.LEFT_PART : SPLIT_PAGE_PART.RIGHT_PART;
           break;
         case SPLIT_PAGE_PART.LEFT_PART:
-          this.currentImageSplitPart = this.isSplitLeftToRight() ? SPLIT_PAGE_PART.RIGHT_PART : SPLIT_PAGE_PART.NO_SPLIT;
+          this.currentImageSplitPart = this.isSplitLeftToRight() ? SPLIT_PAGE_PART.RIGHT_PART : (needsSplitting ? SPLIT_PAGE_PART.RIGHT_PART : SPLIT_PAGE_PART.NO_SPLIT);
           break;
         case SPLIT_PAGE_PART.RIGHT_PART:
           this.currentImageSplitPart = this.isSplitLeftToRight() ? SPLIT_PAGE_PART.NO_SPLIT : SPLIT_PAGE_PART.LEFT_PART;
@@ -349,7 +349,7 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
           this.currentImageSplitPart = this.isSplitLeftToRight() ? SPLIT_PAGE_PART.NO_SPLIT : SPLIT_PAGE_PART.RIGHT_PART;
           break;
         case SPLIT_PAGE_PART.RIGHT_PART:
-          this.currentImageSplitPart = this.isSplitLeftToRight() ? SPLIT_PAGE_PART.LEFT_PART : SPLIT_PAGE_PART.NO_SPLIT;
+          this.currentImageSplitPart = this.isSplitLeftToRight() ? SPLIT_PAGE_PART.LEFT_PART : (needsSplitting ? SPLIT_PAGE_PART.LEFT_PART : SPLIT_PAGE_PART.NO_SPLIT);
           break;
       }
     }
@@ -446,9 +446,7 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
   loadPage() {
     if (!this.canvas || !this.ctx) { return; }
 
-    this.readerService.bookmark(this.seriesId, this.volumeId, this.chapterId, this.pageNum).subscribe(() => {}, err => {
-      //this.toastr.error('Could not save bookmark status. Current page is: ' + this.pageNum); // This seems to be firing for no reason.
-    });
+    this.readerService.bookmark(this.seriesId, this.volumeId, this.chapterId, this.pageNum).subscribe(() => {});
 
     this.isLoading = true;
     this.canvasImage = this.cachedImages.current();
