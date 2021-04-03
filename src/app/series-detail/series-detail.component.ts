@@ -199,7 +199,7 @@ export class SeriesDetailComponent implements OnInit {
   setContinuePoint() {
     this.currentlyReadingVolume = undefined;
     this.currentlyReadingChapter = undefined;
-    this.hasReadingProgress = false;
+    this.hasReadingProgress = this.volumes.filter(v => v.pagesRead > 0).length > 0 || this.chapters.filter(c => c.pagesRead > 0).length > 0;
 
     for (let v of this.volumes) {
       if (v.number === 0) {
@@ -208,7 +208,6 @@ export class SeriesDetailComponent implements OnInit {
         continue;
       } else if (v.pagesRead < v.pages - 1) {
         this.currentlyReadingVolume = v;
-        this.hasReadingProgress = true;
         break;
       }
     }
@@ -220,7 +219,6 @@ export class SeriesDetailComponent implements OnInit {
           return;
         } else if (this.currentlyReadingChapter === undefined) {
           this.currentlyReadingChapter = c;
-          this.hasReadingProgress = true;
         }
       });
       if (this.currentlyReadingChapter === undefined) {
