@@ -36,8 +36,7 @@
                     <button *ngIf="series?.userReview" class="btn btn-sm btn-icon" (click)="openReviewModal(true)" placement="top" ngbTooltip="Edit Review" attr.aria-label="Edit Review"><i class="fa fa-pen"></i></button></p>
             </div>
             <div class="row no-gutters {{series?.userReview ? '' : 'mt-1'}}">
-                <!-- TODO: Read more component -->
-                <p [innerHtml]="seriesSummary | safeHtml"></p>
+                <app-read-more [text]="seriesSummary" [maxLength]="250"></app-read-more>
             </div>
             <div>
                 <div class="row no-gutters" *ngIf="false">
