@@ -387,7 +387,7 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
       event.stopPropagation();
       event.preventDefault();
     }
-    if (this.pageNum - 1 < 0 || this.isLoading) {
+    if ((this.pageNum - 1 < 0 && this.currentImageSplitPart !== (this.isSplitLeftToRight() ? SPLIT_PAGE_PART.RIGHT_PART : SPLIT_PAGE_PART.LEFT_PART)) || this.isLoading) {
       return;
     }
 
