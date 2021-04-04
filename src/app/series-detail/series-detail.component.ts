@@ -96,7 +96,7 @@ export class SeriesDetailComponent implements OnInit {
         this.markSeriesAsUnread(series);
         break;
       case(Action.ScanLibrary):
-        this.scanSeries(series);
+        this.scanLibrary(series);
         break;
       case(Action.Delete):
         this.deleteSeries(series);
@@ -138,8 +138,8 @@ export class SeriesDetailComponent implements OnInit {
     }
   }
 
-  scanSeries(series: Series) {
-    this.seriesService.scan(series.id).subscribe((res: any) => {
+  scanLibrary(series: Series) {
+    this.libraryService.scan(series.libraryId).subscribe((res: any) => {
       this.toastr.success('Scan started for ' + series.name);
     });
   }
