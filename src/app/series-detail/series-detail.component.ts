@@ -183,9 +183,10 @@ export class SeriesDetailComponent implements OnInit {
         this.volumes = volumes.sort(this.utilityService.sortVolumes);
 
         this.setContinuePoint();
-        this.hasSpecials = this.chapters.filter(c => c.isSpecial).length > 0 ;
+        const vol0 = this.volumes.filter(v => v.number === 0);
+        this.hasSpecials = vol0.map(v => v.chapters || []).flat().sort(this.utilityService.sortChapters).filter(c => c.isSpecial || isNaN(parseInt(c.range, 10))).length > 0 ;
         if (this.hasSpecials) {
-          this.specials = this.volumes.filter(v => v.number === 0).map(v => v.chapters || []).flat().filter(c => c.isSpecial).map(c => {
+          this.specials = vol0.map(v => v.chapters || []).flat().filter(c => c.isSpecial || isNaN(parseInt(c.range, 10))).map(c => {
             c.range = c.range.replace(/_/g, ' ');
             return c;
           });
