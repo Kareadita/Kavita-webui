@@ -4,6 +4,7 @@ import { NgbModal, NgbRatingConfig } from '@ng-bootstrap/ng-bootstrap';
 import { ToastrService } from 'ngx-toastr';
 import { forkJoin } from 'rxjs';
 import { take } from 'rxjs/operators';
+import { ConfirmConfig } from '../shared/confirm-dialog/_models/confirm-config';
 import { ConfirmService } from '../shared/confirm.service';
 import { CardDetailsModalComponent } from '../shared/_modals/card-details-modal/card-details-modal.component';
 import { UtilityService } from '../shared/_services/utility.service';
@@ -175,8 +176,7 @@ export class SeriesDetailComponent implements OnInit {
   loadSeries(seriesId: number) {
     this.seriesService.getSeries(seriesId).subscribe(series => {
       this.series = series;
-      this.seriesSummary = (series.summary === null ? '' : series.summary).replace(/\n/g, '<br>');
-      this.userReview = (series.userReview === null ? '' : series.userReview).replace(/\n/g, '<br>');
+      this.createHTML();
 
       this.seriesService.getVolumes(this.series.id).subscribe(volumes => {
         this.chapters = volumes.filter(v => !v.isSpecial && v.number === 0).map(v => v.chapters || []).flat().sort(this.utilityService.sortChapters);
@@ -194,6 +194,11 @@ export class SeriesDetailComponent implements OnInit {
         this.isLoading = false;
       });
     });
+  }
+
+  createHTML() {
+    this.seriesSummary = (this.series.summary === null ? '' : this.series.summary).replace(/\n/g, '<br>');
+    this.userReview = (this.series.userReview === null ? '' : this.series.userReview).replace(/\n/g, '<br>');
   }
 
   setContinuePoint() {
@@ -332,9 +337,14 @@ export class SeriesDetailComponent implements OnInit {
     });
   }
 
-  promptToReview() {
+  async promptToReview() {
     const shouldPrompt = this.isNullOrEmpty(this.series.userReview);
-    if (shouldPrompt && confirm('Do you want to write a review?')) {
+    const config = new ConfirmConfig();
+    config.header = 'Confirm';
+    config.content = 'Do you want to write a review?';
+    config.buttons.push({text: 'No', type: 'secondary'});
+    config.buttons.push({text: 'Yes', type: 'primary'});
+    if (shouldPrompt && await this.confirmService.confirm('Do you want to write a review?', config)) {
       this.openReviewModal();
     }
   }
@@ -342,9 +352,11 @@ export class SeriesDetailComponent implements OnInit {
   openReviewModal(force = false) {
     const modalRef = this.modalService.open(ReviewSeriesModalComponent, { scrollable: true, size: 'lg' });
     modalRef.componentInstance.series = this.series;
-    modalRef.closed.subscribe((closeResult: {success: boolean, review: string}) => {
+    modalRef.closed.subscribe((closeResult: {success: boolean, review: string, rating: number}) => {
       if (closeResult.success && this.series !== undefined) {
         this.series.userReview = closeResult.review;
+        this.series.userRating = closeResult.rating;
+        this.createHTML();
       }
     });
   }

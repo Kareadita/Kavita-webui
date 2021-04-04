@@ -14,7 +14,7 @@ export class ReadMoreComponent implements OnChanges {
 
   public isCollapsed: boolean = true;
 
-  constructor(private elementRef: ElementRef) {
+  constructor() {
 
   }
   toggleView() {
