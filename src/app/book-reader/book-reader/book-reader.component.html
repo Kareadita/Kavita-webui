@@ -1,1 +1,7 @@
-Book Reader in progress
+<ng-container *ngIf="pageUrl !== undefined">
+    <iframe title="Book title here - Chapter X" class="reader" [src]="pageUrl" width="80%" height="300px" referrerpolicy="origin" (load)="injectInterceptor()" #iframeObj>
+        <base target="_parent">
+    </iframe>
+</ng-container>
+
+<!-- <div id="area"></div> -->

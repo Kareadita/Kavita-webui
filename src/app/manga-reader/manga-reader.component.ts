@@ -164,7 +164,7 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
   pagingDirection: PAGING_DIRECTION = PAGING_DIRECTION.FORWARD;
 
   menuOpen = false;
-  isLoading = true; // we need to debounce this so it only kicks in longer than 30 ms load time
+  isLoading = true; 
   mangaFileName = '';
 
   @ViewChild('content') canvas: ElementRef | undefined;

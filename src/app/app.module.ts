@@ -24,6 +24,7 @@ import { EditSeriesModalComponent } from './_modals/edit-series-modal/edit-serie
 import { ReviewSeriesModalComponent } from './_modals/review-series-modal/review-series-modal.component';
 import { LazyLoadImageModule} from 'ng-lazyload-image';
 import { CarouselModule } from './carousel/carousel.module';
+import { RequestParamInterceptor } from './book-reader/request-param.interceptor';
 
 
 
@@ -65,6 +66,7 @@ import { CarouselModule } from './carousel/carousel.module';
     {provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true},
     {provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true},
     //{ provide: LAZYLOAD_IMAGE_HOOKS, useClass: ScrollHooks } // Great, but causes flashing after modals close
+    {provide: HTTP_INTERCEPTORS, useClass: RequestParamInterceptor, multi: true},
   ],
   entryComponents: [],
   bootstrap: [AppComponent]

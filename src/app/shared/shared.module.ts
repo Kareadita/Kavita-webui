@@ -38,8 +38,8 @@ import { ReadMoreComponent } from './read-more/read-more.component';
   exports: [
     RegisterMemberComponent, // TODO: Move this out and put in normal app
     CardItemComponent,
-    LibraryCardComponent,
-    SeriesCardComponent, // TODO: Remove this component and use just AppCardComponent
+    LibraryCardComponent, // TODO: Move this out and put in normal app
+    SeriesCardComponent, // TODO: Move this out and put in normal app
     SafeHtmlPipe,
     CardActionablesComponent,
     ReadMoreComponent
