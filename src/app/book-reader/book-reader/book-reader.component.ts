@@ -18,6 +18,17 @@ import { DomSanitizer, SafeHtml, SafeUrl } from '@angular/platform-browser';
 // import Rendition from 'epubjs/types/rendition';
 import { BookService } from '../book.service';
 
+
+interface PageStyle {
+  'font-family': string;
+  'font-size': string; 
+  'line-height': string;
+  'margin-left': string;
+  'margin-right': string;
+  'background-color'?: string;
+  'color'?: string;
+}
+
 @Component({
   selector: 'app-book-reader',
   templateUrl: './book-reader.component.html',
@@ -42,6 +53,8 @@ export class BookReaderComponent implements OnInit, OnDestroy {
   page: SafeHtml | undefined = undefined;
 
   @ViewChild('iframeObj', {static: false}) iframeObj!: ElementRef<HTMLIFrameElement>;
+
+  pageStyles: PageStyle = {'font-family': 'serif', 'font-size': '100%', 'line-height': 'normal', 'margin-left': '15%', 'margin-right': '15%'};
 
 
   // Temp hack: Override background color for reader and restore it onDestroy

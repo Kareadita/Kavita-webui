@@ -5,7 +5,7 @@
 </ng-container> -->
 
 <div *ngIf="page !== undefined">
-    <div [innerHtml]="page"></div>
+    <div [ngStyle]="pageStyles" [innerHtml]="page"></div>
 </div>
 
 <button class="btn btn-primary" (click)="prevPage()">Prev page</button>
