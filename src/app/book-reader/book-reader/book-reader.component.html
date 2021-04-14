@@ -1,10 +1,16 @@
-<ng-container *ngIf="pageUrl !== undefined">
-    <iframe title="Book title here - Chapter X" class="reader" [src]="pageUrl" width="80%" height="300px" referrerpolicy="origin" (load)="injectInterceptor()" #iframeObj>
+<!-- <ng-container *ngIf="pageUrl !== undefined">
+    <iframe title="Book title here - Chapter X" class="reader" [src]="pageUrl" width="80%" height="300px" referrerpolicy="same-origin" #iframeObj>
         <base target="_parent">
     </iframe>
-</ng-container>
+</ng-container> -->
+
+<div *ngIf="page !== undefined">
+    <div [innerHtml]="page"></div>
+</div>
 
 <button class="btn btn-primary" (click)="prevPage()">Prev page</button>
 <button class="btn btn-primary" (click)="nextPage()">Next page</button>
+
+<button class="btn btn-secondary" (click)="injectStyles()">Inject Styles</button>
 
 <!-- <div id="area"></div> -->

@@ -11,7 +11,7 @@ import { AccountService } from 'src/app/_services/account.service';
 import { NavService } from 'src/app/_services/nav.service';
 import { ReaderService } from 'src/app/_services/reader.service';
 import { SeriesService } from 'src/app/_services/series.service';
-import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
+import { DomSanitizer, SafeHtml, SafeUrl } from '@angular/platform-browser';
 
 // import Epub from 'epubjs';
 // import Book from 'epubjs/types/book';
@@ -39,10 +39,9 @@ export class BookReaderComponent implements OnInit, OnDestroy {
   isLoading = true; 
 
   pageUrl: SafeUrl | undefined = undefined;
-  // book: Book | undefined;
-  // rendition!: Rendition;
+  page: SafeHtml | undefined = undefined;
 
-  @ViewChild('iframeObj', {static: false}) iframeObj!: ElementRef;
+  @ViewChild('iframeObj', {static: false}) iframeObj!: ElementRef<HTMLIFrameElement>;
 
 
   // Temp hack: Override background color for reader and restore it onDestroy
@@ -127,7 +126,18 @@ export class BookReaderComponent implements OnInit, OnDestroy {
   }
 
   loadPage() {
-    this.pageUrl = this.domSanitizer.bypassSecurityTrustResourceUrl(this.bookService.getBookPageUrl(this.chapterId, this.pageNum));
+
+    this.isLoading = true;
+    this.readerService.bookmark(this.seriesId, this.volumeId, this.chapterId, this.pageNum).subscribe(() => {});
+
+    //this.pageUrl = this.domSanitizer.bypassSecurityTrustResourceUrl(this.bookService.getBookPageUrl(this.chapterId, this.pageNum));
+
+    this.bookService.getBookPage(this.chapterId, this.pageNum).subscribe(content => {
+      console.log('content: ', content);
+      this.page = this.domSanitizer.bypassSecurityTrustHtml(content);
+      
+    });
+    this.isLoading = false;
   }
 
   prevPage() {
@@ -139,9 +149,25 @@ export class BookReaderComponent implements OnInit, OnDestroy {
     this.loadPage();
   }
 
-  nextPage() {
+  nextPage(event?: any) {
+    if (event) {
+      event.stopPropagation();
+      event.preventDefault();
+    }
+
+    if ((this.pageNum + 1 >= this.maxPages) || this.isLoading) {
+      return;
+    }
+
     this.pageNum++;
     this.loadPage();
+  }
+
+  injectStyles() {
+    if (!this.iframeObj) { return; }
+    console.log(this.iframeObj.nativeElement.contentWindow?.document.body);
+    this.iframeObj.nativeElement.contentDocument?.documentElement.getElementsByClassName('body').item(0)?.setAttribute('style', 'font-size: 140%');
+    // Font-Size: font-size: 100% (+/- 10%)
   }
 
   // request(url: string, type: string, withCredentials: object, headers: object) {
@@ -155,21 +181,5 @@ export class BookReaderComponent implements OnInit, OnDestroy {
   //     return new Blob([res]);
   //   })).toPromise();
   // }
-
-  injectInterceptor() {
-    let iframeWindow = (this.iframeObj.nativeElement.contentWindow || this.iframeObj.nativeElement.contentDocument);
-    let xhrObj = iframeWindow.XMLHttpRequest.prototype.open;
-    var parentObj = this;
-    iframeWindow.XMLHttpRequest.prototype.open = function (method: any, url: any, async: any, user: any, password: any) {
-      console.log('custom: ', url);  
-      this.addEventListener('load', () => {
-                console.log('load: ', this);
-        });
-        xhrObj.apply(this, arguments);
-        // const oidcToken = JSON.parse(window.localStorage.getItem(parentObj.localstorageKey));
-        // const accessToken  = oidcToken.access_token;
-        // this.setRequestHeader('Authorization', "Bearer " + accessToken); 
-    }
-  }
 
 }
