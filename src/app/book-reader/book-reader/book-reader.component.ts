@@ -13,9 +13,9 @@ import { ReaderService } from 'src/app/_services/reader.service';
 import { SeriesService } from 'src/app/_services/series.service';
 import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 
-import Epub from 'epubjs';
-import Book from 'epubjs/types/book';
-import Rendition from 'epubjs/types/rendition';
+// import Epub from 'epubjs';
+// import Book from 'epubjs/types/book';
+// import Rendition from 'epubjs/types/rendition';
 import { BookService } from '../book.service';
 
 @Component({
@@ -39,8 +39,8 @@ export class BookReaderComponent implements OnInit, OnDestroy {
   isLoading = true; 
 
   pageUrl: SafeUrl | undefined = undefined;
-  book: Book | undefined;
-  rendition!: Rendition;
+  // book: Book | undefined;
+  // rendition!: Rendition;
 
   @ViewChild('iframeObj', {static: false}) iframeObj!: ElementRef;
 
@@ -128,6 +128,20 @@ export class BookReaderComponent implements OnInit, OnDestroy {
 
   loadPage() {
     this.pageUrl = this.domSanitizer.bypassSecurityTrustResourceUrl(this.bookService.getBookPageUrl(this.chapterId, this.pageNum));
+  }
+
+  prevPage() {
+    this.pageNum--;
+    if (this.pageNum < 0) {
+      this.pageNum = 0;
+    }
+
+    this.loadPage();
+  }
+
+  nextPage() {
+    this.pageNum++;
+    this.loadPage();
   }
 
   // request(url: string, type: string, withCredentials: object, headers: object) {

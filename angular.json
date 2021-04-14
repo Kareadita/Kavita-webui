@@ -36,7 +36,7 @@
               "node_modules/@fortawesome/fontawesome-free/css/all.min.css"
             ],
             "scripts": [
-              "./node_modules/epubjs/dist/epub.js"
+              //"./node_modules/epubjs/dist/epub.js"
             ]
           },
           "configurations": {
