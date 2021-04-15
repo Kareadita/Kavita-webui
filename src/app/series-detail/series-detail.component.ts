@@ -4,6 +4,7 @@ import { NgbModal, NgbRatingConfig } from '@ng-bootstrap/ng-bootstrap';
 import { ToastrService } from 'ngx-toastr';
 import { forkJoin } from 'rxjs';
 import { take } from 'rxjs/operators';
+import { ConfirmConfig } from '../shared/confirm-dialog/_models/confirm-config';
 import { ConfirmService } from '../shared/confirm.service';
 import { CardDetailsModalComponent } from '../shared/_modals/card-details-modal/card-details-modal.component';
 import { UtilityService } from '../shared/_services/utility.service';
@@ -32,18 +33,24 @@ export class SeriesDetailComponent implements OnInit {
   chapters: Chapter[] = [];
   libraryId = 0;
   isAdmin = false;
+  isLoading = true;
+  showBook = true;
 
   currentlyReadingVolume: Volume | undefined = undefined;
   currentlyReadingChapter: Chapter | undefined = undefined;
   hasReadingProgress = false;
 
-  testMap: any;
-  showBook = false;
-  isLoading = true;
 
   seriesActions: ActionItem<Series>[] = [];
   volumeActions: ActionItem<Volume>[] = [];
   chapterActions: ActionItem<Chapter>[] = [];
+
+  hasSpecials = false;
+  specials: Array<Chapter> = [];
+  activeTabId = 2;
+
+  seriesSummary: string = '';
+  userReview: string = '';
 
 
   constructor(private route: ActivatedRoute, private seriesService: SeriesService,
@@ -83,7 +90,7 @@ export class SeriesDetailComponent implements OnInit {
   handleSeriesActionCallback(action: Action, series: Series) {
     switch(action) {
       case(Action.MarkAsRead):
-        this.markSeriesAsRead(series); // TODO: I can probably move this into a series completely self-contained
+        this.markSeriesAsRead(series);
         break;
       case(Action.MarkAsUnread):
         this.markSeriesAsUnread(series);
@@ -132,7 +139,7 @@ export class SeriesDetailComponent implements OnInit {
   }
 
   scanLibrary(series: Series) {
-    this.libraryService.scan(this.libraryId).subscribe((res: any) => {
+    this.libraryService.scan(series.libraryId).subscribe((res: any) => {
       this.toastr.success('Scan started for ' + series.name);
     });
   }
@@ -154,6 +161,7 @@ export class SeriesDetailComponent implements OnInit {
     this.seriesService.markUnread(series.id).subscribe(res => {
       this.toastr.success(series.name + ' is now unread');
       series.pagesRead = 0;
+      this.loadSeries(series.id);
     });
   }
 
@@ -161,36 +169,51 @@ export class SeriesDetailComponent implements OnInit {
     this.seriesService.markRead(series.id).subscribe(res => {
       this.toastr.success(series.name + ' is now read');
       series.pagesRead = series.pages;
+      this.loadSeries(series.id);
     });
   }
 
   loadSeries(seriesId: number) {
     this.seriesService.getSeries(seriesId).subscribe(series => {
       this.series = series;
+      this.createHTML();
 
       this.seriesService.getVolumes(this.series.id).subscribe(volumes => {
         this.chapters = volumes.filter(v => !v.isSpecial && v.number === 0).map(v => v.chapters || []).flat().sort(this.utilityService.sortChapters);
         this.volumes = volumes.sort(this.utilityService.sortVolumes);
 
         this.setContinuePoint();
+        const vol0 = this.volumes.filter(v => v.number === 0);
+        this.hasSpecials = vol0.map(v => v.chapters || []).flat().sort(this.utilityService.sortChapters).filter(c => c.isSpecial || isNaN(parseInt(c.range, 10))).length > 0 ;
+        if (this.hasSpecials) {
+          this.specials = vol0.map(v => v.chapters || []).flat().filter(c => c.isSpecial || isNaN(parseInt(c.range, 10))).map(c => {
+            c.range = c.range.replace(/_/g, ' ');
+            return c;
+          });
+        }
+
         this.isLoading = false;
       });
     });
   }
 
+  createHTML() {
+    this.seriesSummary = (this.series.summary === null ? '' : this.series.summary).replace(/\n/g, '<br>');
+    this.userReview = (this.series.userReview === null ? '' : this.series.userReview).replace(/\n/g, '<br>');
+  }
+
   setContinuePoint() {
     this.currentlyReadingVolume = undefined;
     this.currentlyReadingChapter = undefined;
-    this.hasReadingProgress = false;
+    this.hasReadingProgress = this.volumes.filter(v => v.pagesRead > 0).length > 0 || this.chapters.filter(c => c.pagesRead > 0).length > 0;
 
     for (let v of this.volumes) {
       if (v.number === 0) {
         continue;
       } else if (v.pagesRead >= v.pages - 1) {
         continue;
-      } else if (v.pagesRead < v.pages - 1) { // Issue is off by 1 again...
+      } else if (v.pagesRead < v.pages - 1) {
         this.currentlyReadingVolume = v;
-        this.hasReadingProgress = true;
         break;
       }
     }
@@ -202,7 +225,6 @@ export class SeriesDetailComponent implements OnInit {
           return;
         } else if (this.currentlyReadingChapter === undefined) {
           this.currentlyReadingChapter = c;
-          this.hasReadingProgress = true;
         }
       });
       if (this.currentlyReadingChapter === undefined) {
@@ -247,8 +269,8 @@ export class SeriesDetailComponent implements OnInit {
 
     this.readerService.bookmark(seriesId, chapter.volumeId, chapter.id, chapter.pages).subscribe(results => {
       this.toastr.success('Marked as Read');
-      this.setContinuePoint();
       chapter.pagesRead = chapter.pages;
+      this.setContinuePoint();
     });
   }
 
@@ -276,10 +298,16 @@ export class SeriesDetailComponent implements OnInit {
       return;
     }
 
-    this.seriesService.updateRating(this.series?.id, this.series?.userRating, this.series?.userReview).subscribe(() => {});
+    this.seriesService.updateRating(this.series?.id, this.series?.userRating, this.series?.userReview).subscribe(() => {
+      this.createHTML();
+    });
   }
 
   openChapter(chapter: Chapter) {
+    if (chapter.pages === 0) {
+      this.toastr.error('There are no pages. Kavita was not able to read this archive.');
+      return;
+    }
     this.router.navigate(['library', this.libraryId, 'series', this.series?.id, 'manga', chapter.id]);
   }
 
@@ -312,9 +340,14 @@ export class SeriesDetailComponent implements OnInit {
     });
   }
 
-  promptToReview() {
+  async promptToReview() {
     const shouldPrompt = this.isNullOrEmpty(this.series.userReview);
-    if (shouldPrompt && confirm('Do you want to write a review?')) {
+    const config = new ConfirmConfig();
+    config.header = 'Confirm';
+    config.content = 'Do you want to write a review?';
+    config.buttons.push({text: 'No', type: 'secondary'});
+    config.buttons.push({text: 'Yes', type: 'primary'});
+    if (shouldPrompt && await this.confirmService.confirm('Do you want to write a review?', config)) {
       this.openReviewModal();
     }
   }
@@ -322,9 +355,11 @@ export class SeriesDetailComponent implements OnInit {
   openReviewModal(force = false) {
     const modalRef = this.modalService.open(ReviewSeriesModalComponent, { scrollable: true, size: 'lg' });
     modalRef.componentInstance.series = this.series;
-    modalRef.closed.subscribe((closeResult: {success: boolean, review: string}) => {
+    modalRef.closed.subscribe((closeResult: {success: boolean, review: string, rating: number}) => {
       if (closeResult.success && this.series !== undefined) {
         this.series.userReview = closeResult.review;
+        this.series.userRating = closeResult.rating;
+        this.createHTML();
       }
     });
   }
