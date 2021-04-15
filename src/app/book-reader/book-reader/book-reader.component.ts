@@ -146,7 +146,6 @@ export class BookReaderComponent implements OnInit, OnDestroy {
     //this.pageUrl = this.domSanitizer.bypassSecurityTrustResourceUrl(this.bookService.getBookPageUrl(this.chapterId, this.pageNum));
 
     this.bookService.getBookPage(this.chapterId, this.pageNum).subscribe(content => {
-      console.log('content: ', content);
       this.page = this.domSanitizer.bypassSecurityTrustHtml(content);
       
     });
