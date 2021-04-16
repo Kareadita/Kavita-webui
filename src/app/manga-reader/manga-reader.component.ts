@@ -497,7 +497,7 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
       page = 0;
     }
 
-    if (page !== 0 || page !== this.maxPages - 1) {
+    if (!(page === 0 || page === this.maxPages - 1)) {
       page -= 1;
     }
 
