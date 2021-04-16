@@ -164,17 +164,17 @@ export class SeriesDetailComponent implements OnInit {
 
   markSeriesAsUnread(series: Series) {
     this.seriesService.markUnread(series.id).subscribe(res => {
-      this.loadSeries(series.id);
       this.toastr.success(series.name + ' is now unread');
       series.pagesRead = 0;
+      this.loadSeries(series.id);
     });
   }
 
   markSeriesAsRead(series: Series) {
     this.seriesService.markRead(series.id).subscribe(res => {
-      this.loadSeries(series.id);
       this.toastr.success(series.name + ' is now read');
       series.pagesRead = series.pages;
+      this.loadSeries(series.id);
     });
   }
 
@@ -184,7 +184,7 @@ export class SeriesDetailComponent implements OnInit {
       this.createHTML();
 
       this.seriesService.getVolumes(this.series.id).subscribe(volumes => {
-        this.chapters = volumes.filter(v => !v.isSpecial && v.number === 0).map(v => v.chapters || []).flat().sort(this.utilityService.sortChapters);
+        this.chapters = volumes.filter(v => v.number === 0).map(v => v.chapters || []).flat().sort(this.utilityService.sortChapters); // volumes.filter(!v.isSpecial && )
         this.volumes = volumes.sort(this.utilityService.sortVolumes);
 
         this.setContinuePoint();
@@ -274,8 +274,8 @@ export class SeriesDetailComponent implements OnInit {
 
     this.readerService.bookmark(seriesId, chapter.volumeId, chapter.id, chapter.pages).subscribe(results => {
       this.toastr.success('Marked as Read');
-      this.setContinuePoint();
       chapter.pagesRead = chapter.pages;
+      this.setContinuePoint();
     });
   }
 
@@ -303,7 +303,9 @@ export class SeriesDetailComponent implements OnInit {
       return;
     }
 
-    this.seriesService.updateRating(this.series?.id, this.series?.userRating, this.series?.userReview).subscribe(() => {});
+    this.seriesService.updateRating(this.series?.id, this.series?.userRating, this.series?.userReview).subscribe(() => {
+      this.createHTML();
+    });
   }
 
   openChapter(chapter: Chapter) {
