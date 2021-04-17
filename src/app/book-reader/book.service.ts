@@ -21,7 +21,7 @@ export class BookService {
   }
 
   getBookPage(chapterId: number, page: number) {
-    return this.http.get<string>(this.baseUrl + 'book/' + chapterId + '/book-page?page=' + page, {responseType: 'text' as 'json'});
+    return this.http.get<string>(this.baseUrl + 'book/' + chapterId + '/book-page?page=' + page + '&baseUrl=' + encodeURIComponent(this.baseUrl), {responseType: 'text' as 'json'});
   }
 
   getBookPageUrl(chapterId: number, page: number) {

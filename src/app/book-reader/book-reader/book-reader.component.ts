@@ -1,4 +1,4 @@
-import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, HostListener, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import {Location} from '@angular/common';
 import { FormBuilder } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -17,6 +17,7 @@ import { DomSanitizer, SafeHtml, SafeUrl } from '@angular/platform-browser';
 // import Book from 'epubjs/types/book';
 // import Rendition from 'epubjs/types/rendition';
 import { BookService } from '../book.service';
+import { KEY_CODES } from 'src/app/shared/_services/utility.service';
 
 
 interface PageStyle {
@@ -42,6 +43,7 @@ export class BookReaderComponent implements OnInit, OnDestroy {
   chapterId!: number;
   chapter!: Chapter;
 
+  prevPageNum = 0; // Debug only
   pageNum = 0;
   maxPages = 1;
   user!: User;
@@ -53,6 +55,7 @@ export class BookReaderComponent implements OnInit, OnDestroy {
   page: SafeHtml | undefined = undefined;
 
   @ViewChild('iframeObj', {static: false}) iframeObj!: ElementRef<HTMLIFrameElement>;
+  @ViewChild('readingSection', {static: false}) readingSectionElemRef!: ElementRef<HTMLDivElement>;
 
   pageStyles: PageStyle = {'font-family': 'serif', 'font-size': '100%', 'line-height': 'normal', 'margin-left': '15%', 'margin-right': '15%'};
 
@@ -124,9 +127,20 @@ export class BookReaderComponent implements OnInit, OnDestroy {
 
     }, () => {
       setTimeout(() => {
-        this.location.back();
+        this.closeReader();
       }, 200);
     });
+  }
+
+  @HostListener('window:keyup', ['$event'])
+  handleKeyPress(event: KeyboardEvent) {
+    if (event.key === KEY_CODES.RIGHT_ARROW) {
+      this.nextPage();
+    } else if (event.key === KEY_CODES.LEFT_ARROW) {
+      this.prevPage();
+    } else if (event.key === KEY_CODES.ESC_KEY) {
+      this.closeReader();
+    }
   }
 
   setOverrideStyles() {
@@ -138,25 +152,54 @@ export class BookReaderComponent implements OnInit, OnDestroy {
     }
   }
 
+  closeReader() {
+    this.location.back();
+  }
+
   loadPage() {
 
     this.isLoading = true;
     this.readerService.bookmark(this.seriesId, this.volumeId, this.chapterId, this.pageNum).subscribe(() => {});
 
-    //this.pageUrl = this.domSanitizer.bypassSecurityTrustResourceUrl(this.bookService.getBookPageUrl(this.chapterId, this.pageNum));
-
     this.bookService.getBookPage(this.chapterId, this.pageNum).subscribe(content => {
       this.page = this.domSanitizer.bypassSecurityTrustHtml(content);
+      setTimeout(() => {
+        var links = this.readingSectionElemRef.nativeElement.querySelectorAll('a');
+        links.forEach(link => {
+          link.addEventListener('click', (e: any) => {
+            if (!e.target.attributes.hasOwnProperty('kavita-page')) { return; }
+            var page = e.target.attributes['kavita-page'].value;
+            this.setPageNum(parseInt(page, 10));
+            this.loadPage();
+          });
+        });
+      }, 10);
       
+    }, err => {
+      this.pageNum = this.prevPageNum;
+      this.loadPage();
     });
     this.isLoading = false;
   }
 
-  prevPage() {
-    this.pageNum--;
-    if (this.pageNum < 0) {
+  setPageNum(pageNum: number) {
+    this.prevPageNum = this.pageNum;
+    if (pageNum < 0) {
       this.pageNum = 0;
+    } else if (pageNum >= this.maxPages) {
+      this.pageNum = this.maxPages;
+    } else {
+      this.pageNum = pageNum;
     }
+
+  }
+
+  prevPage() {
+    // this.pageNum--;
+    // if (this.pageNum < 0) {
+    //   this.pageNum = 0;
+    // }
+    this.setPageNum(this.pageNum - 1);
 
     this.loadPage();
   }
@@ -167,11 +210,12 @@ export class BookReaderComponent implements OnInit, OnDestroy {
       event.preventDefault();
     }
 
-    if ((this.pageNum + 1 >= this.maxPages) || this.isLoading) {
-      return;
-    }
+    // if ((this.pageNum + 1 >= this.maxPages) || this.isLoading) {
+    //   return;
+    // }
 
-    this.pageNum++;
+    // this.pageNum++;
+    this.setPageNum(this.pageNum + 1);
     this.loadPage();
   }
 
@@ -181,17 +225,5 @@ export class BookReaderComponent implements OnInit, OnDestroy {
     this.iframeObj.nativeElement.contentDocument?.documentElement.getElementsByClassName('body').item(0)?.setAttribute('style', 'font-size: 140%');
     // Font-Size: font-size: 100% (+/- 10%)
   }
-
-  // request(url: string, type: string, withCredentials: object, headers: object) {
-  //   console.log('Requesting ', url);
-  //   console.log('type: ', type);
-
-  //   const filePath = url.split('/' + this.chapterId + '/')[1];
-
-  //   return this.bookService.getEpubFile(this.chapterId, filePath).pipe(map(res => {
-  //     console.log('got res: ', res);
-  //     return new Blob([res]);
-  //   })).toPromise();
-  // }
 
 }

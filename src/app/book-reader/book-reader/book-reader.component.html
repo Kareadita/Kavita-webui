@@ -4,13 +4,11 @@
     </iframe>
 </ng-container> -->
 
-<div *ngIf="page !== undefined">
-    <div [ngStyle]="pageStyles" [innerHtml]="page"></div>
+<div #readingSection>
+    <div [ngStyle]="pageStyles" [innerHtml]="page" *ngIf="page !== undefined"></div>
 </div>
 
 <button class="btn btn-primary" (click)="prevPage()">Prev page</button>
 <button class="btn btn-primary" (click)="nextPage()">Next page</button>
 
 <button class="btn btn-secondary" (click)="injectStyles()">Inject Styles</button>
-
-<!-- <div id="area"></div> -->

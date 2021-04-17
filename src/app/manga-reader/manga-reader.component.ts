@@ -14,15 +14,16 @@ import { ScalingOption } from '../_models/preferences/scaling-option';
 import { PageSplitOption } from '../_models/preferences/page-split-option';
 import { forkJoin } from 'rxjs';
 import { ToastrService } from 'ngx-toastr';
+import { KEY_CODES } from '../shared/_services/utility.service';
 
 const PREFETCH_PAGES = 3;
 
-enum KEY_CODES {
-  RIGHT_ARROW = 'ArrowRight',
-  LEFT_ARROW = 'ArrowLeft',
-  ESC_KEY = 'Escape',
-  SPACE = ' '
-}
+// enum KEY_CODES {
+//   RIGHT_ARROW = 'ArrowRight',
+//   LEFT_ARROW = 'ArrowLeft',
+//   ESC_KEY = 'Escape',
+//   SPACE = ' '
+// }
 
 enum FITTING_OPTION {
   HEIGHT = 'full-height',
