@@ -35,9 +35,7 @@
               "src/styles.scss",
               "node_modules/@fortawesome/fontawesome-free/css/all.min.css"
             ],
-            "scripts": [
-              //"./node_modules/epubjs/dist/epub.js"
-            ]
+            "scripts": []
           },
           "configurations": {
             "production": {
@@ -101,7 +99,7 @@
               "src/assets"
             ],
             "styles": [
-              "src/styles.scss",
+              "src/styles.scss"
             ],
             "scripts": []
           }

@@ -1,11 +1,13 @@
-<!-- <ng-container *ngIf="pageUrl !== undefined">
-    <iframe title="Book title here - Chapter X" class="reader" [src]="pageUrl" width="80%" height="300px" referrerpolicy="same-origin" #iframeObj>
-        <base target="_parent">
-    </iframe>
-</ng-container> -->
-
 <div #readingSection>
     <div [ngStyle]="pageStyles" [innerHtml]="page" *ngIf="page !== undefined"></div>
+</div>
+
+<div class="drawer">
+    <ul>
+        <li *ngFor="let chapter of chapterLinks">
+            <a href="javascript:void()" (click)="loadChapter(chapter.page)">{{chapter.title}}</a>
+        </li>
+    </ul>
 </div>
 
 <button class="btn btn-primary" (click)="prevPage()">Prev page</button>

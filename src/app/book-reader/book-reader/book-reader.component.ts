@@ -13,9 +13,6 @@ import { ReaderService } from 'src/app/_services/reader.service';
 import { SeriesService } from 'src/app/_services/series.service';
 import { DomSanitizer, SafeHtml, SafeUrl } from '@angular/platform-browser';
 
-// import Epub from 'epubjs';
-// import Book from 'epubjs/types/book';
-// import Rendition from 'epubjs/types/rendition';
 import { BookService } from '../book.service';
 import { KEY_CODES } from 'src/app/shared/_services/utility.service';
 
@@ -42,6 +39,9 @@ export class BookReaderComponent implements OnInit, OnDestroy {
   volumeId!: number;
   chapterId!: number;
   chapter!: Chapter;
+
+  chapters: any = {};
+  chapterLinks: Array<{title: string, page: number}> = [];
 
   prevPageNum = 0; // Debug only
   pageNum = 0;
@@ -100,28 +100,28 @@ export class BookReaderComponent implements OnInit, OnDestroy {
     this.seriesId = parseInt(seriesId, 10);
     this.chapterId = parseInt(chapterId, 10);
 
-    // this.book = Epub(this.bookService.getEpubUrl(this.chapterId, 'content.opf'), {requestMethod: this.request.bind(this)});
-    // this.rendition = this.book.renderTo("area", {width: 600, height: 400});
-    // this.rendition.display();
     
 
     forkJoin({
       chapter: this.seriesService.getChapter(this.chapterId),
-      pageNum: this.readerService.getBookmark(this.chapterId)
+      pageNum: this.readerService.getBookmark(this.chapterId),
+      chapters: this.bookService.getBookChapters(this.chapterId)
     }).subscribe(results => {
       this.chapter = results.chapter;
       this.volumeId = results.chapter.volumeId;
       this.maxPages = results.chapter.pages;
+      this.chapters = results.chapters;
+      Object.keys(this.chapters).forEach(key => {
+        if (this.chapters.hasOwnProperty(key)) {
+          this.chapterLinks.push({title: key, page: this.chapters[key]});
+        }
+      });
 
       this.pageNum = results.pageNum;
 
       if (this.pageNum > this.maxPages) {
         this.pageNum = this.maxPages;
       }
-
-      // this.bookService.getEpubFile(this.chapterId, 'content.opf').toPromise().then(xml => {
-      //   console.log('i got: ', xml);
-      // });
 
       this.loadPage();
 
@@ -141,6 +141,11 @@ export class BookReaderComponent implements OnInit, OnDestroy {
     } else if (event.key === KEY_CODES.ESC_KEY) {
       this.closeReader();
     }
+  }
+
+  loadChapter(pageNum: number) {
+    this.setPageNum(pageNum);
+    this.loadPage();
   }
 
   setOverrideStyles() {
