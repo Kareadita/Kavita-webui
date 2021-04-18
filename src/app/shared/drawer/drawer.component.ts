@@ -22,20 +22,4 @@ export class DrawerComponent implements OnInit {
   close() {
     this.drawerClosed.emit();
   }
-
-  // get drawerStyles() {
-  //   const commonStyles = { width: `${this.width}px` };
-  //   if (this.position == 'right') {
-  //     return {
-  //       ...commonStyles,
-  //       right: `${this.isOpen ? 0 : -1 * this.width}px`,
-  //     };
-  //   } else {
-  //     return {
-  //       ...commonStyles,
-  //       left: `${this.isOpen ? 0 : -1 * this.width}px`,
-  //     };
-  //   }
-  // }
-
 }

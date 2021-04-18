@@ -1,10 +1,11 @@
 :host {
     --drawer-width: 400px;
+    --drawer-top-offset: 0px;
   }
   
   .drawer-container {
     position: absolute;
-    top: 0;
+    top: var(--drawer-top-offset);
     right: 0;
     width: var(--drawer-width);
     height: 100vh;

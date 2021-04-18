@@ -6,7 +6,7 @@
         <button class="btn btn-outline-secondary btn-icon col-2" (click)="nextPage()" title="Next Page"><i class="fa fa-arrow-right" aria-hidden="true"></i></button>
     </div>
 
-    <app-drawer #commentDrawer="drawer" [isOpen]="drawerOpen" [style.--drawer-width]="'300px'" (drawerClosed)="closeDrawer()">
+    <app-drawer #commentDrawer="drawer" [isOpen]="drawerOpen" [style.--drawer-width]="'300px'" [style.--drawer-top-offset]="'40px'" (drawerClosed)="closeDrawer()">
         <div header>
             <h2 style="margin-top: 0.5rem">Book Menu
                 <button type="button" class="close" aria-label="Close" (click)="commentDrawer.close()">
