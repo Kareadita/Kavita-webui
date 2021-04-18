@@ -3,10 +3,11 @@
 </div>
 
 <div class="drawer">
-    <ul>
-        <li *ngFor="let chapter of chapterLinks">
-            <a href="javascript:void()" (click)="loadChapter(chapter.page)">{{chapter.title}}</a>
-        </li>
+    <ul *ngFor="let chapterGroup of chapters">
+        <li>{{chapterGroup.title}}</li>
+        <ul *ngFor="let chapter of chapterGroup.children">
+            <li><a href="javascript:void()" (click)="loadChapter(chapter.page, chapter.part)">{{chapter.title}}</a></li>
+        </ul>
     </ul>
 </div>
 

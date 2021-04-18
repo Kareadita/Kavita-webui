@@ -16,6 +16,12 @@ import { DomSanitizer, SafeHtml, SafeUrl } from '@angular/platform-browser';
 import { BookService } from '../book.service';
 import { KEY_CODES } from 'src/app/shared/_services/utility.service';
 
+interface BookChapter {
+  title: string;
+  page: number;
+  part: string;
+  children: Array<BookChapter>;
+}
 
 interface PageStyle {
   'font-family': string;
@@ -40,8 +46,9 @@ export class BookReaderComponent implements OnInit, OnDestroy {
   chapterId!: number;
   chapter!: Chapter;
 
-  chapters: any = {};
+  //chapters: any = {};
   chapterLinks: Array<{title: string, page: number}> = [];
+  chapters: Array<BookChapter> = [];
 
   prevPageNum = 0; // Debug only
   pageNum = 0;
@@ -111,11 +118,11 @@ export class BookReaderComponent implements OnInit, OnDestroy {
       this.volumeId = results.chapter.volumeId;
       this.maxPages = results.chapter.pages;
       this.chapters = results.chapters;
-      Object.keys(this.chapters).forEach(key => {
-        if (this.chapters.hasOwnProperty(key)) {
-          this.chapterLinks.push({title: key, page: this.chapters[key]});
-        }
-      });
+      // Object.keys(this.chapters).forEach(key => {
+      //   if (this.chapters.hasOwnProperty(key)) {
+      //     this.chapterLinks.push({title: key, page: this.chapters[key]});
+      //   }
+      // });
 
       this.pageNum = results.pageNum;
 
@@ -143,9 +150,12 @@ export class BookReaderComponent implements OnInit, OnDestroy {
     }
   }
 
-  loadChapter(pageNum: number) {
+  loadChapter(pageNum: number, part: string) {
     this.setPageNum(pageNum);
     this.loadPage();
+    if (part !== null && part !== '') {
+      // TODO: Scroll to part once page loads
+    }
   }
 
   setOverrideStyles() {
@@ -164,6 +174,7 @@ export class BookReaderComponent implements OnInit, OnDestroy {
   loadPage() {
 
     this.isLoading = true;
+    window.scrollTo(0, 0);
     this.readerService.bookmark(this.seriesId, this.volumeId, this.chapterId, this.pageNum).subscribe(() => {});
 
     this.bookService.getBookPage(this.chapterId, this.pageNum).subscribe(content => {
