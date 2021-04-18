@@ -2,9 +2,15 @@
     padding-bottom: 5px;
 }
 
-li.active {
-    font-weight: bold;
+.table-of-contents li {
+    cursor: pointer;
+
+    &.active {
+        font-weight: bold;
+    }
 }
+
+
 
 .dark-mode {
     * {

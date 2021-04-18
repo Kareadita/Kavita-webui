@@ -273,12 +273,14 @@ export class BookReaderComponent implements OnInit, OnDestroy {
     if (!partSelector.startsWith('#')) {
       partSelector = '#' + partSelector;
     }
-    
+
     const element = document.querySelector(partSelector);
     if (element === null) return;
 
     const rect = element.getBoundingClientRect(); // get rects(width, height, top, etc)
     const viewHeight = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
+
+    // TODO: Check if we are already in view, then return early
 
     window.scroll({
       top: rect.top + rect.height / 2 - viewHeight / 2,
