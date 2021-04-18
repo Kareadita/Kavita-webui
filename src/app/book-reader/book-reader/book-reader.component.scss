@@ -1,3 +1,17 @@
-iframe {
-    border: none;
+.control-container {
+    border-bottom: 1px solid grey;
+}
+
+.dark-mode {
+    * {
+        background-color: rgb(41, 41, 41, 0.90);
+    }
+
+    *:not(input) {
+        color: #dcdcdc;
+    }
+}
+
+.reading-section {
+    overflow-y: scroll;
 }

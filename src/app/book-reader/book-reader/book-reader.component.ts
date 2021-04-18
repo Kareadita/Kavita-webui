@@ -15,22 +15,17 @@ import { DomSanitizer, SafeHtml, SafeUrl } from '@angular/platform-browser';
 
 import { BookService } from '../book.service';
 import { KEY_CODES } from 'src/app/shared/_services/utility.service';
+import { BookChapterItem } from '../_models/book-chapter-item';
 
-interface BookChapter {
-  title: string;
-  page: number;
-  part: string;
-  children: Array<BookChapter>;
-}
 
 interface PageStyle {
   'font-family': string;
   'font-size': string; 
-  'line-height': string;
+  'line-height'?: string;
   'margin-left': string;
   'margin-right': string;
-  'background-color'?: string;
-  'color'?: string;
+  //'background-color'?: string;
+  //'color'?: string;
 }
 
 @Component({
@@ -46,9 +41,7 @@ export class BookReaderComponent implements OnInit, OnDestroy {
   chapterId!: number;
   chapter!: Chapter;
 
-  //chapters: any = {};
-  chapterLinks: Array<{title: string, page: number}> = [];
-  chapters: Array<BookChapter> = [];
+  chapters: Array<BookChapterItem> = [];
 
   prevPageNum = 0; // Debug only
   pageNum = 0;
@@ -64,11 +57,16 @@ export class BookReaderComponent implements OnInit, OnDestroy {
   @ViewChild('iframeObj', {static: false}) iframeObj!: ElementRef<HTMLIFrameElement>;
   @ViewChild('readingSection', {static: false}) readingSectionElemRef!: ElementRef<HTMLDivElement>;
 
-  pageStyles: PageStyle = {'font-family': 'serif', 'font-size': '100%', 'line-height': 'normal', 'margin-left': '15%', 'margin-right': '15%'};
+  pageStyles: PageStyle = {'font-family': 'serif', 'font-size': '100%', 'margin-left': '15%', 'margin-right': '15%'};
+
+
+  drawerOpen = true;
+  darkMode = false;
 
 
   // Temp hack: Override background color for reader and restore it onDestroy
   originalBodyColor: string | undefined;
+  originalTextColor: string | undefined;
 
   constructor(private route: ActivatedRoute, private router: Router, private accountService: AccountService,
     private seriesService: SeriesService, private readerService: ReaderService, private location: Location,
@@ -78,8 +76,9 @@ export class BookReaderComponent implements OnInit, OnDestroy {
   }
   ngOnDestroy(): void {
     const bodyNode = document.querySelector('body');
-    if (bodyNode !== undefined && bodyNode !== null && this.originalBodyColor !== undefined) {
+    if (bodyNode !== undefined && bodyNode !== null && this.originalBodyColor !== undefined && this.originalTextColor != undefined) {
       bodyNode.style.background = this.originalBodyColor;
+      bodyNode.style.color = this.originalTextColor;
       bodyNode.style.height = '100%';
     }
     this.navService.showNavBar();
@@ -95,7 +94,7 @@ export class BookReaderComponent implements OnInit, OnDestroy {
       return;
     }
 
-    //this.setOverrideStyles();
+    this.setOverrideStyles();
 
     this.accountService.currentUser$.pipe(take(1)).subscribe(user => {
       if (user) {
@@ -117,12 +116,13 @@ export class BookReaderComponent implements OnInit, OnDestroy {
       this.chapter = results.chapter;
       this.volumeId = results.chapter.volumeId;
       this.maxPages = results.chapter.pages;
-      this.chapters = results.chapters;
-      // Object.keys(this.chapters).forEach(key => {
-      //   if (this.chapters.hasOwnProperty(key)) {
-      //     this.chapterLinks.push({title: key, page: this.chapters[key]});
-      //   }
-      // });
+
+      // If chapters has only 1 element, flatten so we don't show nested nav items
+      if (results.chapters.length === 1) {
+        this.chapters = results.chapters[0].children;
+      } else {
+        this.chapters = results.chapters;
+      }
 
       this.pageNum = results.pageNum;
 
@@ -162,13 +162,19 @@ export class BookReaderComponent implements OnInit, OnDestroy {
     const bodyNode = document.querySelector('body');
     if (bodyNode !== undefined && bodyNode !== null) {
       this.originalBodyColor = bodyNode.style.background;
-      bodyNode.style.background = 'black';
+      this.originalTextColor = bodyNode.style.color;
+      //bodyNode.style.background = 'black';
       bodyNode.style.height = '0%';
     }
   }
 
   closeReader() {
     this.location.back();
+  }
+
+  resetSettings() {
+    this.pageStyles = {'font-family': 'serif', 'font-size': '100%', 'margin-left': '15%', 'margin-right': '15%'};
+    this.darkMode = false;
   }
 
   loadPage() {
@@ -186,6 +192,7 @@ export class BookReaderComponent implements OnInit, OnDestroy {
             if (!e.target.attributes.hasOwnProperty('kavita-page')) { return; }
             var page = e.target.attributes['kavita-page'].value;
             this.setPageNum(parseInt(page, 10));
+            // TODO: Keep track of what pages we go to in a stack so we can "go back"
             this.loadPage();
           });
         });
@@ -211,10 +218,6 @@ export class BookReaderComponent implements OnInit, OnDestroy {
   }
 
   prevPage() {
-    // this.pageNum--;
-    // if (this.pageNum < 0) {
-    //   this.pageNum = 0;
-    // }
     this.setPageNum(this.pageNum - 1);
 
     this.loadPage();
@@ -226,20 +229,52 @@ export class BookReaderComponent implements OnInit, OnDestroy {
       event.preventDefault();
     }
 
-    // if ((this.pageNum + 1 >= this.maxPages) || this.isLoading) {
-    //   return;
-    // }
-
-    // this.pageNum++;
     this.setPageNum(this.pageNum + 1);
     this.loadPage();
   }
 
-  injectStyles() {
-    if (!this.iframeObj) { return; }
-    console.log(this.iframeObj.nativeElement.contentWindow?.document.body);
-    this.iframeObj.nativeElement.contentDocument?.documentElement.getElementsByClassName('body').item(0)?.setAttribute('style', 'font-size: 140%');
-    // Font-Size: font-size: 100% (+/- 10%)
+  updateFontSize(amount: number) {
+    let val = parseInt(this.pageStyles['font-size'].substr(0, this.pageStyles['font-size'].length - 1), 10);
+    this.pageStyles['font-size'] = val + amount + '%';
+    console.log(this.pageStyles);
+  }
+
+  updateMargin(amount: number) {
+    // let val = parseInt(this.pageStyles['font-size'].substr(0, this.pageStyles['font-size'].length - 1), 10);
+    // this.pageStyles['font-size'] = val + amount + '%';
+
+    console.log(this.pageStyles);
+  }
+
+  updateLineSpacing(amount: number) {
+    // normal => 1.2
+
+    if (!this.pageStyles.hasOwnProperty('line-height') || this.pageStyles['line-height'] === undefined) {
+      this.pageStyles['line-height'] = '1.2 !important';
+    }
+
+    let val = 1.2;
+    const cleanedValue = this.pageStyles['line-height'].replace('!important', '').trim();
+    if (cleanedValue === 'normal') {
+      val = 1.2
+    } else {
+      val = parseFloat(cleanedValue);
+    }
+    this.pageStyles['line-height'] = (val + amount).toFixed(1) + ' !important';
+  }
+
+
+
+  toggleDarkMode() {
+    this.darkMode = !this.darkMode;
+  }
+
+  saveSettings() {
+    // TODO: Implement the ability to save overrides to user preferences for default load
+  }
+
+  closeDrawer() {
+    this.drawerOpen = false;
   }
 
 }

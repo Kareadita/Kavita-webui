@@ -1,0 +1,24 @@
+<!-- 
+
+<div class="side-pane-drawer-container" [ngStyle]="drawerStyles">
+    <div class="drawer-container">
+        <button type="button" class="close" aria-label="Close" (click)="close()">
+            <span aria-hidden="true">&times;</span>
+        </button>
+        <ng-content></ng-content>
+    </div>
+</div> -->
+
+<div
+  class="drawer-container"
+  [class.is-open]="isOpen"
+  [class.position-right]="position === 'right'"
+  [class.position-left]="position === 'left'"
+>
+  <div class="header">
+    <ng-content select="[header]"></ng-content>
+  </div>
+  <div class="body">
+    <ng-content select="[body]"></ng-content>
+  </div>
+</div>

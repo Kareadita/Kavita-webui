@@ -261,7 +261,6 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
     const bodyNode = document.querySelector('body');
     if (bodyNode !== undefined && bodyNode !== null && this.originalBodyColor !== undefined) {
       bodyNode.style.background = this.originalBodyColor;
-      bodyNode.style.height = '100%';
     }
     this.navService.showNavBar();
   }
@@ -288,7 +287,6 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
     if (bodyNode !== undefined && bodyNode !== null) {
       this.originalBodyColor = bodyNode.style.background;
       bodyNode.style.background = 'black';
-      bodyNode.style.height = '0%';
     }
   }
 

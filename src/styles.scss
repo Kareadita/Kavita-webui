@@ -25,6 +25,10 @@
   cursor: not-allowed !important;
 }
 
+// * {
+//   border: 1px solid red;
+// }
+
 
 @include media-breakpoint-down(xs, (xs: 0, sm: 576px, md: 768px, lg: 992px, xl: 1200px)) {
     .phone-hidden {
