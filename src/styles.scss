@@ -21,6 +21,12 @@
 @import '~bootstrap/scss/bootstrap';
 @import '~bootstrap/scss/mixins/_breakpoints.scss';
 
+
+@font-face {
+  font-family: "EBGarmond";
+  src: url(assets/fonts/EBGarmond/EBGaramond-VariableFont_wght.ttf) format("truetype");
+}
+
 .disabled {
   cursor: not-allowed !important;
 }
@@ -57,6 +63,7 @@ button:disabled {
 }
 
 
+
 // TODO: Move the Plex theme into a separate file and copy how  https://bootswatch.com/darkly/ did it
 // h1, h2, h3, h4, h5, h6 {
 //   color: white;
@@ -81,4 +88,7 @@ button:disabled {
 //   }
 // }
 html, body { height: 100%; }
-body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+body {
+  margin: 0; 
+  font-family: "EBGaramond", Roboto, "Helvetica Neue", sans-serif;
+}

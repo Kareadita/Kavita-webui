@@ -78,8 +78,8 @@ export class BookReaderComponent implements OnInit, OnDestroy {
     const bodyNode = document.querySelector('body');
     if (bodyNode !== undefined && bodyNode !== null && this.originalBodyColor !== undefined && this.originalTextColor != undefined) {
       bodyNode.style.background = this.originalBodyColor;
-      bodyNode.style.color = this.originalTextColor;
-      bodyNode.style.height = '100%';
+      //bodyNode.style.color = this.originalTextColor;
+      //bodyNode.style.height = '100%';
     }
     this.navService.showNavBar();
   }
@@ -93,8 +93,6 @@ export class BookReaderComponent implements OnInit, OnDestroy {
       this.router.navigateByUrl('/home');
       return;
     }
-
-    this.setOverrideStyles();
 
     this.accountService.currentUser$.pipe(take(1)).subscribe(user => {
       if (user) {
@@ -116,14 +114,7 @@ export class BookReaderComponent implements OnInit, OnDestroy {
       this.chapter = results.chapter;
       this.volumeId = results.chapter.volumeId;
       this.maxPages = results.chapter.pages;
-
-      // If chapters has only 1 element, flatten so we don't show nested nav items
-      if (results.chapters.length === 1) {
-        this.chapters = results.chapters[0].children;
-      } else {
-        this.chapters = results.chapters;
-      }
-
+      this.chapters = results.chapters;
       this.pageNum = results.pageNum;
 
       if (this.pageNum > this.maxPages) {
@@ -152,20 +143,11 @@ export class BookReaderComponent implements OnInit, OnDestroy {
 
   loadChapter(pageNum: number, part: string) {
     this.setPageNum(pageNum);
-    this.loadPage();
-    if (part !== null && part !== '') {
-      // TODO: Scroll to part once page loads
-    }
-  }
-
-  setOverrideStyles() {
-    const bodyNode = document.querySelector('body');
-    if (bodyNode !== undefined && bodyNode !== null) {
-      this.originalBodyColor = bodyNode.style.background;
-      this.originalTextColor = bodyNode.style.color;
-      //bodyNode.style.background = 'black';
-      bodyNode.style.height = '0%';
-    }
+    this.loadPage(part);
+    // if (part !== null && part !== '') {
+    //   // TODO: Scroll to part once page loads
+    //   this.scrollTo(part);
+    // }
   }
 
   closeReader() {
@@ -177,7 +159,7 @@ export class BookReaderComponent implements OnInit, OnDestroy {
     this.darkMode = false;
   }
 
-  loadPage() {
+  loadPage(part?: string | undefined) {
 
     this.isLoading = true;
     window.scrollTo(0, 0);
@@ -190,12 +172,21 @@ export class BookReaderComponent implements OnInit, OnDestroy {
         links.forEach(link => {
           link.addEventListener('click', (e: any) => {
             if (!e.target.attributes.hasOwnProperty('kavita-page')) { return; }
-            var page = e.target.attributes['kavita-page'].value;
-            this.setPageNum(parseInt(page, 10));
+            var page = parseInt(e.target.attributes['kavita-page'].value, 10);;
+            this.setPageNum(page);
             // TODO: Keep track of what pages we go to in a stack so we can "go back"
-            this.loadPage();
+            var partValue = e.target.attributes.hasOwnProperty('kavita-part') ? e.target.attributes['kavita-part'].value : undefined;
+            if (partValue && page === this.pageNum) {
+              this.scrollTo(e.target.attributes['kavita-part'].value);
+              return;
+            }
+            this.loadPage(partValue);
           });
         });
+
+        if (part !== undefined && part !== '') {
+          this.scrollTo(part);
+        }
       }, 10);
       
     }, err => {
@@ -275,6 +266,24 @@ export class BookReaderComponent implements OnInit, OnDestroy {
 
   closeDrawer() {
     this.drawerOpen = false;
+  }
+
+
+  scrollTo(partSelector: string) {
+    if (!partSelector.startsWith('#')) {
+      partSelector = '#' + partSelector;
+    }
+    
+    const element = document.querySelector(partSelector);
+    if (element === null) return;
+
+    const rect = element.getBoundingClientRect(); // get rects(width, height, top, etc)
+    const viewHeight = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
+
+    window.scroll({
+      top: rect.top + rect.height / 2 - viewHeight / 2,
+      behavior: 'smooth' // smooth scroll
+    });
   }
 
 }

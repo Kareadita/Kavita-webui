@@ -1,11 +1,12 @@
-<div class="sticky-top reading-bar {{darkMode ? 'dark-mode' : ''}}">
-    <button class="btn btn-primary" (click)="prevPage()">Prev page</button>
-    <button class="btn btn-secondary" (click)="drawerOpen = !drawerOpen">Chapter List</button>
-    <button class="btn btn-primary" (click)="nextPage()">Next page</button>
-</div>
+<div class="container-flex {{darkMode ? 'dark-mode' : ''}}">
+    <div class="sticky-top reading-bar row justify-content-between">
+        <button class="btn btn-outline-secondary btn-icon col-2" (click)="prevPage()" title="Previous Page"><i class="fa fa-arrow-left" aria-hidden="true"></i></button>
+        <button class="btn btn-secondary col-2" (click)="closeReader()">Close Book</button>
+        <button class="btn btn-secondary col-2" (click)="drawerOpen = !drawerOpen">Chapter List</button>
+        <button class="btn btn-outline-secondary btn-icon col-2" (click)="nextPage()" title="Next Page"><i class="fa fa-arrow-right" aria-hidden="true"></i></button>
+    </div>
 
-<div class="reading-area {{darkMode ? 'dark-mode' : ''}}">
-    <app-drawer #commentDrawer="drawer" [isOpen]="drawerOpen" [style.--drawer-width]="'300px'" (drawerClosed)="closeDrawer()" class="drawer">
+    <app-drawer #commentDrawer="drawer" [isOpen]="drawerOpen" [style.--drawer-width]="'300px'" (drawerClosed)="closeDrawer()">
         <div header>
             <h2 style="margin-top: 0.5rem">Book Menu
                 <button type="button" class="close" aria-label="Close" (click)="commentDrawer.close()">
@@ -46,20 +47,34 @@
                 </div>
             </div>
             <hr>
-            <h3>Table of Contents</h3>
-            <ul *ngFor="let chapterGroup of chapters" style="padding-inline-start: 0px">
-                <div *ngIf="chapterGroup.children.length > 0; else noChildren">
-                    <li>{{chapterGroup.title}}</li>
-                    <ul *ngFor="let chapter of chapterGroup.children">
-                        <li><a href="javascript:void()" (click)="loadChapter(chapter.page, chapter.part)">{{chapter.title}}</a></li>
+            <div class="table-of-contents">
+                <h3>Table of Contents</h3>
+                <div *ngIf="chapters.length === 1; else nestedChildren">
+                    <ul> <!-- style="padding-inline-start: 0px"-->
+                        <li *ngFor="let chapter of chapters[0].children">
+                            <a href="javascript:void()" (click)="loadChapter(chapter.page, chapter.part)">{{chapter.title}}</a>
+                        </li>
                     </ul>
                 </div>
-                <ng-template #noChildren>
-                    <li style="list-style: none;"><a href="javascript:void()" (click)="loadChapter(chapterGroup.page, chapterGroup.part)">{{chapterGroup.title}}</a></li>
+                <ng-template #nestedChildren>
+                    <ul *ngFor="let chapterGroup of chapters" style="padding-inline-start: 0px">
+                        <!-- TODO: Add expanders if there are multiple sections-->
+                        <li>{{chapterGroup.title}}</li>
+                        <ul *ngFor="let chapter of chapterGroup.children">
+                            <li><a href="javascript:void()" (click)="loadChapter(chapter.page, chapter.part)">{{chapter.title}}</a></li>
+                        </ul>
+                    </ul>
                 </ng-template>
-            </ul>
+            </div>
         </div>
     </app-drawer>
+
+    <ng-container *ngIf="isLoading">
+        <div class="spinner-border text-secondary loading" role="status">
+            <span class="invisible">Loading...</span>
+        </div>
+    </ng-container>
+
     <div #readingSection class="reading-section" [ngStyle]="pageStyles">
         <div [innerHtml]="page" *ngIf="page !== undefined"></div>
     </div>
