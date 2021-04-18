@@ -2,6 +2,10 @@
     padding-bottom: 5px;
 }
 
+li.active {
+    font-weight: bold;
+}
+
 .dark-mode {
     * {
         background-color: rgb(41, 41, 41, 0.90);

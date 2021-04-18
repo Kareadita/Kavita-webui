@@ -59,7 +59,7 @@
                 <ng-template #nestedChildren>
                     <ul *ngFor="let chapterGroup of chapters" style="padding-inline-start: 0px">
                         <!-- TODO: Add expanders if there are multiple sections-->
-                        <li>{{chapterGroup.title}}</li>
+                        <li class="{{chapterGroup.page == pageNum ? 'active': ''}}">{{chapterGroup.title}}</li>
                         <ul *ngFor="let chapter of chapterGroup.children">
                             <li><a href="javascript:void()" (click)="loadChapter(chapter.page, chapter.part)">{{chapter.title}}</a></li>
                         </ul>
