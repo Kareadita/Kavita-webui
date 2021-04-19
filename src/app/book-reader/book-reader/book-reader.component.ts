@@ -171,7 +171,10 @@ export class BookReaderComponent implements OnInit, OnDestroy {
   loadPage(part?: string | undefined) {
 
     this.isLoading = true;
-    window.scrollTo(0, 0);
+    window.scroll({
+      top: 0,
+      behavior: 'smooth'
+    });
     this.readerService.bookmark(this.seriesId, this.volumeId, this.chapterId, this.pageNum).subscribe(() => {});
 
     this.bookService.getBookPage(this.chapterId, this.pageNum).subscribe(content => {
