@@ -12,24 +12,29 @@
 
 
 .dark-mode {
-    * {
-        background-color: #292929; //rgb(41, 41, 41, 0.90);
+    *:not(code), *:not(a) {
+        background-color: #292929;
         box-shadow: none;
         text-shadow: none;
         border-radius: unset;
         //border-color: #555;
         //outline-color: #555; // maybe not
+        color: #dcdcdc !important;
     }
 
-    *:not(input) {
-        color: #dcdcdc;
+    // *:not(input), *:not(code), *:not(:link) {
+    //     color: #dcdcdc;
+    // }
+
+    code {
+        color: #e83e8c !important;
     }
 
     .btn-icon {
         background-color: transparent;
     }
 
-    :link {
+    :link, a {
         color: #8db2e5 !important;
     }
 }
