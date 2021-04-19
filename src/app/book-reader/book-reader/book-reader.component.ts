@@ -28,6 +28,11 @@ interface PageStyle {
   'margin-right': string;
 }
 
+interface HistoryPoint {
+  page: number;
+  scrollOffset: number;
+}
+
 const TOP_OFFSET = -50 * 1.5; // px the sticky header takes up
 
 @Component({
@@ -56,7 +61,8 @@ export class BookReaderComponent implements OnInit, OnDestroy {
 
   pageNum = 0;
   maxPages = 1;
-  adhocPageHistory: Stack<number> = new Stack<number>();
+  adhocPageHistory: Stack<HistoryPoint> = new Stack<HistoryPoint>();
+  
   user!: User;
 
   drawerOpen = false;
@@ -188,8 +194,8 @@ export class BookReaderComponent implements OnInit, OnDestroy {
         link.addEventListener('click', (e: any) => {
           if (!e.target.attributes.hasOwnProperty('kavita-page')) { return; }
           var page = parseInt(e.target.attributes['kavita-page'].value, 10);
-          if (this.adhocPageHistory.peek() !== this.pageNum) {
-            this.adhocPageHistory.push(this.pageNum);
+          if (this.adhocPageHistory.peek()?.page !== this.pageNum) {
+            this.adhocPageHistory.push({page: this.pageNum, scrollOffset: window.pageYOffset});
           }
           
           this.setPageNum(page);
@@ -203,7 +209,7 @@ export class BookReaderComponent implements OnInit, OnDestroy {
       });
   }
 
-  loadPage(part?: string | undefined) {
+  loadPage(part?: string | undefined, scrollTop?: number | undefined) {
 
     this.isLoading = true;
     window.scroll({
@@ -220,22 +226,19 @@ export class BookReaderComponent implements OnInit, OnDestroy {
       setTimeout(() => {
         this.addLinkClickHandlers();
 
-        // if (part !== undefined && part !== '') {
-        //   this.scrollTo(part);
-        // }
-
         Promise.all(Array.from(this.readingSectionElemRef.nativeElement.querySelectorAll('img')).filter(img => !img.complete).map(img => new Promise(resolve => { img.onload = img.onerror = resolve; }))).then(() => {
           this.isLoading = false;
 
           if (part !== undefined && part !== '') {
             this.scrollTo(part);
+          } else if (scrollTop !== undefined && scrollTop !== 0) {
+            window.scroll({
+              top: scrollTop,
+              behavior: 'smooth'
+            });
           }
         });
       }, 10);
-      
-    }, err => {
-      //this.loadPage();
-      // TODO: Alert user there was an error loading the page
     });
   }
 
@@ -254,8 +257,8 @@ export class BookReaderComponent implements OnInit, OnDestroy {
       const page = this.adhocPageHistory.pop();
       console.log('Going to page: ', page);
       if (page !== undefined) {
-        this.setPageNum(page);
-        this.loadPage();
+        this.setPageNum(page.page);
+        this.loadPage(undefined, page.scrollOffset);
       }
     }
   }
@@ -282,7 +285,6 @@ export class BookReaderComponent implements OnInit, OnDestroy {
 
     this.pageStyles['font-size'] = val + amount + '%';
     this.updateReaderStyles();
-    console.log(this.pageStyles);
   }
 
   updateMargin(amount: number) {
@@ -295,7 +297,6 @@ export class BookReaderComponent implements OnInit, OnDestroy {
     this.pageStyles['margin-right'] = (val + amount) + '% !important';
 
     this.updateReaderStyles();
-    console.log(this.pageStyles);
   }
 
   updateLineSpacing(amount: number) {
@@ -309,14 +310,12 @@ export class BookReaderComponent implements OnInit, OnDestroy {
     this.pageStyles['line-height'] = (val + amount) + '% !important';
 
     this.updateReaderStyles();
-    console.log(this.pageStyles);
   }
 
   updateReaderStyles() {
     this.readerStyles = Object.entries(this.pageStyles).map(item => {
       return item[0] + ': ' + item[1] + ';';
     }).join('');
-    console.log(this.readerStyles);
   }
 
 
