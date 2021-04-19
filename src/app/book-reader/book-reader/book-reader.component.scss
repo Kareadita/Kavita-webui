@@ -37,11 +37,39 @@
 .reading-bar {
     background-color: white;
     overflow: hidden;
-    max-height: 45px;
+}
+
+@media(max-width: 875px) {
+    .book-title {
+        display: none;
+    }
+    
+} 
+
+.book-title {
+    margin-top: 10px;
+    text-align: center;
+    text-transform: capitalize;
 }
 
 .reading-section {
     // TODO: Add an animation when it loads in
     height: 100vh;
-    padding-top: 45px;
+    padding-top: 50px;
+
+    //animation: fadeIn linear 0.5s;
+    // opacity: 1;
+	// animation-name: fadeIn;
+    // animation-iteration-count: 1;
+	// animation-timing-function: ease-in;
+    // animation-duration: 2s;
+
 }
+
+
+@keyframes fadeIn {
+    0% {opacity:0;}
+    100% {opacity:1;}
+}
+  
+  

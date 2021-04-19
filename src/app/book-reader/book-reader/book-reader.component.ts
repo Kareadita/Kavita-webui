@@ -16,6 +16,7 @@ import { DomSanitizer, SafeHtml, SafeUrl } from '@angular/platform-browser';
 import { BookService } from '../book.service';
 import { KEY_CODES } from 'src/app/shared/_services/utility.service';
 import { BookChapterItem } from '../_models/book-chapter-item';
+import { animate, state, style, transition, trigger } from '@angular/animations';
 
 
 interface PageStyle {
@@ -29,7 +30,16 @@ interface PageStyle {
 @Component({
   selector: 'app-book-reader',
   templateUrl: './book-reader.component.html',
-  styleUrls: ['./book-reader.component.scss']
+  styleUrls: ['./book-reader.component.scss'],
+  animations: [
+    trigger(
+      'isLoading', [
+        state('1' , style({ opacity: 0 })),
+        state('0', style({ opacity: 1  })),
+        transition('1 => 0', animate('300ms')),
+        transition('0 => 1', animate('500ms'))
+        ])
+  ]
 })
 export class BookReaderComponent implements OnInit, OnDestroy {
 
@@ -41,14 +51,13 @@ export class BookReaderComponent implements OnInit, OnDestroy {
 
   chapters: Array<BookChapterItem> = [];
 
-  prevPageNum = 0; // Debug only
   pageNum = 0;
   maxPages = 1;
   user!: User;
 
   drawerOpen = false;
   isLoading = true; 
-  filename: string = ''; // TODO: Make this the book title
+  bookTitle: string = ''; // TODO: Make this the book title
 
   page: SafeHtml | undefined = undefined; // This is the html we get from the server
 
@@ -108,14 +117,15 @@ export class BookReaderComponent implements OnInit, OnDestroy {
     forkJoin({
       chapter: this.seriesService.getChapter(this.chapterId),
       pageNum: this.readerService.getBookmark(this.chapterId),
-      chapters: this.bookService.getBookChapters(this.chapterId)
+      chapters: this.bookService.getBookChapters(this.chapterId),
+      info: this.bookService.getBookInfo(this.chapterId)
     }).subscribe(results => {
       this.chapter = results.chapter;
       this.volumeId = results.chapter.volumeId;
       this.maxPages = results.chapter.pages;
       this.chapters = results.chapters;
       this.pageNum = results.pageNum;
-      this.filename = this.chapter.files[0].filePath;
+      this.bookTitle = results.info;
 
       if (this.pageNum > this.maxPages) {
         this.pageNum = this.maxPages;
@@ -199,17 +209,18 @@ export class BookReaderComponent implements OnInit, OnDestroy {
         if (part !== undefined && part !== '') {
           this.scrollTo(part);
         }
+        Promise.all(Array.from(this.readingSectionElemRef.nativeElement.querySelectorAll('img')).filter(img => !img.complete).map(img => new Promise(resolve => { img.onload = img.onerror = resolve; }))).then(() => {
+          this.isLoading = false;
+        });
       }, 10);
       
     }, err => {
-      this.pageNum = this.prevPageNum;
-      this.loadPage();
+      //this.loadPage();
+      // TODO: Alert user there was an error loading the page
     });
-    this.isLoading = false;
   }
 
   setPageNum(pageNum: number) {
-    this.prevPageNum = this.pageNum;
     if (pageNum < 0) {
       this.pageNum = 0;
     } else if (pageNum >= this.maxPages) {

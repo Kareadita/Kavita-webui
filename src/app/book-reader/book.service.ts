@@ -20,6 +20,10 @@ export class BookService {
     return this.http.get<string>(this.baseUrl + 'book/' + chapterId + '/book-page?page=' + page + '&baseUrl=' + encodeURIComponent(this.baseUrl), {responseType: 'text' as 'json'});
   }
 
+  getBookInfo(chapterId: number) {
+    return this.http.get<string>(this.baseUrl + 'book/' + chapterId + '/book-info', {responseType: 'text' as 'json'});
+  }
+
   getBookPageUrl(chapterId: number, page: number) {
     return this.baseUrl + 'book/' + chapterId + '/book-page?page=' + page;
   }
