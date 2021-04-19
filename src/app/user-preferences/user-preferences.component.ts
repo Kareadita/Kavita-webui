@@ -4,6 +4,7 @@ import { ToastrService } from 'ngx-toastr';
 import { Observable } from 'rxjs';
 import { take } from 'rxjs/operators';
 import { PageSplitOption } from '../_models/preferences/page-split-option';
+import { Preferences } from '../_models/preferences/preferences';
 import { ReadingDirection } from '../_models/preferences/reading-direction';
 import { ScalingOption } from '../_models/preferences/scaling-option';
 import { User } from '../_models/user';
@@ -71,8 +72,18 @@ export class UserPreferencesComponent implements OnInit, OnDestroy {
   }
 
   save() {
+    if (this.user === undefined) return;
     const modelSettings = this.settingsForm.value;
-    const data = {readingDirection: parseInt(modelSettings.readingDirection, 10), scalingOption: parseInt(modelSettings.scalingOption, 10), pageSplitOption: parseInt(modelSettings.pageSplitOption, 10), hideReadOnDetails: false};
+    const data: Preferences = {
+      readingDirection: parseInt(modelSettings.readingDirection, 10), 
+      scalingOption: parseInt(modelSettings.scalingOption, 10), 
+      pageSplitOption: parseInt(modelSettings.pageSplitOption, 10), 
+      bookReaderDarkMode: this.user?.preferences.bookReaderDarkMode,
+      bookReaderFontFamily: this.user.preferences.bookReaderFontFamily,
+      bookReaderLineSpacing: this.user.preferences.bookReaderLineSpacing,
+      bookReaderFontSize: this.user.preferences.bookReaderFontSize,
+      bookReaderMargin: this.user.preferences.bookReaderMargin
+    };
     this.obserableHandles.push(this.accountService.updatePreferences(data).subscribe((updatedPrefs) => {
       this.toastr.success('Server settings updated');
       if (this.user) {

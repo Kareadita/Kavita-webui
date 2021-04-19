@@ -1,6 +1,6 @@
 import { Component, ElementRef, HostListener, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import {Location} from '@angular/common';
-import { FormBuilder } from '@angular/forms';
+import { FormBuilder, FormGroup } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 import { forkJoin } from 'rxjs';
@@ -18,6 +18,7 @@ import { KEY_CODES } from 'src/app/shared/_services/utility.service';
 import { BookChapterItem } from '../_models/book-chapter-item';
 import { animate, state, style, transition, trigger } from '@angular/animations';
 import { Stack } from 'src/app/shared/data-structures/stack';
+import { Preferences } from 'src/app/_models/preferences/preferences';
 
 
 interface PageStyle {
@@ -67,7 +68,8 @@ export class BookReaderComponent implements OnInit, OnDestroy {
 
   drawerOpen = false;
   isLoading = true; 
-  bookTitle: string = ''; // TODO: Make this the book title
+  bookTitle: string = '';
+  settingsForm: FormGroup = new FormGroup({});
 
   page: SafeHtml | undefined = undefined; // This is the html we get from the server
 
@@ -115,6 +117,8 @@ export class BookReaderComponent implements OnInit, OnDestroy {
     this.accountService.currentUser$.pipe(take(1)).subscribe(user => {
       if (user) {
         this.user = user;
+        //user.preferences.
+        //this.settingsForm.addControl('readingDirection', new FormControl(user.preferences.readingDirection, []));
       }
     });
 
@@ -183,7 +187,15 @@ export class BookReaderComponent implements OnInit, OnDestroy {
     if (windowWidth <= 700) {
       margin = '0%';
     }
-    this.pageStyles = {'font-family': 'default', 'font-size': '100%', 'margin-left': margin, 'margin-right': margin, 'line-height': '100%'};
+    if (this.user) {
+      if (windowWidth > 700) {
+        margin = this.user.preferences.bookReaderMargin + '%';
+      }
+//      margin = this.user.preferences.bookReaderMargin ? this.user.preferences.bookReaderMargin + '%' :  margin;
+      this.pageStyles = {'font-family': 'default', 'font-size': this.user.preferences.bookReaderFontSize + '%', 'margin-left': margin, 'margin-right': margin, 'line-height': '100%'};
+    } else {
+      this.pageStyles = {'font-family': 'default', 'font-size': '100%', 'margin-left': margin, 'margin-right': margin, 'line-height': '100%'};
+    }
     this.toggleDarkMode(false);
     this.updateReaderStyles();
   }
@@ -344,7 +356,25 @@ export class BookReaderComponent implements OnInit, OnDestroy {
   }
 
   saveSettings() {
-    // TODO: Implement the ability to save overrides to user preferences for default load
+    if (this.user === undefined) return;
+    const modelSettings = this.settingsForm.value;
+    const data: Preferences = {
+      readingDirection: this.user.preferences.readingDirection, 
+      scalingOption: this.user.preferences.scalingOption, 
+      pageSplitOption: this.user.preferences.pageSplitOption, 
+      bookReaderDarkMode: this.darkMode,
+      bookReaderFontFamily: modelSettings.bookReaderFontFamily,
+      bookReaderFontSize: parseInt(this.pageStyles['font-size'].substr(0, this.pageStyles['font-size'].length - 1), 10),
+      bookReaderLineSpacing: parseInt(this.pageStyles['line-height'].replace('!important', '').trim(), 10),
+      bookReaderMargin: parseInt(this.pageStyles['margin-left'].replace('%', '').replace('!important', '').trim(), 10)
+    };
+    this.accountService.updatePreferences(data).subscribe((updatedPrefs) => {
+      this.toastr.success('Server settings updated');
+      if (this.user) {
+        this.user.preferences = updatedPrefs;
+      }
+      this.resetSettings();
+    });
   }
 
   closeDrawer() {
