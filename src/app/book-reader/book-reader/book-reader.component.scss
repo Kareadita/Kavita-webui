@@ -11,10 +11,9 @@
 }
 
 
-
 .dark-mode {
     * {
-        background-color: rgb(41, 41, 41, 0.90);
+        background-color: #292929; //rgb(41, 41, 41, 0.90);
         box-shadow: none;
         text-shadow: none;
         border-radius: unset;
@@ -35,8 +34,14 @@
     }
 }
 
+.reading-bar {
+    background-color: white;
+    overflow: hidden;
+    max-height: 45px;
+}
+
 .reading-section {
     // TODO: Add an animation when it loads in
-    //overflow-y: ;
     height: 100vh;
+    padding-top: 45px;
 }

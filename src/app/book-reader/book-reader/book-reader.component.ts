@@ -21,11 +21,9 @@ import { BookChapterItem } from '../_models/book-chapter-item';
 interface PageStyle {
   'font-family': string;
   'font-size': string; 
-  'line-height'?: string;
+  'line-height': string;
   'margin-left': string;
   'margin-right': string;
-  //'background-color'?: string;
-  //'color'?: string;
 }
 
 @Component({
@@ -48,20 +46,22 @@ export class BookReaderComponent implements OnInit, OnDestroy {
   maxPages = 1;
   user!: User;
 
-  menuOpen = false;
+  drawerOpen = false;
   isLoading = true; 
+  filename: string = ''; // TODO: Make this the book title
 
-  pageUrl: SafeUrl | undefined = undefined;
-  page: SafeHtml | undefined = undefined;
+  page: SafeHtml | undefined = undefined; // This is the html we get from the server
 
   @ViewChild('iframeObj', {static: false}) iframeObj!: ElementRef<HTMLIFrameElement>;
   @ViewChild('readingSection', {static: false}) readingSectionElemRef!: ElementRef<HTMLDivElement>;
 
-  pageStyles: PageStyle = {'font-family': 'serif', 'font-size': '100%', 'margin-left': '15%', 'margin-right': '15%'};
+  pageStyles!: PageStyle;
 
 
-  drawerOpen = true;
+  
   darkMode = false;
+  backgroundColor: string = 'white';
+  readerStyles: string = '';
 
 
   // Temp hack: Override background color for reader and restore it onDestroy
@@ -73,13 +73,12 @@ export class BookReaderComponent implements OnInit, OnDestroy {
     private formBuilder: FormBuilder, private navService: NavService, private toastr: ToastrService, 
     private domSanitizer: DomSanitizer, private bookService: BookService) {
       this.navService.hideNavBar();
+      this.resetSettings();
   }
   ngOnDestroy(): void {
     const bodyNode = document.querySelector('body');
     if (bodyNode !== undefined && bodyNode !== null && this.originalBodyColor !== undefined && this.originalTextColor != undefined) {
       bodyNode.style.background = this.originalBodyColor;
-      //bodyNode.style.color = this.originalTextColor;
-      //bodyNode.style.height = '100%';
     }
     this.navService.showNavBar();
   }
@@ -116,6 +115,7 @@ export class BookReaderComponent implements OnInit, OnDestroy {
       this.maxPages = results.chapter.pages;
       this.chapters = results.chapters;
       this.pageNum = results.pageNum;
+      this.filename = this.chapter.files[0].filePath;
 
       if (this.pageNum > this.maxPages) {
         this.pageNum = this.maxPages;
@@ -144,10 +144,6 @@ export class BookReaderComponent implements OnInit, OnDestroy {
   loadChapter(pageNum: number, part: string) {
     this.setPageNum(pageNum);
     this.loadPage(part);
-    // if (part !== null && part !== '') {
-    //   // TODO: Scroll to part once page loads
-    //   this.scrollTo(part);
-    // }
   }
 
   closeReader() {
@@ -155,8 +151,9 @@ export class BookReaderComponent implements OnInit, OnDestroy {
   }
 
   resetSettings() {
-    this.pageStyles = {'font-family': 'serif', 'font-size': '100%', 'margin-left': '15%', 'margin-right': '15%'};
-    this.darkMode = false;
+    this.pageStyles = {'font-family': 'default', 'font-size': '100%', 'margin-left': '15%', 'margin-right': '15%', 'line-height': '100%'};
+    this.toggleDarkMode(false);
+    this.updateReaderStyles();
   }
 
   loadPage(part?: string | undefined) {
@@ -226,38 +223,70 @@ export class BookReaderComponent implements OnInit, OnDestroy {
 
   updateFontSize(amount: number) {
     let val = parseInt(this.pageStyles['font-size'].substr(0, this.pageStyles['font-size'].length - 1), 10);
+    
+
     this.pageStyles['font-size'] = val + amount + '%';
+    this.updateReaderStyles();
     console.log(this.pageStyles);
   }
 
   updateMargin(amount: number) {
-    // let val = parseInt(this.pageStyles['font-size'].substr(0, this.pageStyles['font-size'].length - 1), 10);
-    // this.pageStyles['font-size'] = val + amount + '%';
+    let cleanedValue = this.pageStyles['margin-left'].replace('%', '').replace('!important', '').trim();
+    let val = parseInt(cleanedValue, 10);
+    this.pageStyles['margin-left'] = (val + amount) + '% !important';
 
+    cleanedValue = this.pageStyles['margin-right'].replace('%', '').replace('!important', '').trim();
+    val = parseInt(cleanedValue, 10);
+    this.pageStyles['margin-right'] = (val + amount) + '% !important';
+
+    this.updateReaderStyles();
     console.log(this.pageStyles);
   }
 
   updateLineSpacing(amount: number) {
-    // normal => 1.2
-
-    if (!this.pageStyles.hasOwnProperty('line-height') || this.pageStyles['line-height'] === undefined) {
-      this.pageStyles['line-height'] = '1.2 !important';
-    }
-
     let val = 1.2;
     const cleanedValue = this.pageStyles['line-height'].replace('!important', '').trim();
     if (cleanedValue === 'normal') {
       val = 1.2
     } else {
-      val = parseFloat(cleanedValue);
+      val = parseInt(cleanedValue);
     }
-    this.pageStyles['line-height'] = (val + amount).toFixed(1) + ' !important';
+    this.pageStyles['line-height'] = (val + amount) + '% !important';
+
+    this.updateReaderStyles();
+    console.log(this.pageStyles);
+  }
+
+  updateReaderStyles() {
+    this.readerStyles = Object.entries(this.pageStyles).map(item => {
+      return item[0] + ': ' + item[1] + ';';
+    }).join('');
+    console.log(this.readerStyles);
   }
 
 
 
-  toggleDarkMode() {
-    this.darkMode = !this.darkMode;
+  toggleDarkMode(force?: boolean) {
+    if (force !== undefined) {
+      this.darkMode = force;
+    } else {
+      this.darkMode = !this.darkMode;
+    }
+
+    this.setOverrideStyles();
+  }
+
+  getDarkModeBackgroundColor() {
+    return this.darkMode ? '#292929' : '#fff';
+  }
+
+  setOverrideStyles() {
+    const bodyNode = document.querySelector('body');
+    if (bodyNode !== undefined && bodyNode !== null) {
+      this.originalBodyColor = bodyNode.style.background;
+      bodyNode.style.background = this.getDarkModeBackgroundColor();
+    }
+    this.backgroundColor = this.getDarkModeBackgroundColor();
   }
 
   saveSettings() {
