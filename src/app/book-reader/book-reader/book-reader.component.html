@@ -16,7 +16,7 @@
                 </h2>
                 
             </div>
-            <div body style="padding-bottom: 20px">
+            <div body class="drawer-body">
                 <div class="control-container">
                     <div class="controls">
                         <label>Font Family</label>
@@ -51,7 +51,7 @@
                 <div class="table-of-contents">
                     <h3>Table of Contents</h3>
                     <div *ngIf="chapters.length === 1; else nestedChildren">
-                        <ul> <!-- style="padding-inline-start: 0px"-->
+                        <ul>
                             <li *ngFor="let chapter of chapters[0].children">
                                 <a href="javascript:void()" (click)="loadChapter(chapter.page, chapter.part)">{{chapter.title}}</a>
                             </li>
