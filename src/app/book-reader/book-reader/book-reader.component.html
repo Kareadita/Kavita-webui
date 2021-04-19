@@ -2,6 +2,7 @@
     <div class="fixed-top">
         <div class="reading-bar row no-gutters justify-content-between">
             <button class="btn btn-outline-secondary btn-icon col-2  col-xs-1" (click)="prevPage()" title="Previous Page"><i class="fa fa-arrow-left" aria-hidden="true"></i><span class="phone-hidden">&nbsp;Previous</span></button>
+            <button *ngIf="!this.adhocPageHistory.isEmpty()" class="btn btn-outline-secondary btn-icon col-2 col-xs-1" (click)="goBack()" title="Go Back"><i class="fa fa-reply" aria-hidden="true"></i><span class="phone-hidden">&nbsp;Go Back</span></button>
             <button class="btn btn-secondary col-2 col-xs-1" (click)="drawerOpen = !drawerOpen"><i class="fa fa-bars"></i><span class="phone-hidden">&nbsp;Settings</span></button>
             <div class="book-title col-2 phone-hidden">{{bookTitle}} </div>
             <button class="btn btn-secondary col-2 col-xs-1" (click)="closeReader()"><i class="fa fa-times-circle"></i><span class="phone-hidden">&nbsp;Close</span></button>
@@ -58,9 +59,30 @@
                         </ul>
                     </div>
                     <ng-template #nestedChildren>
+                        <!-- <ngb-accordion #chapterListAccordion="ngbAccordion" activeIds="ngb-panel-0">
+                            <ngb-panel [title]="chapterGroup.title" *ngFor="let chapterGroup of chapters" id="chapter-{{chapterGroup.page}}">
+                              <ng-template ngbPanelContent>
+                                <li class="{{chapterGroup.page == pageNum ? 'active': ''}}" (click)="loadChapter(chapterGroup.page, '')">{{chapterGroup.title}}</li>
+                                <ul *ngFor="let chapter of chapterGroup.children">
+                                    <li><a href="javascript:void()" (click)="loadChapter(chapter.page, chapter.part)">{{chapter.title}}</a></li>
+                                </ul>
+                              </ng-template>
+                            </ngb-panel>
+                            <ngb-panel>
+                              <ng-template ngbPanelTitle>
+                                <span>&#9733; <b>Fancy</b> title &#9733;</span>
+                              </ng-template>
+                              <ng-template ngbPanelContent>
+                                Test
+                              </ng-template>
+                            </ngb-panel>
+                          </ngb-accordion> -->
+
                         <ul *ngFor="let chapterGroup of chapters" style="padding-inline-start: 0px">
-                            <!-- TODO: Add expanders if there are multiple sections-->
-                            <li class="{{chapterGroup.page == pageNum ? 'active': ''}}" (click)="loadChapter(chapterGroup.page, '')">{{chapterGroup.title}}</li>
+                            <li class="{{chapterGroup.page == pageNum ? 'active': ''}}" (click)="loadChapter(chapterGroup.page, '')">
+                                {{chapterGroup.title}}
+                                <button class="btn btn-icon pull-right"><i class="fa fa-chevron-up" aria-hidden="true"></i></button>
+                            </li>
                             <ul *ngFor="let chapter of chapterGroup.children">
                                 <li><a href="javascript:void()" (click)="loadChapter(chapter.page, chapter.part)">{{chapter.title}}</a></li>
                             </ul>

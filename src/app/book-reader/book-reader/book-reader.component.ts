@@ -17,6 +17,7 @@ import { BookService } from '../book.service';
 import { KEY_CODES } from 'src/app/shared/_services/utility.service';
 import { BookChapterItem } from '../_models/book-chapter-item';
 import { animate, state, style, transition, trigger } from '@angular/animations';
+import { Stack } from 'src/app/shared/data-structures/stack';
 
 
 interface PageStyle {
@@ -53,6 +54,7 @@ export class BookReaderComponent implements OnInit, OnDestroy {
 
   pageNum = 0;
   maxPages = 1;
+  adhocPageHistory: Stack<number> = new Stack<number>();
   user!: User;
 
   drawerOpen = false;
@@ -178,6 +180,27 @@ export class BookReaderComponent implements OnInit, OnDestroy {
     this.updateReaderStyles();
   }
 
+  addLinkClickHandlers() {
+    var links = this.readingSectionElemRef.nativeElement.querySelectorAll('a');
+      links.forEach(link => {
+        link.addEventListener('click', (e: any) => {
+          if (!e.target.attributes.hasOwnProperty('kavita-page')) { return; }
+          var page = parseInt(e.target.attributes['kavita-page'].value, 10);
+          if (this.adhocPageHistory.peek() !== this.pageNum) {
+            this.adhocPageHistory.push(this.pageNum);
+          }
+          
+          this.setPageNum(page);
+          var partValue = e.target.attributes.hasOwnProperty('kavita-part') ? e.target.attributes['kavita-part'].value : undefined;
+          if (partValue && page === this.pageNum) {
+            this.scrollTo(e.target.attributes['kavita-part'].value);
+            return;
+          }
+          this.loadPage(partValue);
+        });
+      });
+  }
+
   loadPage(part?: string | undefined) {
 
     this.isLoading = true;
@@ -185,32 +208,26 @@ export class BookReaderComponent implements OnInit, OnDestroy {
       top: 0,
       behavior: 'smooth'
     });
+
+
     this.readerService.bookmark(this.seriesId, this.volumeId, this.chapterId, this.pageNum).subscribe(() => {});
 
     this.bookService.getBookPage(this.chapterId, this.pageNum).subscribe(content => {
+      console.log('current page: ', this.pageNum);
       this.page = this.domSanitizer.bypassSecurityTrustHtml(content);
       setTimeout(() => {
-        var links = this.readingSectionElemRef.nativeElement.querySelectorAll('a');
-        links.forEach(link => {
-          link.addEventListener('click', (e: any) => {
-            if (!e.target.attributes.hasOwnProperty('kavita-page')) { return; }
-            var page = parseInt(e.target.attributes['kavita-page'].value, 10);;
-            this.setPageNum(page);
-            // TODO: Keep track of what pages we go to in a stack so we can "go back"
-            var partValue = e.target.attributes.hasOwnProperty('kavita-part') ? e.target.attributes['kavita-part'].value : undefined;
-            if (partValue && page === this.pageNum) {
-              this.scrollTo(e.target.attributes['kavita-part'].value);
-              return;
-            }
-            this.loadPage(partValue);
-          });
-        });
+        this.addLinkClickHandlers();
 
-        if (part !== undefined && part !== '') {
-          this.scrollTo(part);
-        }
+        // if (part !== undefined && part !== '') {
+        //   this.scrollTo(part);
+        // }
+
         Promise.all(Array.from(this.readingSectionElemRef.nativeElement.querySelectorAll('img')).filter(img => !img.complete).map(img => new Promise(resolve => { img.onload = img.onerror = resolve; }))).then(() => {
           this.isLoading = false;
+
+          if (part !== undefined && part !== '') {
+            this.scrollTo(part);
+          }
         });
       }, 10);
       
@@ -228,7 +245,17 @@ export class BookReaderComponent implements OnInit, OnDestroy {
     } else {
       this.pageNum = pageNum;
     }
+  }
 
+  goBack() {
+    if (!this.adhocPageHistory.isEmpty()) {
+      const page = this.adhocPageHistory.pop();
+      console.log('Going to page: ', page);
+      if (page !== undefined) {
+        this.setPageNum(page);
+        this.loadPage();
+      }
+    }
   }
 
   prevPage() {
@@ -325,11 +352,11 @@ export class BookReaderComponent implements OnInit, OnDestroy {
 
 
   scrollTo(partSelector: string) {
-    if (!partSelector.startsWith('#')) {
-      partSelector = '#' + partSelector;
+    if (partSelector.startsWith('#')) {
+      partSelector = partSelector.substr(1, partSelector.length);
     }
 
-    const element = document.querySelector(partSelector);
+    const element = document.querySelector('*[id="' + partSelector + '"]');
     if (element === null) return;
 
     const rect = element.getBoundingClientRect(); // get rects(width, height, top, etc)
