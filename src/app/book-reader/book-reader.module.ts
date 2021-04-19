@@ -5,7 +5,6 @@ import { BookReaderRoutingModule } from './book-reader.router.module';
 import { SharedModule } from '../shared/shared.module';
 import { StyleControlComponent } from './style-control/style-control.component';
 import { SafeStylePipe } from './safe-style.pipe';
-import { NgbAccordionModule } from '@ng-bootstrap/ng-bootstrap';
 
 
 @NgModule({
@@ -13,7 +12,6 @@ import { NgbAccordionModule } from '@ng-bootstrap/ng-bootstrap';
   imports: [
     CommonModule,
     BookReaderRoutingModule,
-    NgbAccordionModule,
     SharedModule
   ], exports: [
     BookReaderComponent,

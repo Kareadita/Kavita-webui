@@ -54,37 +54,17 @@
                     <div *ngIf="chapters.length === 1; else nestedChildren">
                         <ul>
                             <li *ngFor="let chapter of chapters[0].children">
-                                <a href="javascript:void()" (click)="loadChapter(chapter.page, chapter.part)">{{chapter.title}}</a>
+                                <a href="javascript:void(0);" (click)="loadChapter(chapter.page, chapter.part)">{{chapter.title}}</a>
                             </li>
                         </ul>
                     </div>
                     <ng-template #nestedChildren>
-                        <!-- <ngb-accordion #chapterListAccordion="ngbAccordion" activeIds="ngb-panel-0">
-                            <ngb-panel [title]="chapterGroup.title" *ngFor="let chapterGroup of chapters" id="chapter-{{chapterGroup.page}}">
-                              <ng-template ngbPanelContent>
-                                <li class="{{chapterGroup.page == pageNum ? 'active': ''}}" (click)="loadChapter(chapterGroup.page, '')">{{chapterGroup.title}}</li>
-                                <ul *ngFor="let chapter of chapterGroup.children">
-                                    <li><a href="javascript:void()" (click)="loadChapter(chapter.page, chapter.part)">{{chapter.title}}</a></li>
-                                </ul>
-                              </ng-template>
-                            </ngb-panel>
-                            <ngb-panel>
-                              <ng-template ngbPanelTitle>
-                                <span>&#9733; <b>Fancy</b> title &#9733;</span>
-                              </ng-template>
-                              <ng-template ngbPanelContent>
-                                Test
-                              </ng-template>
-                            </ngb-panel>
-                          </ngb-accordion> -->
-
                         <ul *ngFor="let chapterGroup of chapters" style="padding-inline-start: 0px">
                             <li class="{{chapterGroup.page == pageNum ? 'active': ''}}" (click)="loadChapter(chapterGroup.page, '')">
                                 {{chapterGroup.title}}
-                                <button class="btn btn-icon pull-right"><i class="fa fa-chevron-up" aria-hidden="true"></i></button>
                             </li>
                             <ul *ngFor="let chapter of chapterGroup.children">
-                                <li><a href="javascript:void()" (click)="loadChapter(chapter.page, chapter.part)">{{chapter.title}}</a></li>
+                                <li><a href="javascript:void(0);" (click)="loadChapter(chapter.page, chapter.part)">{{chapter.title}}</a></li>
                             </ul>
                         </ul>
                     </ng-template>
@@ -103,7 +83,10 @@
 
     
 
-    <div #readingSection class="reading-section" [attr.style]="readerStyles | safeStyle">
-        <div [innerHtml]="page" *ngIf="page !== undefined"></div>
+    <div #readingSection class="reading-section">
+        <!-- <div [innerHtml]="styles" *ngIf="styles !== undefined"></div> -->
+        <div [attr.style]="readerStyles | safeStyle">
+            <div [innerHtml]="page" *ngIf="page !== undefined"></div>
+        </div>
     </div>
 </div>

@@ -28,6 +28,8 @@ interface PageStyle {
   'margin-right': string;
 }
 
+const TOP_OFFSET = -50 * 1.5; // px the sticky header takes up
+
 @Component({
   selector: 'app-book-reader',
   templateUrl: './book-reader.component.html',
@@ -359,14 +361,9 @@ export class BookReaderComponent implements OnInit, OnDestroy {
     const element = document.querySelector('*[id="' + partSelector + '"]');
     if (element === null) return;
 
-    const rect = element.getBoundingClientRect(); // get rects(width, height, top, etc)
-    const viewHeight = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
-
-    // TODO: Check if we are already in view, then return early
-
     window.scroll({
-      top: rect.top + rect.height / 2 - viewHeight / 2,
-      behavior: 'smooth' // smooth scroll
+      top: element.getBoundingClientRect().top + window.pageYOffset + TOP_OFFSET,
+      behavior: 'smooth' 
     });
   }
 
