@@ -77,7 +77,7 @@ export class BookReaderComponent implements OnInit, OnDestroy {
   }
   ngOnDestroy(): void {
     const bodyNode = document.querySelector('body');
-    if (bodyNode !== undefined && bodyNode !== null && this.originalBodyColor !== undefined && this.originalTextColor != undefined) {
+    if (bodyNode !== undefined && bodyNode !== null && this.originalBodyColor !== undefined) {
       bodyNode.style.background = this.originalBodyColor;
     }
     this.navService.showNavBar();
@@ -155,7 +155,15 @@ export class BookReaderComponent implements OnInit, OnDestroy {
   }
 
   resetSettings() {
-    this.pageStyles = {'font-family': 'default', 'font-size': '100%', 'margin-left': '15%', 'margin-right': '15%', 'line-height': '100%'};
+    const windowWidth = window.innerWidth
+      || document.documentElement.clientWidth
+      || document.body.clientWidth;
+
+    let margin = '15%';
+    if (windowWidth <= 700) {
+      margin = '0%';
+    }
+    this.pageStyles = {'font-family': 'default', 'font-size': '100%', 'margin-left': margin, 'margin-right': margin, 'line-height': '100%'};
     this.toggleDarkMode(false);
     this.updateReaderStyles();
   }

@@ -1,11 +1,11 @@
 <div class="container-flex {{darkMode ? 'dark-mode' : ''}}">
     <div class="fixed-top">
         <div class="reading-bar row no-gutters justify-content-between">
-            <button class="btn btn-outline-secondary btn-icon col-2" (click)="prevPage()" title="Previous Page"><i class="fa fa-arrow-left" aria-hidden="true"></i><span class="phone-hidden">&nbsp;Previous Page</span></button>
-            <button class="btn btn-secondary col-2" (click)="drawerOpen = !drawerOpen"><i class="fa fa-bars"></i>&nbsp;Settings</button>
+            <button class="btn btn-outline-secondary btn-icon col-2  col-xs-1" (click)="prevPage()" title="Previous Page"><i class="fa fa-arrow-left" aria-hidden="true"></i><span class="phone-hidden">&nbsp;Previous Page</span></button>
+            <button class="btn btn-secondary col-2 col-xs-1" (click)="drawerOpen = !drawerOpen"><i class="fa fa-bars"></i><span class="phone-hidden">&nbsp;Settings</span></button>
             <div class="col-2 phone-hidden" style="margin-top: 5px;"><!-- TODO: THE BOOK TITLE ---> {{filename}} </div>
-            <button class="btn btn-secondary col-2" (click)="closeReader()"><i class="fa fa-times-circle"></i>&nbsp;Close <span class="phone-hidden">Book</span></button>
-            <button class="btn btn-outline-secondary btn-icon col-2" (click)="nextPage()" title="Next Page"><span class="phone-hidden">Next Page&nbsp;</span><i class="fa fa-arrow-right" aria-hidden="true"></i></button>
+            <button class="btn btn-secondary col-2 col-xs-1" (click)="closeReader()"><i class="fa fa-times-circle"></i><span class="phone-hidden">&nbsp;Close Book</span></button>
+            <button class="btn btn-outline-secondary btn-icon col-2  col-xs-1" (click)="nextPage()" title="Next Page"><span class="phone-hidden">Next Page&nbsp;</span><i class="fa fa-arrow-right" aria-hidden="true"></i></button>
         </div>
         <app-drawer #commentDrawer="drawer" [isOpen]="drawerOpen" [style.--drawer-width]="'300px'" [style.--drawer-top-offset]="'38px'" [style.--drawer-background-color]="backgroundColor" (drawerClosed)="closeDrawer()">
             <div header>
@@ -16,7 +16,7 @@
                 </h2>
                 
             </div>
-            <div body>
+            <div body style="padding-bottom: 20px">
                 <div class="control-container">
                     <div class="controls">
                         <label>Font Family</label>
