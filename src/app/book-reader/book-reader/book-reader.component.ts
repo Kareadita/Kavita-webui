@@ -130,7 +130,7 @@ export class BookReaderComponent implements OnInit, OnDestroy {
     });
   }
 
-  @HostListener('window:keyup', ['$event'])
+  @HostListener('window:keydown', ['$event'])
   handleKeyPress(event: KeyboardEvent) {
     if (event.key === KEY_CODES.RIGHT_ARROW) {
       this.nextPage();
@@ -138,6 +138,10 @@ export class BookReaderComponent implements OnInit, OnDestroy {
       this.prevPage();
     } else if (event.key === KEY_CODES.ESC_KEY) {
       this.closeReader();
+    } else if (event.key === KEY_CODES.SPACE) {
+      this.drawerOpen = !this.drawerOpen;
+      event.stopPropagation();
+      event.preventDefault(); 
     }
   }
 
