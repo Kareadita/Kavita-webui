@@ -164,6 +164,9 @@ export class BookReaderComponent implements OnInit, OnDestroy {
       bodyNode.style.background = this.originalBodyColor;
     }
     this.navService.showNavBar();
+
+    const head = document.querySelector('head');
+    this.renderer.removeChild(head, this.darkModeStyleElem);
   }
 
   ngOnInit(): void {
@@ -426,8 +429,6 @@ export class BookReaderComponent implements OnInit, OnDestroy {
       bodyNode.style.background = this.getDarkModeBackgroundColor();
     }
     this.backgroundColor = this.getDarkModeBackgroundColor();
-    // Let's try to inject a style tag for global styles then remove on onNgDestroy
-    //document.querySelector('head')?.appendChild(new style)
     const head = document.querySelector('head');
     if (this.darkMode) {
       this.renderer.appendChild(head, this.darkModeStyleElem)
