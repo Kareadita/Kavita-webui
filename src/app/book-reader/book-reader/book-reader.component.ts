@@ -19,6 +19,7 @@ import { BookChapterItem } from '../_models/book-chapter-item';
 import { animate, state, style, transition, trigger } from '@angular/animations';
 import { Stack } from 'src/app/shared/data-structures/stack';
 import { Preferences } from 'src/app/_models/preferences/preferences';
+import { MemberService } from 'src/app/_services/member.service';
 
 
 interface PageStyle {
@@ -94,25 +95,17 @@ export class BookReaderComponent implements OnInit, OnDestroy {
 
 
   darkModeStyles = `
-  
-    body {
-      color: #dcdcdc !important;
-      background-image: none !important;
-      background-color: #292929 !important;
-      box-shadow: none;
-      text-shadow: none;
-      border-radius: unset;
-    }
 
-    *:not(code), *:not(a) {
-        background-color: #292929;
-        box-shadow: none;
-        text-shadow: none;
-        border-radius: unset;
-        color: #dcdcdc !important;
-    }
 
-    *:not(input), *:not(select), *:not(code), *:not(:link) {
+    // *:not(code):not(a):not(.ngx-toastr) {
+    //     background-color: #292929;
+    //     box-shadow: none;
+    //     text-shadow: none;
+    //     border-radius: unset;
+    //     //color: #dcdcdc !important;
+    // }
+
+    *:not(input), *:not(select), *:not(code), *:not(:link), *:not(.ngx-toastr) {
         color: #dcdcdc !important;
     }
 
@@ -120,9 +113,9 @@ export class BookReaderComponent implements OnInit, OnDestroy {
         color: #e83e8c !important;
     }
 
-    .btn-icon {
-        background-color: transparent;
-    }
+    // .btn-icon {
+    //     background-color: transparent;
+    // }
 
     :link, a {
         color: #8db2e5 !important;
@@ -138,7 +131,7 @@ export class BookReaderComponent implements OnInit, OnDestroy {
   constructor(private route: ActivatedRoute, private router: Router, private accountService: AccountService,
     private seriesService: SeriesService, private readerService: ReaderService, private location: Location,
     private renderer: Renderer2, private navService: NavService, private toastr: ToastrService, 
-    private domSanitizer: DomSanitizer, private bookService: BookService) {
+    private domSanitizer: DomSanitizer, private bookService: BookService, private memberService: MemberService) {
       this.navService.hideNavBar();
       this.darkModeStyleElem = this.renderer.createElement('style');
       this.darkModeStyleElem.innerHTML = this.darkModeStyles;
@@ -158,6 +151,7 @@ export class BookReaderComponent implements OnInit, OnDestroy {
         this.resetSettings();
       });
   }
+
   ngOnDestroy(): void {
     const bodyNode = document.querySelector('body');
     if (bodyNode !== undefined && bodyNode !== null && this.originalBodyColor !== undefined) {
@@ -184,9 +178,10 @@ export class BookReaderComponent implements OnInit, OnDestroy {
     this.seriesId = parseInt(seriesId, 10);
     this.chapterId = parseInt(chapterId, 10);
 
-    
-
-    
+    this.memberService.hasReadingProgress(this.libraryId).subscribe(hasProgress => {
+      this.drawerOpen = !hasProgress;
+      this.toastr.info('You can modify book settings, save those settings for all books, and view table of contents from the drawer.');
+    });
 
     forkJoin({
       chapter: this.seriesService.getChapter(this.chapterId),
