@@ -3,6 +3,13 @@ import { Injectable } from '@angular/core';
 import { environment } from 'src/environments/environment';
 import { BookChapterItem } from './_models/book-chapter-item';
 
+export interface BookPage {
+  bookTitle: string;
+  styles: string;
+  html: string;
+}
+
+
 @Injectable({
   providedIn: 'root'
 })
@@ -19,6 +26,10 @@ export class BookService {
   getBookPage(chapterId: number, page: number) {
     return this.http.get<string>(this.baseUrl + 'book/' + chapterId + '/book-page?page=' + page + '&baseUrl=' + encodeURIComponent(this.baseUrl), {responseType: 'text' as 'json'});
   }
+
+  // getBookPage(chapterId: number, page: number) {
+  //   return this.http.get<BookPage>(this.baseUrl + 'book/' + chapterId + '/book-page?page=' + page + '&baseUrl=' + encodeURIComponent(this.baseUrl));
+  // }
 
   getBookInfo(chapterId: number) {
     return this.http.get<string>(this.baseUrl + 'book/' + chapterId + '/book-info', {responseType: 'text' as 'json'});

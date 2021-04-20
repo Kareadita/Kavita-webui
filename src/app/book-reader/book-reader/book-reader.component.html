@@ -20,8 +20,15 @@
             <div body class="drawer-body">
                 <div class="control-container">
                     <div class="controls">
-                        <label>Font Family</label>
-                        <!-- Dropdown -->
+
+                        <form [formGroup]="settingsForm">
+                            <div class="form-group">
+                                <label for="library-type">Font Family</label>
+                                <select class="form-control" id="library-type" formControlName="bookReaderFontFamily">
+                                    <option [value]="opt" *ngFor="let opt of fontFamilies; let i = index">{{opt | titlecase}}</option>
+                                </select>
+                            </div>
+                        </form>
                     </div>
                     <div class="controls">
                         <button (click)="updateFontSize(-10)" class="btn btn-icon" title="Decrease"><i class="fa fa-minus" aria-hidden="true"></i></button>
@@ -82,11 +89,11 @@
     </ng-container>
 
     
-
+    <div [innerHtml]="styles" *ngIf="styles !== undefined"></div>
     <div #readingSection class="reading-section">
-        <!-- <div [innerHtml]="styles" *ngIf="styles !== undefined"></div> -->
-        <div [attr.style]="readerStyles | safeStyle">
-            <div [innerHtml]="page" *ngIf="page !== undefined"></div>
+        <div> <!--  [attr.style]="readerStyles | safeStyle" -->
+            
         </div>
+        <div #readingHtml [innerHtml]="page" *ngIf="page !== undefined"></div>
     </div>
 </div>

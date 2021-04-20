@@ -5,6 +5,7 @@ import { BookReaderRoutingModule } from './book-reader.router.module';
 import { SharedModule } from '../shared/shared.module';
 import { StyleControlComponent } from './style-control/style-control.component';
 import { SafeStylePipe } from './safe-style.pipe';
+import { ReactiveFormsModule } from '@angular/forms';
 
 
 @NgModule({
@@ -12,6 +13,7 @@ import { SafeStylePipe } from './safe-style.pipe';
   imports: [
     CommonModule,
     BookReaderRoutingModule,
+    ReactiveFormsModule,
     SharedModule
   ], exports: [
     BookReaderComponent,

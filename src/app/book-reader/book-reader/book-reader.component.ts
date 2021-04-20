@@ -1,6 +1,6 @@
-import { Component, ElementRef, HostListener, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, HostListener, OnDestroy, OnInit, Renderer2, RendererStyleFlags2, ViewChild } from '@angular/core';
 import {Location} from '@angular/common';
-import { FormBuilder, FormGroup } from '@angular/forms';
+import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 import { forkJoin } from 'rxjs';
@@ -72,12 +72,14 @@ export class BookReaderComponent implements OnInit, OnDestroy {
   settingsForm: FormGroup = new FormGroup({});
 
   page: SafeHtml | undefined = undefined; // This is the html we get from the server
+  styles: SafeHtml | undefined = undefined; // This is the css we get from the server
 
-  @ViewChild('iframeObj', {static: false}) iframeObj!: ElementRef<HTMLIFrameElement>;
+  @ViewChild('readingHtml', {static: false}) readingHtml!: ElementRef<HTMLDivElement>;
   @ViewChild('readingSection', {static: false}) readingSectionElemRef!: ElementRef<HTMLDivElement>;
 
-  pageStyles!: PageStyle;
 
+  pageStyles!: PageStyle;
+  fontFamilies: Array<string> = ['default', 'EBGaramond', 'Fira Sans', 'Lato', 'Libre Baskerville', 'Libre Caslon', 'Merriweather', 'Nanum Gothic', 'Oswald', 'RocknRoll One'];
 
   
   darkMode = false;
@@ -91,7 +93,7 @@ export class BookReaderComponent implements OnInit, OnDestroy {
 
   constructor(private route: ActivatedRoute, private router: Router, private accountService: AccountService,
     private seriesService: SeriesService, private readerService: ReaderService, private location: Location,
-    private formBuilder: FormBuilder, private navService: NavService, private toastr: ToastrService, 
+    private renderer: Renderer2, private navService: NavService, private toastr: ToastrService, 
     private domSanitizer: DomSanitizer, private bookService: BookService) {
       this.navService.hideNavBar();
       this.resetSettings();
@@ -117,14 +119,22 @@ export class BookReaderComponent implements OnInit, OnDestroy {
     this.accountService.currentUser$.pipe(take(1)).subscribe(user => {
       if (user) {
         this.user = user;
-        //user.preferences.
-        //this.settingsForm.addControl('readingDirection', new FormControl(user.preferences.readingDirection, []));
+        if (this.user.preferences.bookReaderFontFamily === undefined) {
+          this.user.preferences.bookReaderFontFamily = 'default';
+        }
+        this.settingsForm.addControl('bookReaderFontFamily', new FormControl(user.preferences.bookReaderFontFamily, []));
+
+        this.settingsForm.get('bookReaderFontFamily')!.valueChanges.subscribe(changes => {
+          this.updateFontFamily(changes);
+        });
       }
     });
 
     this.libraryId = parseInt(libraryId, 10);
     this.seriesId = parseInt(seriesId, 10);
     this.chapterId = parseInt(chapterId, 10);
+
+    
 
     
 
@@ -191,12 +201,12 @@ export class BookReaderComponent implements OnInit, OnDestroy {
       if (windowWidth > 700) {
         margin = this.user.preferences.bookReaderMargin + '%';
       }
-//      margin = this.user.preferences.bookReaderMargin ? this.user.preferences.bookReaderMargin + '%' :  margin;
       this.pageStyles = {'font-family': 'default', 'font-size': this.user.preferences.bookReaderFontSize + '%', 'margin-left': margin, 'margin-right': margin, 'line-height': '100%'};
     } else {
       this.pageStyles = {'font-family': 'default', 'font-size': '100%', 'margin-left': margin, 'margin-right': margin, 'line-height': '100%'};
     }
     this.toggleDarkMode(false);
+    this.settingsForm.get('bookReaderFontFamily')?.setValue(this.user.preferences.bookReaderFontFamily);
     this.updateReaderStyles();
   }
 
@@ -233,10 +243,11 @@ export class BookReaderComponent implements OnInit, OnDestroy {
     this.readerService.bookmark(this.seriesId, this.volumeId, this.chapterId, this.pageNum).subscribe(() => {});
 
     this.bookService.getBookPage(this.chapterId, this.pageNum).subscribe(content => {
-      console.log('current page: ', this.pageNum);
+      //this.styles = this.domSanitizer.bypassSecurityTrustHtml(content.styles);
       this.page = this.domSanitizer.bypassSecurityTrustHtml(content);
       setTimeout(() => {
         this.addLinkClickHandlers();
+        this.updateReaderStyles();
 
         Promise.all(Array.from(this.readingSectionElemRef.nativeElement.querySelectorAll('img')).filter(img => !img.complete).map(img => new Promise(resolve => { img.onload = img.onerror = resolve; }))).then(() => {
           this.isLoading = false;
@@ -267,7 +278,6 @@ export class BookReaderComponent implements OnInit, OnDestroy {
   goBack() {
     if (!this.adhocPageHistory.isEmpty()) {
       const page = this.adhocPageHistory.pop();
-      console.log('Going to page: ', page);
       if (page !== undefined) {
         this.setPageNum(page.page);
         this.loadPage(undefined, page.scrollOffset);
@@ -299,6 +309,17 @@ export class BookReaderComponent implements OnInit, OnDestroy {
     this.updateReaderStyles();
   }
 
+  updateFontFamily(familyName: string) {
+    let cleanedName = familyName.replace(' ', '_').replace('!important', '').trim();
+    if (cleanedName === 'default') {
+      this.pageStyles['font-family'] = 'inherit';
+    } else {
+      this.pageStyles['font-family'] = "'" + cleanedName + "'";
+    }
+
+    this.updateReaderStyles();
+  }
+
   updateMargin(amount: number) {
     let cleanedValue = this.pageStyles['margin-left'].replace('%', '').replace('!important', '').trim();
     let val = parseInt(cleanedValue, 10);
@@ -306,30 +327,32 @@ export class BookReaderComponent implements OnInit, OnDestroy {
 
     cleanedValue = this.pageStyles['margin-right'].replace('%', '').replace('!important', '').trim();
     val = parseInt(cleanedValue, 10);
-    this.pageStyles['margin-right'] = (val + amount) + '% !important';
+    this.pageStyles['margin-right'] = (val + amount) + '%';
 
     this.updateReaderStyles();
   }
 
   updateLineSpacing(amount: number) {
-    let val = 1.2;
-    const cleanedValue = this.pageStyles['line-height'].replace('!important', '').trim();
-    if (cleanedValue === 'normal') {
-      val = 1.2
-    } else {
-      val = parseInt(cleanedValue);
-    }
-    this.pageStyles['line-height'] = (val + amount) + '% !important';
+    const cleanedValue = parseInt(this.pageStyles['line-height'].replace('%', '').replace('!important', '').trim(), 10);
+
+    this.pageStyles['line-height'] = (cleanedValue + amount) + '%';
 
     this.updateReaderStyles();
   }
 
   updateReaderStyles() {
-    this.readerStyles = Object.entries(this.pageStyles).map(item => {
-      return item[0] + ': ' + item[1] + ';';
-    }).join('');
-  }
+    if (this.readingHtml != undefined && this.readingHtml.nativeElement) {
+      for(let i = 0; i < this.readingHtml.nativeElement.children.length; i++) {
+        const elem = this.readingHtml.nativeElement.children.item(i);
+        if (elem?.tagName != 'STYLE') {
+          Object.entries(this.pageStyles).map(item => {
+            this.renderer.setStyle(elem, item[0], item[1], RendererStyleFlags2.Important);
+          });
+        }
+      }
+    }
 
+  }
 
 
   toggleDarkMode(force?: boolean) {
