@@ -91,9 +91,6 @@
     
     <div [innerHtml]="styles" *ngIf="styles !== undefined"></div>
     <div #readingSection class="reading-section">
-        <div> <!--  [attr.style]="readerStyles | safeStyle" -->
-            
-        </div>
-        <div #readingHtml [innerHtml]="page" *ngIf="page !== undefined"></div>
+        <div #readingHtml [innerHtml]="page" *ngIf="page !== undefined"></div> <!--class="{{darkMode ? 'dark-mode' : ''}}"-->
     </div>
 </div>

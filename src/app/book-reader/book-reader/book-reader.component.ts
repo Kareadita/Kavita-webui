@@ -85,18 +85,78 @@ export class BookReaderComponent implements OnInit, OnDestroy {
   darkMode = false;
   backgroundColor: string = 'white';
   readerStyles: string = '';
+  darkModeStyleElem!: HTMLElement;
 
 
   // Temp hack: Override background color for reader and restore it onDestroy
   originalBodyColor: string | undefined;
   originalTextColor: string | undefined;
 
+
+  darkModeStyles = `
+  
+    body {
+      color: #dcdcdc !important;
+      background-image: none !important;
+      background-color: #292929 !important;
+      box-shadow: none;
+      text-shadow: none;
+      border-radius: unset;
+    }
+
+    *:not(code), *:not(a) {
+        background-color: #292929;
+        box-shadow: none;
+        text-shadow: none;
+        border-radius: unset;
+        color: #dcdcdc !important;
+    }
+
+    *:not(input), *:not(select), *:not(code), *:not(:link) {
+        color: #dcdcdc !important;
+    }
+
+    code {
+        color: #e83e8c !important;
+    }
+
+    .btn-icon {
+        background-color: transparent;
+    }
+
+    :link, a {
+        color: #8db2e5 !important;
+    }
+
+    img, img[src] {
+      z-index: 1;
+      filter: brightness(0.85) !important;
+      background-color: initial !important;
+    }
+  `;
+
   constructor(private route: ActivatedRoute, private router: Router, private accountService: AccountService,
     private seriesService: SeriesService, private readerService: ReaderService, private location: Location,
     private renderer: Renderer2, private navService: NavService, private toastr: ToastrService, 
     private domSanitizer: DomSanitizer, private bookService: BookService) {
       this.navService.hideNavBar();
-      this.resetSettings();
+      this.darkModeStyleElem = this.renderer.createElement('style');
+      this.darkModeStyleElem.innerHTML = this.darkModeStyles;
+
+      this.accountService.currentUser$.pipe(take(1)).subscribe(user => {
+        if (user) {
+          this.user = user;
+          if (this.user.preferences.bookReaderFontFamily === undefined) {
+            this.user.preferences.bookReaderFontFamily = 'default';
+          }
+          this.settingsForm.addControl('bookReaderFontFamily', new FormControl(user.preferences.bookReaderFontFamily, []));
+  
+          this.settingsForm.get('bookReaderFontFamily')!.valueChanges.subscribe(changes => {
+            this.updateFontFamily(changes);
+          });
+        }
+        this.resetSettings();
+      });
   }
   ngOnDestroy(): void {
     const bodyNode = document.querySelector('body');
@@ -116,19 +176,6 @@ export class BookReaderComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.accountService.currentUser$.pipe(take(1)).subscribe(user => {
-      if (user) {
-        this.user = user;
-        if (this.user.preferences.bookReaderFontFamily === undefined) {
-          this.user.preferences.bookReaderFontFamily = 'default';
-        }
-        this.settingsForm.addControl('bookReaderFontFamily', new FormControl(user.preferences.bookReaderFontFamily, []));
-
-        this.settingsForm.get('bookReaderFontFamily')!.valueChanges.subscribe(changes => {
-          this.updateFontFamily(changes);
-        });
-      }
-    });
 
     this.libraryId = parseInt(libraryId, 10);
     this.seriesId = parseInt(seriesId, 10);
@@ -202,10 +249,12 @@ export class BookReaderComponent implements OnInit, OnDestroy {
         margin = this.user.preferences.bookReaderMargin + '%';
       }
       this.pageStyles = {'font-family': 'default', 'font-size': this.user.preferences.bookReaderFontSize + '%', 'margin-left': margin, 'margin-right': margin, 'line-height': '100%'};
+      this.toggleDarkMode(this.user.preferences.bookReaderDarkMode);
     } else {
       this.pageStyles = {'font-family': 'default', 'font-size': '100%', 'margin-left': margin, 'margin-right': margin, 'line-height': '100%'};
+      this.toggleDarkMode(false);
     }
-    this.toggleDarkMode(false);
+    
     this.settingsForm.get('bookReaderFontFamily')?.setValue(this.user.preferences.bookReaderFontFamily);
     this.updateReaderStyles();
   }
@@ -243,7 +292,6 @@ export class BookReaderComponent implements OnInit, OnDestroy {
     this.readerService.bookmark(this.seriesId, this.volumeId, this.chapterId, this.pageNum).subscribe(() => {});
 
     this.bookService.getBookPage(this.chapterId, this.pageNum).subscribe(content => {
-      //this.styles = this.domSanitizer.bypassSecurityTrustHtml(content.styles);
       this.page = this.domSanitizer.bypassSecurityTrustHtml(content);
       setTimeout(() => {
         this.addLinkClickHandlers();
@@ -352,6 +400,8 @@ export class BookReaderComponent implements OnInit, OnDestroy {
       }
     }
 
+
+
   }
 
 
@@ -376,6 +426,14 @@ export class BookReaderComponent implements OnInit, OnDestroy {
       bodyNode.style.background = this.getDarkModeBackgroundColor();
     }
     this.backgroundColor = this.getDarkModeBackgroundColor();
+    // Let's try to inject a style tag for global styles then remove on onNgDestroy
+    //document.querySelector('head')?.appendChild(new style)
+    const head = document.querySelector('head');
+    if (this.darkMode) {
+      this.renderer.appendChild(head, this.darkModeStyleElem)
+    } else {
+      this.renderer.removeChild(head, this.darkModeStyleElem);
+    }
   }
 
   saveSettings() {

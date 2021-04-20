@@ -52,19 +52,22 @@
 
 
 .dark-mode {
+
+    color: #dcdcdc !important;
+    background-image: none !important;
+    background-color: #292929 !important;
+
     *:not(code), *:not(a) {
         background-color: #292929;
         box-shadow: none;
         text-shadow: none;
         border-radius: unset;
-        //border-color: #555;
-        //outline-color: #555; // maybe not
         color: #dcdcdc !important;
     }
 
-    // *:not(input), *:not(code), *:not(:link) {
-    //     color: #dcdcdc;
-    // }
+    *:not(input), *:not(code), *:not(:link) {
+        color: #dcdcdc !important;
+    }
 
     code {
         color: #e83e8c !important;
@@ -77,6 +80,63 @@
     :link, a {
         color: #8db2e5 !important;
     }
+
+    // Coppied
+    // html, body {
+    //     color: #dcdcdc !important;
+    //     background-image: none !important;
+    //     background-color: #292929 !important;
+    //   }
+      
+    //   html::before, body::before {
+    //     background-image: none !important;
+    //   }
+      
+    //   html *:not(input) {color: #dcdcdc !important}
+    //   html * {background-color: rgb(41, 41, 41, 0.90) !important}
+      
+    //   html *, html *[id], html *[class] {
+    //     box-shadow: none !important;
+    //     text-shadow: none !important;
+    //     border-radius: unset !important;
+    //     border-color: #555555 !important;
+    //     outline-color: #555555 !important;
+    //   }
+      
+      img, img[src] {
+        z-index: 1;
+        filter: brightness(0.85) !important;
+        background-color: initial !important;
+      }
+      
+    //   video, video[src] {
+    //     z-index: 1;
+    //     background-color: transparent !important;
+    //   }
+      
+    //   input:not([type='button']):not([type='submit']) {
+    //     color: #dcdcdc !important;
+    //     background-image: none !important;
+    //     background-color: #333333 !important;
+    //   }
+      
+    //   textarea, textarea[class], input[type='text'], input[type='text'][class] {
+    //     color: #dcdcdc !important;
+    //     background-color: #555555 !important;
+    //   }
+      
+    //   svg:not([fill]) {fill: #7d7d7d !important}
+    //   li, select {background-image: none !important}
+    //   input[type='text'], input[type='search'] {text-indent: 10px}
+    //   a {background-color: rgba(255, 255, 255, 0.01) !important}
+    //   html cite, html cite *, html cite *[class] {color: #029833 !important}
+    //   svg[fill], button, input[type='button'], input[type='submit'] {opacity: 0.85 !important}
+      
+    //   :before {color: #dcdcdc !important}
+    //   :link:not(cite), :link *:not(cite) {color: #8db2e5 !important}
+    //   :visited, :visited *, :visited *[class] {color: rgb(211, 138, 138) !important}
+    :visited, :visited *, :visited *[class] {color: rgb(211, 138, 138) !important}
+    :link:not(cite), :link *:not(cite) {color: #8db2e5 !important}
 }
 
 .reading-bar {
