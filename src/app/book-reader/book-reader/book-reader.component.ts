@@ -42,13 +42,11 @@ const TOP_OFFSET = -50 * 1.5; // px the sticky header takes up
   templateUrl: './book-reader.component.html',
   styleUrls: ['./book-reader.component.scss'],
   animations: [
-    trigger(
-      'isLoading', [
-        state('1' , style({ opacity: 0 })),
-        state('0', style({ opacity: 1  })),
-        transition('1 => 0', animate('300ms')),
-        transition('0 => 1', animate('500ms'))
-        ])
+    trigger('isLoading', [
+      state('false', style({opacity: 1})),
+      state('true', style({opacity: 0})),
+      transition('false <=> true', animate('200ms'))
+  ])
   ]
 })
 export class BookReaderComponent implements OnInit, OnDestroy {
@@ -91,20 +89,10 @@ export class BookReaderComponent implements OnInit, OnDestroy {
 
   // Temp hack: Override background color for reader and restore it onDestroy
   originalBodyColor: string | undefined;
-  originalTextColor: string | undefined;
+
 
 
   darkModeStyles = `
-
-
-    // *:not(code):not(a):not(.ngx-toastr) {
-    //     background-color: #292929;
-    //     box-shadow: none;
-    //     text-shadow: none;
-    //     border-radius: unset;
-    //     //color: #dcdcdc !important;
-    // }
-
     *:not(input), *:not(select), *:not(code), *:not(:link), *:not(.ngx-toastr) {
         color: #dcdcdc !important;
     }
@@ -179,8 +167,10 @@ export class BookReaderComponent implements OnInit, OnDestroy {
     this.chapterId = parseInt(chapterId, 10);
 
     this.memberService.hasReadingProgress(this.libraryId).subscribe(hasProgress => {
-      this.drawerOpen = !hasProgress;
-      this.toastr.info('You can modify book settings, save those settings for all books, and view table of contents from the drawer.');
+      if (!hasProgress) {
+        this.drawerOpen = !hasProgress;
+        this.toastr.info('You can modify book settings, save those settings for all books, and view table of contents from the drawer.');
+      }
     });
 
     forkJoin({
@@ -279,7 +269,6 @@ export class BookReaderComponent implements OnInit, OnDestroy {
   }
 
   loadPage(part?: string | undefined, scrollTop?: number | undefined) {
-
     this.isLoading = true;
     window.scroll({
       top: 0,
@@ -397,9 +386,6 @@ export class BookReaderComponent implements OnInit, OnDestroy {
         }
       }
     }
-
-
-
   }
 
 

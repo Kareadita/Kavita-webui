@@ -29,7 +29,7 @@ export class MemberService {
     return this.httpClient.get<boolean>(this.baseUrl + 'users/has-library-access?libraryId=' + libraryId);
   }
 
-  hasReadingProgress(libraryType: LibraryType) {
-    return this.httpClient.get<boolean>(this.baseUrl + 'users/has-reading-progress?libraryType=' + libraryType);
+  hasReadingProgress(librayId: number) {
+    return this.httpClient.get<boolean>(this.baseUrl + 'users/has-reading-progress?libraryId=' + librayId);
   }
 }

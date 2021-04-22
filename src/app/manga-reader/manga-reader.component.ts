@@ -16,6 +16,7 @@ import { forkJoin } from 'rxjs';
 import { ToastrService } from 'ngx-toastr';
 import { KEY_CODES } from '../shared/_services/utility.service';
 import { CircularArray } from '../shared/data-structures/circular-array';
+import { MemberService } from '../_services/member.service';
 
 const PREFETCH_PAGES = 3;
 
@@ -78,7 +79,8 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
 
   constructor(private route: ActivatedRoute, private router: Router, private accountService: AccountService,
               private seriesService: SeriesService, private readerService: ReaderService, private location: Location,
-              private formBuilder: FormBuilder, private navService: NavService, private toastr: ToastrService) {
+              private formBuilder: FormBuilder, private navService: NavService, private toastr: ToastrService,
+              private memberService: MemberService) {
                 this.navService.hideNavBar();
   }
 
@@ -91,6 +93,10 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
       this.router.navigateByUrl('/home');
       return;
     }
+
+    this.libraryId = parseInt(libraryId, 10);
+    this.seriesId = parseInt(seriesId, 10);
+    this.chapterId = parseInt(chapterId, 10);
 
     this.setOverrideStyles();
 
@@ -106,12 +112,16 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
         this.splitForm = this.formBuilder.group({
           pageSplitOption: this.pageSplitOption + ''
         });
+        this.memberService.hasReadingProgress(this.libraryId).subscribe(progress => {
+          if (!progress) {
+            this.menuOpen = true;
+            this.toastr.info('Tap the image at any time to open the menu. You can configure different settings or go to page by clicking progress bar. Tap sides of image move to next/prev page.');
+          }
+        })
       }
     });
 
-    this.libraryId = parseInt(libraryId, 10);
-    this.seriesId = parseInt(seriesId, 10);
-    this.chapterId = parseInt(chapterId, 10);
+    
 
     forkJoin({
       chapter: this.seriesService.getChapter(this.chapterId),
