@@ -380,7 +380,7 @@ export class BookReaderComponent implements OnInit, OnDestroy {
       for(let i = 0; i < this.readingHtml.nativeElement.children.length; i++) {
         const elem = this.readingHtml.nativeElement.children.item(i);
         if (elem?.tagName != 'STYLE') {
-          Object.entries(this.pageStyles).map(item => {
+          Object.entries(this.pageStyles).forEach(item => {
             this.renderer.setStyle(elem, item[0], item[1], RendererStyleFlags2.Important);
           });
         }

@@ -158,27 +158,10 @@
 }
 
 .reading-section {
-    // TODO: Add an animation when it loads in
     height: 100vh;
     padding-top: 50px;
-
-    //animation: fadeIn linear 0.5s;
-    // opacity: 1;
-	// animation-name: fadeIn;
-    // animation-iteration-count: 1;
-	// animation-timing-function: ease-in;
-    // animation-duration: 2s;
-
 }
 
 .drawer-body {
     padding-bottom: 20px;
 }
-
-
-@keyframes fadeIn {
-    0% {opacity:0;}
-    100% {opacity:1;}
-}
-  
-  
