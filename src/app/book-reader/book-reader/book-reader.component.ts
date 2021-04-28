@@ -1,6 +1,6 @@
 import { Component, ElementRef, HostListener, OnDestroy, OnInit, Renderer2, RendererStyleFlags2, ViewChild } from '@angular/core';
 import {Location} from '@angular/common';
-import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
+import { FormControl, FormGroup } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 import { forkJoin } from 'rxjs';
@@ -11,7 +11,7 @@ import { AccountService } from 'src/app/_services/account.service';
 import { NavService } from 'src/app/_services/nav.service';
 import { ReaderService } from 'src/app/_services/reader.service';
 import { SeriesService } from 'src/app/_services/series.service';
-import { DomSanitizer, SafeHtml, SafeUrl } from '@angular/platform-browser';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 
 import { BookService } from '../book.service';
 import { KEY_CODES } from 'src/app/shared/_services/utility.service';
@@ -75,16 +75,18 @@ export class BookReaderComponent implements OnInit, OnDestroy {
 
   @ViewChild('readingHtml', {static: false}) readingHtml!: ElementRef<HTMLDivElement>;
   @ViewChild('readingSection', {static: false}) readingSectionElemRef!: ElementRef<HTMLDivElement>;
+  @ViewChild('stickyTop', {static: false}) stickyTopElemRef!: ElementRef<HTMLDivElement>;
 
 
   pageStyles!: PageStyle;
-  fontFamilies: Array<string> = ['default', 'EBGaramond', 'Fira Sans', 'Lato', 'Libre Baskerville', 'Libre Caslon', 'Merriweather', 'Nanum Gothic', 'Oswald', 'RocknRoll One'];
+  fontFamilies: Array<string> = [];
 
   
   darkMode = false;
   backgroundColor: string = 'white';
   readerStyles: string = '';
   darkModeStyleElem!: HTMLElement;
+  topOffset: number = 0; // Offset for drawer and rendering canvas
 
 
   // Temp hack: Override background color for reader and restore it onDestroy
@@ -123,6 +125,7 @@ export class BookReaderComponent implements OnInit, OnDestroy {
       this.navService.hideNavBar();
       this.darkModeStyleElem = this.renderer.createElement('style');
       this.darkModeStyleElem.innerHTML = this.darkModeStyles;
+      this.fontFamilies = this.bookService.getFontFamilies();
 
       this.accountService.currentUser$.pipe(take(1)).subscribe(user => {
         if (user) {
@@ -168,7 +171,8 @@ export class BookReaderComponent implements OnInit, OnDestroy {
 
     this.memberService.hasReadingProgress(this.libraryId).subscribe(hasProgress => {
       if (!hasProgress) {
-        this.drawerOpen = !hasProgress;
+        //this.drawerOpen = !hasProgress;
+        this.toggleDrawer();
         this.toastr.info('You can modify book settings, save those settings for all books, and view table of contents from the drawer.');
       }
     });
@@ -208,7 +212,7 @@ export class BookReaderComponent implements OnInit, OnDestroy {
     } else if (event.key === KEY_CODES.ESC_KEY) {
       this.closeReader();
     } else if (event.key === KEY_CODES.SPACE) {
-      this.drawerOpen = !this.drawerOpen;
+      this.toggleDrawer();
       event.stopPropagation();
       event.preventDefault(); 
     }
@@ -439,6 +443,12 @@ export class BookReaderComponent implements OnInit, OnDestroy {
       }
       this.resetSettings();
     });
+  }
+
+  toggleDrawer() {
+    this.topOffset = this.stickyTopElemRef.nativeElement?.offsetHeight;
+    console.log('TopOffset: ', this.topOffset);
+    this.drawerOpen = !this.drawerOpen;
   }
 
   closeDrawer() {
