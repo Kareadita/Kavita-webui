@@ -445,6 +445,14 @@ export class BookReaderComponent implements OnInit, OnDestroy {
     this.drawerOpen = false;
   }
 
+  handleReaderClick(event: MouseEvent) {
+    if (this.drawerOpen) {
+      this.closeDrawer();
+      event.stopPropagation();
+      event.preventDefault();
+    }
+  }
+
 
   scrollTo(partSelector: string) {
     if (partSelector.startsWith('#')) {
