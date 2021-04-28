@@ -236,7 +236,7 @@ export class BookReaderComponent implements OnInit, OnDestroy {
       if (windowWidth > 700) {
         margin = this.user.preferences.bookReaderMargin + '%';
       }
-      this.pageStyles = {'font-family': 'default', 'font-size': this.user.preferences.bookReaderFontSize + '%', 'margin-left': margin, 'margin-right': margin, 'line-height': '100%'};
+      this.pageStyles = {'font-family': this.user.preferences.bookReaderFontFamily, 'font-size': this.user.preferences.bookReaderFontSize + '%', 'margin-left': margin, 'margin-right': margin, 'line-height': this.user.preferences.bookReaderLineSpacing + '%'};
       this.toggleDarkMode(this.user.preferences.bookReaderDarkMode);
     } else {
       this.pageStyles = {'font-family': 'default', 'font-size': '100%', 'margin-left': margin, 'margin-right': margin, 'line-height': '100%'};
