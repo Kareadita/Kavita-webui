@@ -363,10 +363,7 @@ export class BookReaderComponent implements OnInit, OnDestroy {
   updateMargin(amount: number) {
     let cleanedValue = this.pageStyles['margin-left'].replace('%', '').replace('!important', '').trim();
     let val = parseInt(cleanedValue, 10);
-    this.pageStyles['margin-left'] = (val + amount) + '% !important';
-
-    cleanedValue = this.pageStyles['margin-right'].replace('%', '').replace('!important', '').trim();
-    val = parseInt(cleanedValue, 10);
+    this.pageStyles['margin-left'] = (val + amount) + '%';
     this.pageStyles['margin-right'] = (val + amount) + '%';
 
     this.updateReaderStyles();
