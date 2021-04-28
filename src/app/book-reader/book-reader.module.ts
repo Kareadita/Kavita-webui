@@ -3,13 +3,12 @@ import { CommonModule } from '@angular/common';
 import { BookReaderComponent } from './book-reader/book-reader.component';
 import { BookReaderRoutingModule } from './book-reader.router.module';
 import { SharedModule } from '../shared/shared.module';
-import { StyleControlComponent } from './style-control/style-control.component';
 import { SafeStylePipe } from './safe-style.pipe';
 import { ReactiveFormsModule } from '@angular/forms';
 
 
 @NgModule({
-  declarations: [BookReaderComponent, StyleControlComponent, SafeStylePipe],
+  declarations: [BookReaderComponent, SafeStylePipe],
   imports: [
     CommonModule,
     BookReaderRoutingModule,

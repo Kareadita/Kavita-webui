@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 
 export class DrawerOptions {
   topOffset: number = 0; // pixels, only applies when position left/right
@@ -10,7 +10,7 @@ export class DrawerOptions {
   styleUrls: ['./drawer.component.scss'],
   exportAs: "drawer"
 })
-export class DrawerComponent implements OnInit, OnChanges {
+export class DrawerComponent {
 
   @Input() isOpen = false;
   @Input() width: number = 400;
@@ -18,15 +18,6 @@ export class DrawerComponent implements OnInit, OnChanges {
   @Input() options: Partial<DrawerOptions> = new DrawerOptions();
   @Output() drawerClosed = new EventEmitter();
 
-
-  constructor() { }
-
-  ngOnInit(): void {
-  }
-
-  ngOnChanges(changes: SimpleChanges) {
-    console.log(this.options);
-  }
 
   close() {
     this.drawerClosed.emit();
