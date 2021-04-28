@@ -49,6 +49,7 @@ export class SeriesDetailComponent implements OnInit {
   hasSpecials = false;
   specials: Array<Chapter> = [];
   activeTabId = 2;
+  hasNonSpecialVolumeChapters = true;
 
   seriesSummary: string = '';
   userReview: string = '';
@@ -196,6 +197,13 @@ export class SeriesDetailComponent implements OnInit {
             return c;
           });
         }
+
+        if (this.volumes.filter(v => v.number !== 0).length === 0 && this.chapters.filter(c => !c.isSpecial).length === 0 && this.specials.length > 0) {
+          this.activeTabId = 1;
+          this.hasNonSpecialVolumeChapters = false;
+        }
+
+        console.log('Specials: ', this.specials);
 
         this.isLoading = false;
       });

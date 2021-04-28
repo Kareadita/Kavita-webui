@@ -24,12 +24,8 @@ export class BookService {
   }
 
   getBookPage(chapterId: number, page: number) {
-    return this.http.get<string>(this.baseUrl + 'book/' + chapterId + '/book-page?page=' + page + '&baseUrl=' + encodeURIComponent(this.baseUrl), {responseType: 'text' as 'json'});
+    return this.http.get<string>(this.baseUrl + 'book/' + chapterId + '/book-page?page=' + page, {responseType: 'text' as 'json'});
   }
-
-  // getBookPage(chapterId: number, page: number) {
-  //   return this.http.get<BookPage>(this.baseUrl + 'book/' + chapterId + '/book-page?page=' + page + '&baseUrl=' + encodeURIComponent(this.baseUrl));
-  // }
 
   getBookInfo(chapterId: number) {
     return this.http.get<string>(this.baseUrl + 'book/' + chapterId + '/book-info', {responseType: 'text' as 'json'});

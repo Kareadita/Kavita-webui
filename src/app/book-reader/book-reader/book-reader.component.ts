@@ -340,11 +340,12 @@ export class BookReaderComponent implements OnInit, OnDestroy {
     let val = parseInt(this.pageStyles['font-size'].substr(0, this.pageStyles['font-size'].length - 1), 10);
     
 
-    this.pageStyles['font-size'] = val + amount + '%';
+    this.pageStyles['font-size'] = Math.max(val + amount, 10) + '%';
     this.updateReaderStyles();
   }
 
   updateFontFamily(familyName: string) {
+    if (familyName === null) familyName = '';
     let cleanedName = familyName.replace(' ', '_').replace('!important', '').trim();
     if (cleanedName === 'default') {
       this.pageStyles['font-family'] = 'inherit';
