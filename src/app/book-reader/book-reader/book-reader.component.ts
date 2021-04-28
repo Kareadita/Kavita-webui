@@ -303,8 +303,8 @@ export class BookReaderComponent implements OnInit, OnDestroy {
   setPageNum(pageNum: number) {
     if (pageNum < 0) {
       this.pageNum = 0;
-    } else if (pageNum >= this.maxPages) {
-      this.pageNum = this.maxPages;
+    } else if (pageNum >= this.maxPages - 1) {
+      this.pageNum = this.maxPages - 1;
     } else {
       this.pageNum = pageNum;
     }
