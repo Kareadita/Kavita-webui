@@ -343,8 +343,11 @@ export class BookReaderComponent implements OnInit, OnDestroy {
   updateFontSize(amount: number) {
     let val = parseInt(this.pageStyles['font-size'].substr(0, this.pageStyles['font-size'].length - 1), 10);
     
+    if (val + amount > 300 || val + amount < 50) {
+      return;
+    }
 
-    this.pageStyles['font-size'] = Math.max(val + amount, 10) + '%';
+    this.pageStyles['font-size'] = val + amount + '%';
     this.updateReaderStyles();
   }
 
@@ -363,6 +366,11 @@ export class BookReaderComponent implements OnInit, OnDestroy {
   updateMargin(amount: number) {
     let cleanedValue = this.pageStyles['margin-left'].replace('%', '').replace('!important', '').trim();
     let val = parseInt(cleanedValue, 10);
+
+    if (val + amount > 30 || val + amount < 0) {
+      return;
+    }
+
     this.pageStyles['margin-left'] = (val + amount) + '%';
     this.pageStyles['margin-right'] = (val + amount) + '%';
 
@@ -371,6 +379,10 @@ export class BookReaderComponent implements OnInit, OnDestroy {
 
   updateLineSpacing(amount: number) {
     const cleanedValue = parseInt(this.pageStyles['line-height'].replace('%', '').replace('!important', '').trim(), 10);
+
+    if (cleanedValue + amount > 250 || cleanedValue + amount < 100) {
+      return;
+    }
 
     this.pageStyles['line-height'] = (cleanedValue + amount) + '%';
 

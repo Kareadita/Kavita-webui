@@ -32,7 +32,7 @@ export class UserPreferencesComponent implements OnInit, OnDestroy {
   obserableHandles: Array<any> = [];
 
   bookReaderLineSpacingOptions: Options = {
-    floor: 50,
+    floor: 100,
     ceil: 250,
     step: 10,
   };
