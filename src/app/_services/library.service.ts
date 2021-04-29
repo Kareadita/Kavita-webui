@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable, of, ReplaySubject } from 'rxjs';
+import { of } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
 import { Library, LibraryType } from '../_models/library';
@@ -15,8 +15,6 @@ export class LibraryService {
   baseUrl = environment.apiUrl;
 
   libraryNames: {[key:number]: string} | undefined = undefined;
-  // private libraryNamesSource = new ReplaySubject<{[key:number]: string}>(1);
-  // public libraryNames$ = this.libraryNamesSource.asObservable();
 
   constructor(private httpClient: HttpClient) {}
 

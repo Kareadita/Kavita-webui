@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
-import { Subject, Subscription } from 'rxjs';
-import { take, takeUntil } from 'rxjs/operators';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { Chapter } from 'src/app/_models/chapter';
 import { Series } from 'src/app/_models/series';
 import { Volume } from 'src/app/_models/volume';
