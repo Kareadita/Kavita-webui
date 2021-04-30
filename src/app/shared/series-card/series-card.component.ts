@@ -60,6 +60,9 @@ export class SeriesCardComponent implements OnInit, OnChanges {
       case(Action.ScanLibrary):
         this.scanLibrary(series);
         break;
+      case(Action.RefreshMetadata):
+        this.refreshMetdata(series);
+        break;
       case(Action.Delete):
         this.deleteSeries(series);
         break;
@@ -82,6 +85,12 @@ export class SeriesCardComponent implements OnInit, OnChanges {
           this.reload.emit(true);
         });
       }
+    });
+  }
+
+  refreshMetdata(series: Series) {
+    this.seriesService.refreshMetadata(series).subscribe((res: any) => {
+      this.toastr.success('Refresh started for ' + series.name);
     });
   }
 
