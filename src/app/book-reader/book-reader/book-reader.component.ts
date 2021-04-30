@@ -297,6 +297,7 @@ export class BookReaderComponent implements OnInit, OnDestroy {
       setTimeout(() => {
         this.addLinkClickHandlers();
         this.updateReaderStyles();
+        this.topOffset = this.stickyTopElemRef.nativeElement?.offsetHeight;
 
         Promise.all(Array.from(this.readingSectionElemRef.nativeElement.querySelectorAll('img')).filter(img => !img.complete).map(img => new Promise(resolve => { img.onload = img.onerror = resolve; }))).then(() => {
           this.isLoading = false;
@@ -466,7 +467,6 @@ export class BookReaderComponent implements OnInit, OnDestroy {
 
   toggleDrawer() {
     this.topOffset = this.stickyTopElemRef.nativeElement?.offsetHeight;
-    console.log('TopOffset: ', this.topOffset);
     this.drawerOpen = !this.drawerOpen;
   }
 

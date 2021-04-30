@@ -87,7 +87,7 @@
         </app-drawer>
     </div>
     
-    <div #readingSection class="reading-section" [ngStyle]="{'margin-top': topOffset + 20 + 'px'}" [@isLoading]="isLoading ? true : false" (click)="handleReaderClick($event)">
+    <div #readingSection class="reading-section" [ngStyle]="{'padding-top': topOffset + 20 + 'px'}" [@isLoading]="isLoading ? true : false" (click)="handleReaderClick($event)">
         <div #readingHtml [innerHtml]="page" *ngIf="page !== undefined"></div>
     </div>
 
