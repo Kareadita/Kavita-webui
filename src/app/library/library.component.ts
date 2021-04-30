@@ -53,6 +53,18 @@ export class LibraryComponent implements OnInit {
     // });
   }
 
+  reloadSeries() {
+    this.seriesService.getRecentlyAdded().subscribe((series) => {
+      series.forEach(s => s.coverImage = this.imageService.getSeriesCoverImage(s.id));
+      this.recentlyAdded = series;
+    });
+
+    this.seriesService.getInProgress().subscribe((series) => {
+      series.forEach(s => s.coverImage = this.imageService.getSeriesCoverImage(s.id));
+      this.inProgress = series;
+    });
+  }
+
   handleSectionClick(sectionTitle: string) {
     // TODO: Implement this in future. For now, it is not supported
   }
