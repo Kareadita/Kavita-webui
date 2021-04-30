@@ -84,7 +84,7 @@
     <div #readingSection class="reading-section" [ngStyle]="{'padding-top': topOffset + 20 + 'px'}" [@isLoading]="isLoading ? true : false" (click)="handleReaderClick($event)">
         <div #readingHtml [innerHtml]="page" *ngIf="page !== undefined"></div>
         
-        <div [ngStyle]="{'padding-top': topOffset + 20 + 'px'}" *ngIf="page !== undefined">
+        <div [ngStyle]="{'padding-top': topOffset + 20 + 'px'}" *ngIf="page !== undefined && scrollbarNeeded">
             <ng-container [ngTemplateOutlet]="actionBar"></ng-container>
         </div>
     </div>

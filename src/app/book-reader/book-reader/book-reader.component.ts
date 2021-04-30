@@ -87,6 +87,7 @@ export class BookReaderComponent implements OnInit, OnDestroy {
   readerStyles: string = '';
   darkModeStyleElem!: HTMLElement;
   topOffset: number = 0; // Offset for drawer and rendering canvas
+  scrollbarNeeded = false; // Used for showing/hiding bottom action bar
 
 
   // Temp hack: Override background color for reader and restore it onDestroy
@@ -181,7 +182,6 @@ export class BookReaderComponent implements OnInit, OnDestroy {
 
     this.memberService.hasReadingProgress(this.libraryId).subscribe(hasProgress => {
       if (!hasProgress) {
-        //this.drawerOpen = !hasProgress;
         this.toggleDrawer();
         this.toastr.info('You can modify book settings, save those settings for all books, and view table of contents from the drawer.');
       }
@@ -340,6 +340,7 @@ export class BookReaderComponent implements OnInit, OnDestroy {
 
         Promise.all(Array.from(this.readingSectionElemRef.nativeElement.querySelectorAll('img')).filter(img => !img.complete).map(img => new Promise(resolve => { img.onload = img.onerror = resolve; }))).then(() => {
           this.isLoading = false;
+          this.scrollbarNeeded = this.readingSectionElemRef.nativeElement.scrollHeight > this.readingSectionElemRef.nativeElement.clientHeight;
 
           if (part !== undefined && part !== '') {
             this.scrollTo(part);
