@@ -1,6 +1,6 @@
 <div class="container-flex {{darkMode ? 'dark-mode' : ''}}">
     <div class="fixed-top" #stickyTop>
-        <!-- TODO: Skip to content button for screen readers-->
+        <a class="sr-only sr-only-focusable focus-visible" href="javascript:void(0);" (click)="moveFocus()">Skip to main content</a>
         <ng-container [ngTemplateOutlet]="actionBar"></ng-container>
         <app-drawer #commentDrawer="drawer" [isOpen]="drawerOpen" [style.--drawer-width]="'300px'" [options]="{topOffset: topOffset}" [style.--drawer-background-color]="backgroundColor" (drawerClosed)="closeDrawer()">
             <div header>

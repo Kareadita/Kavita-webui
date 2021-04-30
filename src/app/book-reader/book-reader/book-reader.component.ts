@@ -282,6 +282,13 @@ export class BookReaderComponent implements OnInit, OnDestroy {
       });
   }
 
+  moveFocus() {
+    const elems = document.getElementsByClassName('reading-section');
+    if (elems.length > 0) {
+      (elems[0] as HTMLDivElement).focus();
+    }
+  }
+
   loadPage(part?: string | undefined, scrollTop?: number | undefined) {
     this.isLoading = true;
     window.scroll({
