@@ -1,6 +1,5 @@
 import { Component, OnInit } from '@angular/core';
 import { take } from 'rxjs/operators';
-import { Chapter } from '../_models/chapter';
 import { InProgressChapter } from '../_models/in-progress-chapter';
 import { Library } from '../_models/library';
 import { Series } from '../_models/series';

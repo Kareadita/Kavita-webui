@@ -20,6 +20,7 @@ import { ConfirmService } from '../confirm.service';
 export class SeriesCardComponent implements OnInit, OnChanges {
   @Input() data: Series | undefined;
   @Input() libraryId = 0;
+  @Input() suppressLibraryLink = false;
   @Output() clicked = new EventEmitter<Series>();
   @Output() reload = new EventEmitter<boolean>();
 
