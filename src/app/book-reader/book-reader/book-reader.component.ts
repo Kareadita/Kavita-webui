@@ -289,6 +289,38 @@ export class BookReaderComponent implements OnInit, OnDestroy {
     }
   }
 
+  promptForPage() {
+    const question = 'There are ' + (this.maxPages - 1) + ' pages. What page do you want to go to?';
+    const goToPageNum = window.prompt(question, '');
+    if (goToPageNum === null || goToPageNum.trim().length === 0) { return null; }
+    return goToPageNum;
+  }
+
+  goToPage(pageNum?: number) {
+    let page = pageNum;
+    if (pageNum === null || pageNum === undefined) {
+      const goToPageNum = this.promptForPage();
+      if (goToPageNum === null) { return; }
+      page = parseInt(goToPageNum.trim(), 10);
+    }
+
+    if (page === undefined || this.pageNum === page) { return; }
+
+    if (page > this.maxPages) {
+      page = this.maxPages;
+    } else if (page < 0) {
+      page = 0;
+    }
+
+    if (!(page === 0 || page === this.maxPages - 1)) {
+      page -= 1;
+    }
+
+    this.pageNum = page;
+    this.loadPage();
+
+  }
+
   loadPage(part?: string | undefined, scrollTop?: number | undefined) {
     this.isLoading = true;
     window.scroll({
