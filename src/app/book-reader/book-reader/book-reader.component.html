@@ -48,6 +48,13 @@
                         <button (click)="toggleDarkMode(false)" class="btn btn-icon" aria-labelledby="darkmode"><i class="fa fa-sun" aria-hidden="true"></i></button>
                         <button (click)="toggleDarkMode(true)" class="btn btn-icon" aria-labelledby="darkmode"><i class="fa fa-moon" aria-hidden="true"></i></button>
                     </div>
+                    <div class="controls">
+                        <label id="tap-pagination">Tap Pagination&nbsp;<i class="fa fa-info-circle" aria-hidden="true" placement="top" [ngbTooltip]="tapPaginationTooltip" role="button" tabindex="0" aria-describedby="tap-pagination-help"></i></label>
+                        <ng-template #tapPaginationTooltip>The ability to click the sides of the page to page left and right</ng-template>
+                        <span class="sr-only" id="tap-pagination-help">The ability to click the sides of the page to page left and right</span>
+                        <button (click)="toggleClickToPaginate()" class="btn btn-icon" aria-labelledby="tap-pagination"><i class="fa fa-arrows-alt-h {{clickToPaginate ? 'icon-primary-color' : ''}}" aria-hidden="true"></i></button>
+                        <!-- <button (click)="showClickToPaginateVisualOverlay()" class="btn btn-icon" aria-labelledby="tap-pagination"><i class="fa fa-fill-drip  {{clickToPaginateVisualOverlay ? 'icon-primary-color' : ''}}" aria-hidden="true"></i></button> -->
+                    </div>
                     <div class="row no-gutters justify-content-between">
                         <button (click)="resetSettings()" class="btn btn-secondary col">Reset</button>
                         <button (click)="saveSettings()" class="btn btn-primary col" style="margin-left:10px;">Save</button>
@@ -79,6 +86,15 @@
                 </div>
             </div>
         </app-drawer>
+    </div>
+
+    <div class="overlay" *ngIf="clickToPaginate" >
+        <div class="left {{clickToPaginateVisualOverlay ? 'tint' : ''}}" [@fade]="clickToPaginateVisualOverlay" (click)="prevPage()">
+
+        </div>
+        <div class="right {{clickToPaginateVisualOverlay ? 'tint' : ''}}" [@fade]="clickToPaginateVisualOverlay" (click)="nextPage()">
+
+        </div>
     </div>
     
     <div #readingSection class="reading-section" [ngStyle]="{'padding-top': topOffset + 20 + 'px'}" [@isLoading]="isLoading ? true : false" (click)="handleReaderClick($event)">

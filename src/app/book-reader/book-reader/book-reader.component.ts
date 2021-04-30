@@ -46,7 +46,12 @@ const TOP_OFFSET = -50 * 1.5; // px the sticky header takes up
       state('false', style({opacity: 1})),
       state('true', style({opacity: 0})),
       transition('false <=> true', animate('200ms'))
-  ])
+    ]),
+    trigger('fade', [
+      state('true', style({opacity: 0})),
+      state('false', style({opacity: 0.4})),
+      transition('false <=> true', animate('4000ms'))
+    ])
   ]
 })
 export class BookReaderComponent implements OnInit, OnDestroy {
@@ -69,6 +74,10 @@ export class BookReaderComponent implements OnInit, OnDestroy {
   isLoading = true; 
   bookTitle: string = '';
   settingsForm: FormGroup = new FormGroup({});
+  clickToPaginate = false;
+  clickToPaginateVisualOverlay = false;
+  clickToPaginateVisualOverlayTimeout: any = undefined; // For animation
+  clickToPaginateVisualOverlayTimeout2: any = undefined; // For kicking off animation, giving enough time to render html
 
   page: SafeHtml | undefined = undefined; // This is the html we get from the server
   styles: SafeHtml | undefined = undefined; // This is the css we get from the server
@@ -163,6 +172,16 @@ export class BookReaderComponent implements OnInit, OnDestroy {
 
     const head = document.querySelector('head');
     this.renderer.removeChild(head, this.darkModeStyleElem);
+
+    if (this.clickToPaginateVisualOverlayTimeout !== undefined) {
+      clearTimeout(this.clickToPaginateVisualOverlayTimeout);
+      this.clickToPaginateVisualOverlayTimeout = undefined;
+    }
+    if (this.clickToPaginateVisualOverlayTimeout2 !== undefined) {
+      clearTimeout(this.clickToPaginateVisualOverlayTimeout2);
+      this.clickToPaginateVisualOverlayTimeout2 = undefined;
+    }
+
   }
 
   ngOnInit(): void {
@@ -535,6 +554,33 @@ export class BookReaderComponent implements OnInit, OnDestroy {
       top: element.getBoundingClientRect().top + window.pageYOffset + TOP_OFFSET,
       behavior: 'smooth' 
     });
+  }
+
+  toggleClickToPaginate() {
+    this.clickToPaginate = !this.clickToPaginate;
+
+    if (this.clickToPaginateVisualOverlayTimeout2 !== undefined) {
+      clearTimeout(this.clickToPaginateVisualOverlayTimeout2);
+      this.clickToPaginateVisualOverlayTimeout2 = undefined;
+    }
+    if (!this.clickToPaginate) { return; }
+
+    this.clickToPaginateVisualOverlayTimeout2 = setTimeout(() => {
+      this.showClickToPaginateVisualOverlay();
+    }, 200);
+  }
+
+  showClickToPaginateVisualOverlay() {
+    this.clickToPaginateVisualOverlay = true;
+
+    if (this.clickToPaginateVisualOverlay && this.clickToPaginateVisualOverlayTimeout !== undefined) {
+      clearTimeout(this.clickToPaginateVisualOverlayTimeout);
+      this.clickToPaginateVisualOverlayTimeout = undefined;
+    }
+    this.clickToPaginateVisualOverlayTimeout = setTimeout(() => {
+      this.clickToPaginateVisualOverlay = false;
+    }, 1000);
+
   }
 
 }
