@@ -6,7 +6,7 @@
     "start": "ng serve",
     "build": "ng build",
     "prod": "ng build --prod",
-    "explore": "ng build --stats-json && webpack-bundle-analyzer ../Kavita/API/wwwroot/stats.json",
+    "explore": "ng build --stats-json && webpack-bundle-analyzer ../kavita/API/wwwroot/stats.json",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
