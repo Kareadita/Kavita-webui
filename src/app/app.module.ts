@@ -60,7 +60,7 @@ import { SwiperModule } from 'swiper/angular';
     LazyLoadImageModule,
     SharedModule,
     CarouselModule,
-    SwiperModule,
+    //SwiperModule,
     ToastrModule.forRoot({
       positionClass: 'toast-bottom-right'
     }),

@@ -20,7 +20,8 @@
 /* Importing Bootstrap SCSS file. */
 @import '~bootstrap/scss/bootstrap';
 @import '~bootstrap/scss/mixins/_breakpoints.scss';
-@import '~swiper/swiper-bundle';
+
+@import '~swiper/swiper-bundle'; // TODO: Replace with just files we need
 
 
 
