@@ -21,7 +21,8 @@
 @import '~bootstrap/scss/bootstrap';
 @import '~bootstrap/scss/mixins/_breakpoints.scss';
 
-@import '~swiper/swiper-bundle'; // TODO: Replace with just files we need
+//@import '~swiper/swiper-bundle'; // TODO: Replace with just files we .not-phone-hidden
+@import '~swiper/swiper.scss';
 
 
 
