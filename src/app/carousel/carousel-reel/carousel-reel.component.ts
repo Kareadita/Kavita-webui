@@ -1,6 +1,5 @@
 import { Component, ContentChild, EventEmitter, Input, OnInit, Output, TemplateRef } from '@angular/core';
 import Swiper from 'swiper';
-import { A11yOptions } from 'swiper/types';
 
 @Component({
   selector: 'app-carousel-reel',
