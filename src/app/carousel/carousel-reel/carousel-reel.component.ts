@@ -21,6 +21,10 @@ export class CarouselReelComponent implements OnInit{
       slidesPerView: 1,
       spaceBetween: 10,
     },
+    30: {
+      slidesPerView: 2,
+      spaceBetween: 10,
+    },
     360: {
       slidesPerView: 3,
       spaceBetween: 10,
