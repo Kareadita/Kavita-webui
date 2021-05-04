@@ -244,6 +244,8 @@ export class BookReaderComponent implements OnInit, OnDestroy {
       this.toggleDrawer();
       event.stopPropagation();
       event.preventDefault(); 
+    } else if (event.key === KEY_CODES.G) {
+      this.goToPage();
     }
   }
 
