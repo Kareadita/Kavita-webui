@@ -112,6 +112,13 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
         this.splitForm = this.formBuilder.group({
           pageSplitOption: this.pageSplitOption + ''
         });
+        // On change of splitting, re-render the page if the page is already split
+        this.splitForm.valueChanges.subscribe(changes => {
+          const needsSplitting = this.canvasImage.width > this.canvasImage.height;
+          if (needsSplitting) {
+            this.loadPage();
+          }
+        });
         this.memberService.hasReadingProgress(this.libraryId).subscribe(progress => {
           if (!progress) {
             this.menuOpen = true;
@@ -183,6 +190,8 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
       this.closeReader();
     } else if (event.key === KEY_CODES.SPACE) {
       this.toggleMenu();
+    } else if (event.key === KEY_CODES.G) {
+      this.goToPage();
     }
   }
 
@@ -404,7 +413,7 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   promptForPage() {
-    const goToPageNum = window.prompt('What page would you like to go to?', '');
+    const goToPageNum = window.prompt('There are ' + this.maxPages + ' pages. What page would you like to go to?', '');
     if (goToPageNum === null || goToPageNum.trim().length === 0) { return null; }
     return goToPageNum;
   }
