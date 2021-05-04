@@ -17,6 +17,8 @@ import { ToastrService } from 'ngx-toastr';
 import { KEY_CODES } from '../shared/_services/utility.service';
 import { CircularArray } from '../shared/data-structures/circular-array';
 import { MemberService } from '../_services/member.service';
+import { Stack } from '../shared/data-structures/stack';
+import { Volume } from '../_models/volume';
 
 const PREFETCH_PAGES = 3;
 
@@ -72,6 +74,7 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
   private canvasImage = new Image();
 
   cachedImages!: CircularArray<HTMLImageElement>; // This is a circular array of size PREFETCH_PAGES + 2
+  continuousChaptersStack: Stack<number> = new Stack();
 
   // Temp hack: Override background color for reader and restore it onDestroy
   originalBodyColor: string | undefined;
@@ -97,6 +100,8 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
     this.libraryId = parseInt(libraryId, 10);
     this.seriesId = parseInt(seriesId, 10);
     this.chapterId = parseInt(chapterId, 10);
+
+    this.continuousChaptersStack.push(this.chapterId);
 
     this.setOverrideStyles();
 
@@ -124,11 +129,10 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
             this.menuOpen = true;
             this.toastr.info('Tap the image at any time to open the menu. You can configure different settings or go to page by clicking progress bar. Tap sides of image move to next/prev page.');
           }
-        })
+        });
       }
     });
 
-    
 
     this.init();
   }
@@ -315,7 +319,14 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
 
       // Move to next volume/chapter automatically
       // Get next chapterId, set it, call init()
-      //this.init();
+      this.readerService.getNextChapter(this.seriesId, this.volumeId, this.chapterId).subscribe(chapterId => {
+        if (chapterId >= 0) {
+          this.chapterId = chapterId;
+          // TODO: Update windows location but don't refresh
+          this.continuousChaptersStack.push(chapterId);
+          this.init();
+        }
+      });
       return;
     }
 
@@ -337,6 +348,26 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
     const notInSplit = this.currentImageSplitPart !== (this.isSplitLeftToRight() ? SPLIT_PAGE_PART.RIGHT_PART : SPLIT_PAGE_PART.LEFT_PART);
 
     if ((this.pageNum - 1 < 0 && notInSplit) || this.isLoading) {
+
+      if (this.isLoading) { return; }
+
+      // Move to next volume/chapter automatically
+      this.continuousChaptersStack.pop();
+      const prevChapter = this.continuousChaptersStack.peek();
+      if (prevChapter != this.chapterId) {
+        if (prevChapter !== undefined) {
+          this.chapterId = prevChapter;
+          this.init();
+          return;
+        }
+      }
+      this.readerService.getPrevChapter(this.seriesId, this.volumeId, this.chapterId).subscribe(chapterId => {
+        if (chapterId >= 0) {
+          this.chapterId = chapterId;
+          this.continuousChaptersStack.push(chapterId);
+          this.init();
+        }
+      });  
       return;
     }
 
