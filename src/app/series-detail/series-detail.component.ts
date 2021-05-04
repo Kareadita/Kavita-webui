@@ -230,9 +230,9 @@ export class SeriesDetailComponent implements OnInit {
     for (let v of this.volumes) {
       if (v.number === 0) {
         continue;
-      } else if (v.pagesRead >= v.pages - 1) {
+      } else if (v.pagesRead >= v.pages) {
         continue;
-      } else if (v.pagesRead < v.pages - 1) {
+      } else if (v.pagesRead < v.pages) {
         this.currentlyReadingVolume = v;
         break;
       }
