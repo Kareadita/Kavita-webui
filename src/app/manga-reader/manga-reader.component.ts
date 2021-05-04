@@ -130,6 +130,41 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
 
     
 
+    this.init();
+  }
+
+  ngAfterViewInit() {
+    if (!this.canvas) {
+      return;
+    }
+    this.ctx = this.canvas.nativeElement.getContext('2d', { alpha: false });
+    this.canvasImage.onload = () => this.renderPage();
+  }
+
+  ngOnDestroy() {
+    const bodyNode = document.querySelector('body');
+    if (bodyNode !== undefined && bodyNode !== null && this.originalBodyColor !== undefined) {
+      bodyNode.style.background = this.originalBodyColor;
+    }
+    this.navService.showNavBar();
+  }
+
+  @HostListener('window:keyup', ['$event'])
+  handleKeyPress(event: KeyboardEvent) {
+    if (event.key === KEY_CODES.RIGHT_ARROW) {
+      this.readingDirection === ReadingDirection.LeftToRight ? this.nextPage() : this.prevPage();
+    } else if (event.key === KEY_CODES.LEFT_ARROW) {
+      this.readingDirection === ReadingDirection.LeftToRight ? this.prevPage() : this.nextPage();
+    } else if (event.key === KEY_CODES.ESC_KEY) {
+      this.closeReader();
+    } else if (event.key === KEY_CODES.SPACE) {
+      this.toggleMenu();
+    } else if (event.key === KEY_CODES.G) {
+      this.goToPage();
+    }
+  }
+
+  init() {
     forkJoin({
       chapter: this.seriesService.getChapter(this.chapterId),
       pageNum: this.readerService.getBookmark(this.chapterId),
@@ -162,37 +197,6 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
         this.closeReader();
       }, 200);
     });
-  }
-
-  ngAfterViewInit() {
-    if (!this.canvas) {
-      return;
-    }
-    this.ctx = this.canvas.nativeElement.getContext('2d', { alpha: false });
-    this.canvasImage.onload = () => this.renderPage();
-  }
-
-  ngOnDestroy() {
-    const bodyNode = document.querySelector('body');
-    if (bodyNode !== undefined && bodyNode !== null && this.originalBodyColor !== undefined) {
-      bodyNode.style.background = this.originalBodyColor;
-    }
-    this.navService.showNavBar();
-  }
-
-  @HostListener('window:keyup', ['$event'])
-  handleKeyPress(event: KeyboardEvent) {
-    if (event.key === KEY_CODES.RIGHT_ARROW) {
-      this.readingDirection === ReadingDirection.LeftToRight ? this.nextPage() : this.prevPage();
-    } else if (event.key === KEY_CODES.LEFT_ARROW) {
-      this.readingDirection === ReadingDirection.LeftToRight ? this.prevPage() : this.nextPage();
-    } else if (event.key === KEY_CODES.ESC_KEY) {
-      this.closeReader();
-    } else if (event.key === KEY_CODES.SPACE) {
-      this.toggleMenu();
-    } else if (event.key === KEY_CODES.G) {
-      this.goToPage();
-    }
   }
 
   closeReader() {
@@ -306,6 +310,12 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
     const notInSplit = this.currentImageSplitPart !== (this.isSplitLeftToRight() ? SPLIT_PAGE_PART.LEFT_PART : SPLIT_PAGE_PART.RIGHT_PART);
 
     if ((this.pageNum + 1 >= this.maxPages && notInSplit) || this.isLoading) {
+
+      if (this.isLoading) { return; }
+
+      // Move to next volume/chapter automatically
+      // Get next chapterId, set it, call init()
+      //this.init();
       return;
     }
 
