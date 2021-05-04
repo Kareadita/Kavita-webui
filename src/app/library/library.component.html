@@ -16,6 +16,7 @@
     </div>
 
     <div class="">
+        <!-- TODO: Refactor this into a saved filter query so that when i open the section, we can go to a predefined library view -->
         <app-carousel-reel [items]="inProgress" title="In Progress" (sectionClick)="handleSectionClick($event)">
             <ng-template #carouselItem let-item let-position="idx">
                 <app-series-card [data]="item" [libraryId]="item.libraryId" (reload)="reloadSeries()"></app-series-card>

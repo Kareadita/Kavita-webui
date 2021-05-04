@@ -26,6 +26,7 @@ import { LazyLoadImageModule} from 'ng-lazyload-image';
 import { CarouselModule } from './carousel/carousel.module';
 import { NgxSliderModule } from '@angular-slider/ngx-slider';
 import { SwiperModule } from 'swiper/angular';
+import { ComplexFilterComponent } from './complex-filter/complex-filter.component';
 
 
 
@@ -40,7 +41,7 @@ import { SwiperModule } from 'swiper/angular';
     LibraryDetailComponent, // Move into MangaModule
     SeriesDetailComponent, // Move into MangaModule
     NotConnectedComponent, // Move into ExtrasModule
-    UserPreferencesComponent, EditSeriesModalComponent, ReviewSeriesModalComponent, // Move into SettingsModule
+    UserPreferencesComponent, EditSeriesModalComponent, ReviewSeriesModalComponent, ComplexFilterComponent, // Move into SettingsModule
   ],
   imports: [
     HttpClientModule,

@@ -1,12 +1,37 @@
 <div class="container-fluid" style="padding-top: 10px">
-    <div class="d-flex justify-content-center" *ngIf="pagination && series.length !== 0">
-        <ngb-pagination
-            [(page)]="pageNumber"
-            [pageSize]="pagination.itemsPerPage"
-            (pageChange)="onPageChange($event)"
-            [rotate]="false" [ellipses]="false" [boundaryLinks]="true"
-            [collectionSize]="pagination.totalItems"></ngb-pagination>
+    <div class="row no-gutters">
+            <app-card-actionables [actions]="actions" [labelBy]="libraryName" iconClass="fa-ellipsis-v" (actionHandler)="performAction($event)"></app-card-actionables>
+            <h2>{{libraryName}}</h2>
+            <button class="btn btn-icon {{showFilter ? 'icon--active' : ''}}" style="margin-bottom: 10px" (click)="showFilter = !showFilter"><i aria-hidden="true" class="fa fa-filter"></i><span class="phone-hidden">&nbsp;Filter</span></button>
+            
+            <div ngbDropdown display="dynamic" placement="bottom-left" dropdown>
+                <button class="btn" ngbDropdownToggle>Sort By</button>
+                <div ngbDropdownMenu class="row no-gutters justify-content-between">
+                    <button ngbDropdownItem style="padding: 5px 5px" *ngFor="let sortOption of sortingOptions"> 
+                        {{sortOption.name}}
+                        <span class="float-right" *ngIf="sortOption.active"><i class="fa fa-long-arrow-alt-up" aria-hidden="true"></i></span>      
+                    </button>
+                </div>
+            </div>
+
+            <span class="badge badge-pill badge-light" *ngIf="pagination">
+                {{pagination.totalItems}}
+            </span>
+
+            <div class="d-flex justify-content-center mx-auto" *ngIf="pagination && series.length !== 0">
+                <ngb-pagination
+                    [(page)]="pageNumber"
+                    [pageSize]="pagination.itemsPerPage"
+                    (pageChange)="onPageChange($event)"
+                    [rotate]="false" [ellipses]="false" [boundaryLinks]="true"
+                    [collectionSize]="pagination.totalItems"></ngb-pagination>
+            </div>
     </div>
+    <div class="row filter-bar">
+        
+        <app-complex-filter *ngIf="showFilter"></app-complex-filter>
+    </div>
+    
 
     <div class="row no-gutters">
         <div class="col-auto" *ngFor="let manga of series; trackBy:trackByIdentity">
