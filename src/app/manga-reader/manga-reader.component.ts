@@ -18,7 +18,6 @@ import { KEY_CODES } from '../shared/_services/utility.service';
 import { CircularArray } from '../shared/data-structures/circular-array';
 import { MemberService } from '../_services/member.service';
 import { Stack } from '../shared/data-structures/stack';
-import { Volume } from '../_models/volume';
 
 const PREFETCH_PAGES = 3;
 
@@ -318,14 +317,8 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
       if (this.isLoading) { return; }
 
       // Move to next volume/chapter automatically
-      // Get next chapterId, set it, call init()
       this.readerService.getNextChapter(this.seriesId, this.volumeId, this.chapterId).subscribe(chapterId => {
-        if (chapterId >= 0) {
-          this.chapterId = chapterId;
-          // TODO: Update windows location but don't refresh
-          this.continuousChaptersStack.push(chapterId);
-          this.init();
-        }
+        this.loadChapter(chapterId);
       });
       return;
     }
@@ -362,11 +355,7 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
         }
       }
       this.readerService.getPrevChapter(this.seriesId, this.volumeId, this.chapterId).subscribe(chapterId => {
-        if (chapterId >= 0) {
-          this.chapterId = chapterId;
-          this.continuousChaptersStack.push(chapterId);
-          this.init();
-        }
+        this.loadChapter(chapterId);
       });  
       return;
     }
@@ -378,6 +367,14 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
     this.loadPage();
+  }
+
+  loadChapter(chapterId: number) {
+    if (chapterId >= 0) {
+      this.chapterId = chapterId;
+      this.continuousChaptersStack.push(chapterId);
+      this.init();
+    }
   }
 
   renderPage() {

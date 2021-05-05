@@ -230,33 +230,6 @@ export class SeriesDetailComponent implements OnInit {
     const [currentVolume, currentChapter] = this.readerService.getCurrentVolumeAndChapter(this.volumes);
     this.currentlyReadingVolume = currentVolume;
     this.currentlyReadingChapter = currentChapter;
-
-
-    // for (let v of this.volumes) {
-    //   if (v.number === 0) {
-    //     continue;
-    //   } else if (v.pagesRead >= v.pages) {
-    //     continue;
-    //   } else if (v.pagesRead < v.pages) {
-    //     this.currentlyReadingVolume = v;
-    //     break;
-    //   }
-    // }
-
-    // if (this.currentlyReadingVolume === undefined) {
-    //   // We need to check against chapters
-    //   this.chapters.forEach(c => {
-    //     if (c.pagesRead >= c.pages) {
-    //       return;
-    //     } else if (this.currentlyReadingChapter === undefined) {
-    //       this.currentlyReadingChapter = c;
-    //     }
-    //   });
-    //   if (this.currentlyReadingChapter === undefined) {
-    //     // Default to first chapter
-    //     this.currentlyReadingChapter = this.chapters[0];
-    //   }
-    // }
   }
 
   markAsRead(vol: Volume) {
