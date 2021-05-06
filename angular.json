@@ -18,7 +18,7 @@
       "prefix": "app",
       "architect": {
         "build": {
-          "builder": "@angular-builders/custom-webpack:browser",
+          "builder": "@angular-devkit/build-angular:browser",
           "options": {
             "outputPath": "../Kavita/API/wwwroot",
             "index": "src/index.html",
@@ -26,9 +26,6 @@
             "polyfills": "src/polyfills.ts",
             "tsConfig": "tsconfig.app.json",
             "aot": true,
-            "customWebpackConfig": {
-              "path": "./webpack.config.js"
-            },
             "assets": [
               "src/favicon.ico",
               "src/assets"
