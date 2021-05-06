@@ -226,18 +226,13 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
                   || document.body.clientHeight;
 
         const ratio = windowWidth / windowHeight;
-        console.log('Ratio: ', ratio);
-        // Essentially I need the first image to load so i can check against it's dimensions
-        if (windowHeight > windowWidth || ratio > 0.7) {
-          console.log('[1] Mapping to ', FITTING_OPTION.WIDTH);
+        if (windowHeight > windowWidth) {
           return FITTING_OPTION.WIDTH;
         }
 
-        if (ratio > 0.6) {
-          console.log('Mapping to ', FITTING_OPTION.HEIGHT);
+        if (windowWidth >= windowHeight || ratio > 1.0) {
           return FITTING_OPTION.HEIGHT;
         }
-        console.log('[2] Mapping to ', FITTING_OPTION.WIDTH);
         return FITTING_OPTION.WIDTH;
       }
       case (ScalingOption.FitToHeight):
