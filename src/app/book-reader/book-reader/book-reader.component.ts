@@ -133,6 +133,8 @@ export class BookReaderComponent implements OnInit, OnDestroy {
     private renderer: Renderer2, private navService: NavService, private toastr: ToastrService, 
     private domSanitizer: DomSanitizer, private bookService: BookService, private memberService: MemberService) {
       this.navService.hideNavBar();
+
+
       this.darkModeStyleElem = this.renderer.createElement('style');
       this.darkModeStyleElem.innerHTML = this.darkModeStyles;
       this.fontFamilies = this.bookService.getFontFamilies();
@@ -153,11 +155,18 @@ export class BookReaderComponent implements OnInit, OnDestroy {
           if (this.user.preferences.bookReaderMargin === undefined) {
             this.user.preferences.bookReaderMargin = 0;
           }
+          this.clickToPaginate = this.user.preferences.bookReaderTapToPaginate;
+          
           this.settingsForm.addControl('bookReaderFontFamily', new FormControl(user.preferences.bookReaderFontFamily, []));
   
           this.settingsForm.get('bookReaderFontFamily')!.valueChanges.subscribe(changes => {
             this.updateFontFamily(changes);
           });
+        }
+
+        const bodyNode = document.querySelector('body');
+        if (bodyNode !== undefined && bodyNode !== null) {
+          this.originalBodyColor = bodyNode.style.background;
         }
         this.resetSettings();
       });
@@ -219,8 +228,9 @@ export class BookReaderComponent implements OnInit, OnDestroy {
       this.pageNum = results.pageNum;
       this.bookTitle = results.info;
 
-      if (this.pageNum > this.maxPages) {
-        this.pageNum = this.maxPages;
+      if (this.pageNum >= this.maxPages) {
+        this.pageNum = this.maxPages - 1;
+        this.readerService.bookmark(this.seriesId, this.volumeId, this.chapterId, this.pageNum).subscribe(() => {/* No operation */});
       }
 
       this.loadPage();
@@ -244,6 +254,8 @@ export class BookReaderComponent implements OnInit, OnDestroy {
       this.toggleDrawer();
       event.stopPropagation();
       event.preventDefault(); 
+    } else if (event.key === KEY_CODES.G) {
+      this.goToPage();
     }
   }
 
@@ -343,7 +355,7 @@ export class BookReaderComponent implements OnInit, OnDestroy {
   loadPage(part?: string | undefined, scrollTop?: number | undefined) {
     this.isLoading = true;
 
-    this.readerService.bookmark(this.seriesId, this.volumeId, this.chapterId, this.pageNum).subscribe(() => {});
+    this.readerService.bookmark(this.seriesId, this.volumeId, this.chapterId, this.pageNum).subscribe(() => {/* No operation */});
 
     this.bookService.getBookPage(this.chapterId, this.pageNum).subscribe(content => {
       this.page = this.domSanitizer.bypassSecurityTrustHtml(content);
@@ -490,7 +502,7 @@ export class BookReaderComponent implements OnInit, OnDestroy {
   setOverrideStyles() {
     const bodyNode = document.querySelector('body');
     if (bodyNode !== undefined && bodyNode !== null) {
-      this.originalBodyColor = bodyNode.style.background;
+      //this.originalBodyColor = bodyNode.style.background;
       bodyNode.style.background = this.getDarkModeBackgroundColor();
     }
     this.backgroundColor = this.getDarkModeBackgroundColor();
@@ -513,10 +525,11 @@ export class BookReaderComponent implements OnInit, OnDestroy {
       bookReaderFontFamily: modelSettings.bookReaderFontFamily,
       bookReaderFontSize: parseInt(this.pageStyles['font-size'].substr(0, this.pageStyles['font-size'].length - 1), 10),
       bookReaderLineSpacing: parseInt(this.pageStyles['line-height'].replace('!important', '').trim(), 10),
-      bookReaderMargin: parseInt(this.pageStyles['margin-left'].replace('%', '').replace('!important', '').trim(), 10)
+      bookReaderMargin: parseInt(this.pageStyles['margin-left'].replace('%', '').replace('!important', '').trim(), 10),
+      bookReaderTapToPaginate: this.user.preferences.bookReaderTapToPaginate
     };
     this.accountService.updatePreferences(data).subscribe((updatedPrefs) => {
-      this.toastr.success('Server settings updated');
+      this.toastr.success('User settings updated');
       if (this.user) {
         this.user.preferences = updatedPrefs;
       }
