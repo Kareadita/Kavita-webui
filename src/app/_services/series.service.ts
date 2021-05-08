@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
+import { FilterQuery } from '../complex-filter/_models/filter-query';
 import { Chapter } from '../_models/chapter';
 import { InProgressChapter } from '../_models/in-progress-chapter';
 import { PaginatedResult } from '../_models/pagination';
@@ -99,4 +100,5 @@ export class SeriesService {
   refreshMetadata(series: Series) {
     return this.httpClient.post(this.baseUrl + 'series/refresh-metadata', {libraryId: series.libraryId, seriesId: series.id});
   }
+
 }

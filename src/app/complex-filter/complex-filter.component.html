@@ -3,24 +3,26 @@
         <div *ngIf="false">
             <button class="btn btn-icon"><i aria-hidden="true" class="fa fa-minus-circle"></i><span class="sr-only">Remove Row</span></button>
         </div>
-        <div class="form-group">
-            <!-- <label for="filter-primary-option">Font Family</label> -->
-            <select class="form-control" id="filter-primary" formControlName="primaryOptions">
-                <option *ngFor="let opt of primaryOptions" [value]="opt">{{opt | titlecase}}</option>
-            </select>
-        </div>
-        <div class="form-group">
-            <!-- <label for="filter-primary-option">Font Family</label> -->
-            <select class="form-control" id="filter-secondary" formControlName="secondaryOptions">
-                <option *ngFor="let opt of secondaryOptions" [value]="opt">{{opt | titlecase}}</option>
-            </select>
-        </div>
-        <div class="form-group">
-            <!-- <label for="filter-primary-option">Font Family</label> -->
-            <input class="form-control" formControlName="query" type="text" />
-        </div>
-        <div class="compound-buttons">
-            <button class="btn btn-icon"><i aria-hidden="true" class="fa fa-plus-circle"></i><span class="sr-only">AND</span></button>
+        <div *ngFor="let searchQuery of searchQueries.controls">
+            <div class="form-group">
+                <!-- <label for="filter-primary-option">Font Family</label> -->
+                <select class="form-control" id="filter-primary" [formControl]="searchQuery.get('key')">
+                    <option *ngFor="let opt of primaryOptions" [value]="opt">{{opt | titlecase}}</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <!-- <label for="filter-primary-option">Font Family</label> -->
+                <select class="form-control" id="filter-secondary" [formControl]="searchQuery.conditional">
+                    <option *ngFor="let opt of secondaryOptions" [value]="opt.value">{{opt.label | titlecase}}</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <!-- <label for="filter-primary-option">Font Family</label> -->
+                <input class="form-control" [formControl]="searchQuery.value" type="text" />
+            </div>
+            <div class="compound-buttons">
+                <button class="btn btn-icon" (click)="addQuery()"><i aria-hidden="true" class="fa fa-plus-circle"></i><span class="sr-only">AND</span></button>
+            </div>
         </div>
     </div>
     <div class="row no-gutters">

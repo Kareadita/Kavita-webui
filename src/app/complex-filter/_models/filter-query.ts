@@ -36,17 +36,26 @@ export interface SearchOptionsResponse {
     optionsSearchEval: OptionsSearchEval[];
 }
 
+export interface WhereClause {
+    conditional: string;
+    key: string;
+    value: string;
+}
+
 
 
 export interface FilterQuery {
 
-    keyCriterion: FilterCriterion;
-    comparisonCriterion: FilterCriterion;
-    value: string | number;
+    // keyCriterion: FilterCriterion;
+    // comparisonCriterion: FilterCriterion;
+    // value: string | number;
 
-    queryCriteria: OptionsSearchCriteria;
-    optionsSearchEval: OptionsSearchEval;
-    query: string | Date;
-    queryConjuction: QueryConjunction;
+    //queryCriteria: OptionsSearchCriteria;
+    //optionsSearchEval: OptionsSearchEval;
+    //query: string | Date;
+    //queryConjuction: QueryConjunction;
+    whereClauses: Array<WhereClause>;
+    sortKey?: string;
+    sortOrder: number; // todo: enum -1 | 0 | 1
     limit: number;
 }
