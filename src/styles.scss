@@ -42,6 +42,50 @@ button:disabled {
   cursor: not-allowed;
 }
 
+// @media (prefers-color-scheme: dark) {
+
+// }
+$dark-bg-color: #343a40;
+$dark-text-color: #efefef;;
+.bg-dark {
+  color: $dark-text-color;
+
+  h2 {
+      color: $dark-text-color;
+  }
+
+  a, .btn-link {
+    color: rgb(88, 166, 255);
+  }
+
+  .navbar {
+    background-color: rgb(22, 27, 34);
+  }
+
+  .rating-star {
+    color: white;
+  }
+
+  .modal-content {
+    color: $dark-text-color;
+    background-color: $dark-bg-color;
+  }
+
+  input, textarea {
+    color: $dark-text-color;
+    background-color: $dark-bg-color;
+  }
+
+  .read-more-link {
+    color: $dark-text-color !important;
+  }
+
+  .card { 
+    background-color: $dark-bg-color;
+    color: $dark-text-color;
+  }
+}
+
 
 
 // TODO: Move the Plex theme into a separate file and copy how  https://bootswatch.com/darkly/ did it

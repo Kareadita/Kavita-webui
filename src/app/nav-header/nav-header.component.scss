@@ -1,6 +1,13 @@
 @import '~bootstrap/scss/mixins/_breakpoints.scss';
 
 $primary-color: white;
+$bg-color: #343a40;
+
+.navbar {
+    background-color: $bg-color;
+}
+
+
 
 .focus-visible:focus {
     visibility: visible;
