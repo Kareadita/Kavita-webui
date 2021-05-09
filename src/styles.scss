@@ -27,13 +27,15 @@ img.ng-lazyloaded {
 @import './assets/themes/dark.scss';
 
 // Global Styles
-button:disabled {
+button:disabled, .form-control:disabled, .form-control[readonly], .disabled, :disabled {
   cursor: not-allowed;
 }
 
-label {
+label, select {
   cursor: pointer;
 }
+
+
 
 html, body { height: 100%; }
 body {
@@ -41,9 +43,9 @@ body {
   font-family: "EBGaramond", "Helvetica Neue", sans-serif;
 }
 
-.disabled, :disabled {
-  cursor: not-allowed !important;
-}
+// .disabled, :disabled {
+//   cursor: not-allowed !important;
+// }
 
 
 

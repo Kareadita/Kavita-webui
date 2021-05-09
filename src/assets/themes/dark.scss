@@ -1,8 +1,14 @@
 // All dark style overrides should live here
 
 $dark-bg-color: #343a40;
-$dark-text-color: #efefef;;
-$dark-hover-color: rgba(239, 239, 239, 0.18);
+$dark-text-color: #efefef;
+$dark-hover-color: #007bff; // rgba(239, 239, 239, 0.18), icon color: #4ac694
+$dark-form-background: rgba(1, 4, 9, 0.5);
+$dark-form-placeholder: #efefef;
+$dark-link-color: rgb(88, 166, 255);
+$dark-icon-color: white;
+$dark-form-border: rgba(239, 239, 239, 0.125);
+
 .bg-dark {
   color: $dark-text-color;
 
@@ -11,11 +17,11 @@ $dark-hover-color: rgba(239, 239, 239, 0.18);
   }
 
   a, .btn-link {
-    color: rgb(88, 166, 255);
+    color: $dark-link-color;
   }
 
-  .rating-star {
-    color: white;
+  .rating-star, .close, i.fa {
+    color: $dark-icon-color;
   }
 
   .modal-content {
@@ -23,22 +29,37 @@ $dark-hover-color: rgba(239, 239, 239, 0.18);
     background-color: $dark-bg-color;
   }
 
-  input, textarea, .autocomplete-container .input-container input {
+  input:not(readonly), textarea, .autocomplete-container .input-container input, .form-control {
     color: $dark-text-color;
     background-color: $dark-bg-color;
   }
 
-//   .autocomplete-container .suggestions-container .complete-selected, .autocomplete-container .suggestions-container ul li:hover {
-//     background-color: $dark-hover-color;
-//     color: $dark-text-color;
-//   }
+  input::placeholder {
+    color: $dark-form-placeholder;
+  }
+
   .autocomplete-container .input-container .x {
     color: $dark-text-color;
   }
-  .autocomplete-container .suggestions-container, .dropdown-menu {
+  .autocomplete-container .suggestions-container, .dropdown-menu, .list-group-item {
     color: $dark-text-color;
     background-color: $dark-bg-color;
+    border-color: $dark-form-border;
   }
+
+  .nav-tabs {
+      border-color: $dark-form-border;
+  }
+
+  .nav-tabs .nav-link.active, .nav-tabs .nav-item.show .nav-link {
+      border-color: $dark-form-border;
+      color: $dark-text-color;
+      background-color: $dark-form-background;
+  }
+  .nav-tabs .nav-link:hover, .nav-tabs .nav-link:focus {
+    border-color: $dark-hover-color;
+  }
+  
 
   .dropdown-menu {
     .dropdown-item:hover, .dropdown-item:focus {
@@ -57,7 +78,7 @@ $dark-hover-color: rgba(239, 239, 239, 0.18);
   .card { 
     background-color: $dark-bg-color;
     color: $dark-text-color;
-    border: 1px solid rgba(239, 239, 239, 0.125); //#343a40
+    border-color: $dark-form-border; //#343a40
   }
 
   .section-title {
