@@ -31,7 +31,7 @@ $dark-form-readonly: #434648;
     background-color: $dark-bg-color;
   }
 
-  input:not(readonly), textarea, .autocomplete-container .input-container input, .form-control {
+  input:not(read-only), textarea, .autocomplete-container .input-container input, .form-control {
     color: $dark-text-color;
     background-color: $dark-bg-color;
   }
@@ -50,6 +50,20 @@ $dark-form-readonly: #434648;
   .autocomplete-container .suggestions-container, .dropdown-menu, .list-group-item {
     color: $dark-text-color;
     background-color: $dark-bg-color;
+    border-color: $dark-form-border;
+  }
+
+  .ngx-slider .ngx-slider-bubble {
+      color: $dark-text-color !important;
+  }
+
+  .page-link {
+      background-color: $dark-form-background;
+      border-color: $dark-form-border;
+  }
+
+  .page-item.disabled .page-link {
+    background-color: $dark-form-background;
     border-color: $dark-form-border;
   }
 
