@@ -1,0 +1,70 @@
+// All dark style overrides should live here
+
+$dark-bg-color: #343a40;
+$dark-text-color: #efefef;;
+$dark-hover-color: rgba(239, 239, 239, 0.18);
+.bg-dark {
+  color: $dark-text-color;
+
+  h2, h4 {
+      color: $dark-text-color;
+  }
+
+  a, .btn-link {
+    color: rgb(88, 166, 255);
+  }
+
+  .rating-star {
+    color: white;
+  }
+
+  .modal-content {
+    color: $dark-text-color;
+    background-color: $dark-bg-color;
+  }
+
+  input, textarea, .autocomplete-container .input-container input {
+    color: $dark-text-color;
+    background-color: $dark-bg-color;
+  }
+
+//   .autocomplete-container .suggestions-container .complete-selected, .autocomplete-container .suggestions-container ul li:hover {
+//     background-color: $dark-hover-color;
+//     color: $dark-text-color;
+//   }
+  .autocomplete-container .input-container .x {
+    color: $dark-text-color;
+  }
+  .autocomplete-container .suggestions-container, .dropdown-menu {
+    color: $dark-text-color;
+    background-color: $dark-bg-color;
+  }
+
+  .dropdown-menu {
+    .dropdown-item:hover, .dropdown-item:focus {
+        color: $dark-text-color;
+        background-color: $dark-hover-color;
+    }
+    .dropdown-item {
+        color: $dark-text-color;
+    }
+  }
+
+  .read-more-link {
+    color: $dark-text-color !important;
+  }
+
+  .card { 
+    background-color: $dark-bg-color;
+    color: $dark-text-color;
+    border: 1px solid rgba(239, 239, 239, 0.125); //#343a40
+  }
+
+  .section-title {
+    color: $dark-text-color;
+  }
+
+  .error-banner, .dropdown-toggle {
+    color: #efefef;
+  }
+}

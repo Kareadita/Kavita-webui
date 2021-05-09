@@ -22,7 +22,7 @@
     }
     
 }
-
+// These are needed due to nested css within another component
 ::ng-deep .bg-dark {
     .section-title {
         color: #efefef !important;

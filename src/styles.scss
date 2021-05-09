@@ -11,22 +11,6 @@
   src: url(assets/fonts/EBGarmond/EBGaramond-VariableFont_wght.ttf) format("truetype");
 }
 
-.disabled, :disabled {
-  cursor: not-allowed !important;
-}
-
-
-@include media-breakpoint-down(xs, (xs: 0, sm: 576px, md: 768px, lg: 992px, xl: 1200px)) {
-    .phone-hidden {
-      display: none;
-    }
-}
-
-@include media-breakpoint-up(sm, (xs: 0, sm: 576px, md: 768px, lg: 992px, xl: 1200px)) {
-    .not-phone-hidden {
-      display: none;
-    }
-}
 
 // Custom animation for ng-lazyload-image
 img.ng-lazyloaded {
@@ -37,60 +21,41 @@ img.ng-lazyloaded {
   to   { opacity: 1; }
 }
 
+
+
+
+@import './assets/themes/dark.scss';
+
 // Global Styles
 button:disabled {
   cursor: not-allowed;
 }
 
-// @media (prefers-color-scheme: dark) {
+label {
+  cursor: pointer;
+}
 
-// }
-$dark-bg-color: #343a40;
-$dark-text-color: #efefef;;
-.bg-dark {
-  color: $dark-text-color;
+html, body { height: 100%; }
+body {
+  margin: 0; 
+  font-family: "EBGaramond", "Helvetica Neue", sans-serif;
+}
 
-  h2 {
-      color: $dark-text-color;
-  }
-
-  a, .btn-link {
-    color: rgb(88, 166, 255);
-  }
-
-  .navbar {
-    background-color: rgb(22, 27, 34);
-  }
-
-  .rating-star {
-    color: white;
-  }
-
-  .modal-content {
-    color: $dark-text-color;
-    background-color: $dark-bg-color;
-  }
-
-  input, textarea {
-    color: $dark-text-color;
-    background-color: $dark-bg-color;
-  }
-
-  .read-more-link {
-    color: $dark-text-color !important;
-  }
-
-  .card { 
-    background-color: $dark-bg-color;
-    color: $dark-text-color;
-  }
+.disabled, :disabled {
+  cursor: not-allowed !important;
 }
 
 
 
-// TODO: Move the Plex theme into a separate file and copy how  https://bootswatch.com/darkly/ did it
-html, body { height: 100%; }
-body {
-  margin: 0; 
-  font-family: "EBGaramond", Roboto, "Helvetica Neue", sans-serif;
+// Utiliities
+@include media-breakpoint-down(xs, (xs: 0, sm: 576px, md: 768px, lg: 992px, xl: 1200px)) {
+  .phone-hidden {
+    display: none;
+  }
+}
+
+@include media-breakpoint-up(sm, (xs: 0, sm: 576px, md: 768px, lg: 992px, xl: 1200px)) {
+  .not-phone-hidden {
+    display: none;
+  }
 }
