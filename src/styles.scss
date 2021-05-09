@@ -1,15 +1,21 @@
 /* Importing Bootstrap SCSS file. */
+
+$theme-colors: (
+  "primary": #4ac694,
+  "danger": #ff4136
+);
+
+
 @import '~bootstrap/scss/bootstrap';
 @import '~bootstrap/scss/mixins/_breakpoints.scss';
 
 @import '~swiper/swiper.scss';
 
-
-
 @font-face {
   font-family: "EBGarmond";
   src: url(assets/fonts/EBGarmond/EBGaramond-VariableFont_wght.ttf) format("truetype");
 }
+
 
 
 // Custom animation for ng-lazyload-image
@@ -33,6 +39,10 @@ button:disabled, .form-control:disabled, .form-control[readonly], .disabled, :di
 
 label, select {
   cursor: pointer;
+}
+
+.btn-primary {
+  color: white;
 }
 
 

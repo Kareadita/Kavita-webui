@@ -2,12 +2,13 @@
 
 $dark-bg-color: #343a40;
 $dark-text-color: #efefef;
-$dark-hover-color: #007bff; // rgba(239, 239, 239, 0.18), icon color: #4ac694
+$dark-hover-color: #4ac694; // rgba(239, 239, 239, 0.18), icon color: #4ac694,  blue #007bff
 $dark-form-background: rgba(1, 4, 9, 0.5);
 $dark-form-placeholder: #efefef;
 $dark-link-color: rgb(88, 166, 255);
 $dark-icon-color: white;
 $dark-form-border: rgba(239, 239, 239, 0.125);
+$dark-form-readonly: #434648;
 
 .bg-dark {
   color: $dark-text-color;
@@ -17,7 +18,8 @@ $dark-form-border: rgba(239, 239, 239, 0.125);
   }
 
   a, .btn-link {
-    color: $dark-link-color;
+    //color: $dark-link-color;
+    color: #4ac694;
   }
 
   .rating-star, .close, i.fa {
@@ -32,6 +34,10 @@ $dark-form-border: rgba(239, 239, 239, 0.125);
   input:not(readonly), textarea, .autocomplete-container .input-container input, .form-control {
     color: $dark-text-color;
     background-color: $dark-bg-color;
+  }
+
+  input:read-only, input:disabled {
+      background-color: $dark-form-readonly;
   }
 
   input::placeholder {
@@ -54,7 +60,7 @@ $dark-form-border: rgba(239, 239, 239, 0.125);
   .nav-tabs .nav-link.active, .nav-tabs .nav-item.show .nav-link {
       border-color: $dark-form-border;
       color: $dark-text-color;
-      background-color: $dark-form-background;
+      background-color: $dark-hover-color;
   }
   .nav-tabs .nav-link:hover, .nav-tabs .nav-link:focus {
     border-color: $dark-hover-color;
