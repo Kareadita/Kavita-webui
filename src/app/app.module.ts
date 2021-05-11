@@ -28,26 +28,33 @@ import { NgxSliderModule } from '@angular-slider/ngx-slider';
 
 import * as Sentry from "@sentry/angular";
 import { environment } from 'src/environments/environment';
-import { Integrations } from '@sentry/angular';
 import { version } from 'package.json';
 import { Router } from '@angular/router';
+import { RewriteFrames as RewriteFramesIntegration } from "@sentry/integrations";
+import { Dedupe as DedupeIntegration } from "@sentry/integrations";
 
 Sentry.init({
   dsn: "https://db1a1f6445994b13a6f479512aecdd48@o641015.ingest.sentry.io/5757426",
   environment: environment.production ? 'prod' : 'dev',
   release: version,
   integrations: [
-    // new Sentry.Integrations.GlobalHandlers({ 
-    //   onunhandledrejection: false,
-    //   onerror: false
-    // })
+    new Sentry.Integrations.GlobalHandlers({ 
+      onunhandledrejection: true,
+      onerror: true
+    }),
+    new DedupeIntegration(),
+    new RewriteFramesIntegration()
   ],
   ignoreErrors: [new RegExp(/\/api\/admin/)],
-
-  // Set tracesSampleRate to 1.0 to capture 100%
-  // of transactions for performance monitoring.
-  // We recommend adjusting this value in production
   tracesSampleRate: environment.production ? 0 : 1.0,
+});
+
+Sentry.configureScope(scope => {
+  scope.setUser({
+    username: 'Not authorized'
+  });
+  scope.setTag('production', environment.production);
+  scope.setTag('version', version);
 });
 
 
@@ -92,6 +99,12 @@ Sentry.init({
     {provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true},
     {provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true},
     //{ provide: LAZYLOAD_IMAGE_HOOKS, useClass: ScrollHooks } // Great, but causes flashing after modals close
+    {
+      provide: ErrorHandler,
+      useValue: Sentry.createErrorHandler({
+        showDialog: false,
+      }),
+    },
     {
       provide: Sentry.TraceService,
       deps: [Router],
