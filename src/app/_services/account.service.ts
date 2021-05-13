@@ -5,6 +5,7 @@ import { map } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
 import { Preferences } from '../_models/preferences/preferences';
 import { User } from '../_models/user';
+import * as Sentry from "@sentry/angular";
 
 @Injectable({
   providedIn: 'root'
@@ -41,6 +42,12 @@ export class AccountService {
       user.roles = [];
       const roles = this.getDecodedToken(user.token).role;
       Array.isArray(roles) ? user.roles = roles : user.roles.push(roles);
+      Sentry.setContext('admin', {'admin': this.hasAdminRole(user)});
+      Sentry.configureScope(scope => {
+        scope.setUser({
+          username: user.username
+        });
+      });
     }
 
     localStorage.setItem(this.userKey, JSON.stringify(user));

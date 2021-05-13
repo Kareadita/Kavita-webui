@@ -47,6 +47,7 @@ export class ReaderService {
     let currentlyReadingChapter: Chapter | undefined = undefined;
     const chapters = volumes.filter(v => v.number === 0).map(v => v.chapters || []).flat().sort(this.utilityService.sortChapters);
 
+
     for (let v of volumes) {
       if (v.number === 0) {
         continue;
@@ -54,10 +55,20 @@ export class ReaderService {
         continue;
       } else if (v.pagesRead < v.pages - 1) {
         currentlyReadingVolume = v;
+        if (currentlyReadingVolume.chapters == undefined) {
+          break;
+        }
+        for (let c of currentlyReadingVolume.chapters) {
+          if (c.pagesRead < c.pages) {
+            currentlyReadingChapter = c;
+            break;
+          }
+        }
         break;
       }
     }
 
+    // Why do I even need to deal with volumes? I can just do everything in chapters since chapters belong to volumes itself. 
     if (currentlyReadingVolume === undefined) {
       // We need to check against chapters
       chapters.forEach(c => {
