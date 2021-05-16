@@ -324,7 +324,7 @@ export class SeriesDetailComponent implements OnInit {
       return;
     }
     // Sort the chapters, then grab first
-    this.openChapter(volume.chapters.sort(this.utilityService.sortChapters)[0]);
+    this.openChapter([...volume.chapters].sort(this.utilityService.sortChapters)[0]);
   }
 
   isNullOrEmpty(val: string) {
