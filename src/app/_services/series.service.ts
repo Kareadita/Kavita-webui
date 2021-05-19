@@ -7,6 +7,7 @@ import { Chapter } from '../_models/chapter';
 import { InProgressChapter } from '../_models/in-progress-chapter';
 import { PaginatedResult } from '../_models/pagination';
 import { Series } from '../_models/series';
+import { SeriesMetadata } from '../_models/series-metadata';
 import { Volume } from '../_models/volume';
 
 @Injectable({
@@ -98,5 +99,9 @@ export class SeriesService {
 
   refreshMetadata(series: Series) {
     return this.httpClient.post(this.baseUrl + 'series/refresh-metadata', {libraryId: series.libraryId, seriesId: series.id});
+  }
+
+  getMetadata(seriesId: number) {
+    return this.httpClient.get<SeriesMetadata>(this.baseUrl + 'series/metadata?seriesId=' + seriesId);
   }
 }

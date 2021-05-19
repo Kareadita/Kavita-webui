@@ -1,0 +1,95 @@
+<form [formGroup]="typeaheadForm">
+    <ng-container *ngIf="settings.multiple" >
+      <!-- <mat-form-field style="width:96%;">
+        <mat-chip-list #chipList>
+          <mat-chip color="primary" *ngFor="let option of selectedOptions" 
+                  [removable]="true" (removed)="removeSelectedOption(option)">
+            {{this.settings.displayFn(option)}}
+            <mat-icon matChipRemove>cancel</mat-icon>
+          </mat-chip>
+          <input type="text" 
+          matInput [formControl]="typeaheadControl" [matAutocomplete]="auto" [matChipInputFor]="chipList" panelWidth="100%" showPanel="true">
+      </mat-chip-list> -->
+
+      <div class="search-field">
+        <div>
+          <app-tag-badge *ngFor="let option of selectedOptions">
+          {{option.value}}
+          </app-tag-badge>
+        </div>
+        <input type="text" formControlName="typeahead">
+      </div>
+      
+
+      
+      <ul class="list-group results">
+          <li *ngIf="!typeaheadControl.value && !typeaheadControl.touched" class="list-group-item">
+            Type to search
+          </li>
+          <li *ngIf="isLoadingOptions">
+            <div class="spinner-border text-secondary" role="status">
+              <span class="invisible">Loading...</span>
+            </div>
+          </li>
+          <li *ngIf="typeaheadControl.value && typeaheadControl.value.length > settings.minCharacters && typeaheadControl.dirty">
+            Add {{typeaheadControl.value}}...
+          </li>
+          <li *ngFor="let option of filteredOptions | async" (click)="toggleSelection($event, option)" class="list-group-item">
+            <div class="form-check">
+                <input id="option-{{1}}" type="checkbox" class="form-check-input">
+                {{ settings.displayFn(option) }}
+            </div>
+          </li>
+      </ul>
+
+
+      <!-- <mat-autocomplete #auto="matAutocomplete">
+        <mat-option *ngIf="!typeaheadControl.value && !typeaheadControl.touched" (click)="$event.stopPropagation()" disabled >
+          Type to search
+        </mat-option>
+        <ng-container *ngIf="(filteredOptions | async)?.length > 0; else noResults">
+          <mat-option *ngFor="let option of filteredOptions | async" [(value)]="selectedOptionIds">
+            <div>
+              <mat-checkbox [checked]="optionSelection.isSelected(option[settings.id])" (change)="toggleSelection($event,option)" (click)="$event.stopPropagation()">
+                  {{ settings.displayFn(option) }}
+              </mat-checkbox> 
+            </div>
+          </mat-option>
+        </ng-container>
+        <mat-option *ngIf="isLoadingOptions" disabled> 
+          <mat-spinner diameter="20"></mat-spinner>
+        </mat-option>
+        <ng-template #noResults>
+          <mat-option *ngIf="typeaheadControl.value && typeaheadControl.value.length > settings.minCharacters && typeaheadControl.dirty" (click)="$event.stopPropagation()" disabled>
+            No Results Found
+          </mat-option>
+        </ng-template>
+      </mat-autocomplete>
+
+    </mat-form-field> -->
+  </ng-container>
+  <ng-container *ngIf="!settings.multiple">
+    <!-- <mat-form-field  style="width:96%;">
+      <input type="text" matInput [matAutocomplete]="auto"  [formControl]="typeaheadControl">
+        <mat-autocomplete #auto="matAutocomplete">
+          <mat-option *ngIf="!typeaheadControl.value" (click)="$event.stopPropagation()" disabled >
+            Type to search
+          </mat-option>
+          <ng-container *ngIf="(filteredOptions | async)?.length > 0; else noResults">
+            <mat-option *ngFor="let option of (filteredOptions | async)" [value]="settings.displayFn(option)" (click)="toggleSingle(option)">
+              <div style="width:100%">{{ settings.displayFn(option) }}</div>
+            </mat-option>
+          </ng-container>
+          <mat-option *ngIf="isLoadingOptions" disabled> 
+            <mat-spinner diameter="20"></mat-spinner>
+          </mat-option>
+          <ng-template #noResults>
+            <mat-option *ngIf="!isLoadingOptions && typeaheadControl.value && typeaheadControl.value.length > settings.minCharacters && typeaheadControl.dirty" (click)="$event.stopPropagation()" disabled>
+              No Results Found
+            </mat-option>
+          </ng-template>
+        </mat-autocomplete>
+    </mat-form-field> -->
+
+  </ng-container>
+  </form>

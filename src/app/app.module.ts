@@ -32,30 +32,55 @@ import { version } from 'package.json';
 import { Router } from '@angular/router';
 import { RewriteFrames as RewriteFramesIntegration } from "@sentry/integrations";
 import { Dedupe as DedupeIntegration } from "@sentry/integrations";
+import { PersonBadgeComponent } from './person-badge/person-badge.component';
+import { TypeaheadModule } from './typeahead/typeahead.module';
 
-Sentry.init({
-  dsn: "https://db1a1f6445994b13a6f479512aecdd48@o641015.ingest.sentry.io/5757426",
-  environment: environment.production ? 'prod' : 'dev',
-  release: version,
-  integrations: [
-    new Sentry.Integrations.GlobalHandlers({ 
-      onunhandledrejection: true,
-      onerror: true
-    }),
-    new DedupeIntegration(),
-    new RewriteFramesIntegration()
-  ],
-  ignoreErrors: [new RegExp(/\/api\/admin/)],
-  tracesSampleRate: 0,
-});
+let sentryProviders: any[] = [];
 
-Sentry.configureScope(scope => {
-  scope.setUser({
-    username: 'Not authorized'
+if (environment.production) {
+  Sentry.init({
+    dsn: "https://db1a1f6445994b13a6f479512aecdd48@o641015.ingest.sentry.io/5757426",
+    environment: environment.production ? 'prod' : 'dev',
+    release: version,
+    integrations: [
+      new Sentry.Integrations.GlobalHandlers({ 
+        onunhandledrejection: true,
+        onerror: true
+      }),
+      new DedupeIntegration(),
+      new RewriteFramesIntegration()
+    ],
+    ignoreErrors: [new RegExp(/\/api\/admin/)],
+    tracesSampleRate: 0,
   });
-  scope.setTag('production', environment.production);
-  scope.setTag('version', version);
-});
+  
+  Sentry.configureScope(scope => {
+    scope.setUser({
+      username: 'Not authorized'
+    });
+    scope.setTag('production', environment.production);
+    scope.setTag('version', version);
+  });
+
+  sentryProviders = [{
+    provide: ErrorHandler,
+    useValue: Sentry.createErrorHandler({
+      showDialog: false,
+    }),
+  },
+  {
+    provide: Sentry.TraceService,
+    deps: [Router],
+  },
+  {
+    provide: APP_INITIALIZER,
+    useFactory: () => () => {},
+    deps: [Sentry.TraceService],
+    multi: true,
+  }];
+}
+
+
 
 
 
@@ -70,7 +95,10 @@ Sentry.configureScope(scope => {
     LibraryDetailComponent, // Move into MangaModule
     SeriesDetailComponent, // Move into MangaModule
     NotConnectedComponent, // Move into ExtrasModule
-    UserPreferencesComponent, EditSeriesModalComponent, ReviewSeriesModalComponent, // Move into SettingsModule
+    UserPreferencesComponent, // Move into SettingsModule
+    EditSeriesModalComponent, 
+    ReviewSeriesModalComponent, 
+    PersonBadgeComponent, 
   ],
   imports: [
     HttpClientModule,
@@ -90,6 +118,7 @@ Sentry.configureScope(scope => {
     LazyLoadImageModule,
     SharedModule,
     CarouselModule,
+    TypeaheadModule,
     //SwiperModule,
     ToastrModule.forRoot({
       positionClass: 'toast-bottom-right'
@@ -99,22 +128,7 @@ Sentry.configureScope(scope => {
     {provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true},
     {provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true},
     //{ provide: LAZYLOAD_IMAGE_HOOKS, useClass: ScrollHooks } // Great, but causes flashing after modals close
-    {
-      provide: ErrorHandler,
-      useValue: Sentry.createErrorHandler({
-        showDialog: false,
-      }),
-    },
-    {
-      provide: Sentry.TraceService,
-      deps: [Router],
-    },
-    {
-      provide: APP_INITIALIZER,
-      useFactory: () => () => {},
-      deps: [Sentry.TraceService],
-      multi: true,
-    }
+    ...sentryProviders
   ],
   entryComponents: [],
   bootstrap: [AppComponent]

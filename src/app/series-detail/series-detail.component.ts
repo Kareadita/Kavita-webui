@@ -13,6 +13,7 @@ import { ReviewSeriesModalComponent } from '../_modals/review-series-modal/revie
 import { Chapter } from '../_models/chapter';
 import { LibraryType } from '../_models/library';
 import { Series } from '../_models/series';
+import { SeriesMetadata } from '../_models/series-metadata';
 import { Volume } from '../_models/volume';
 import { AccountService } from '../_services/account.service';
 import { ActionItem, ActionFactoryService, Action } from '../_services/action-factory.service';
@@ -54,6 +55,7 @@ export class SeriesDetailComponent implements OnInit {
   seriesSummary: string = '';
   userReview: string = '';
   libraryType: LibraryType = LibraryType.Manga;
+  seriesMetadata: SeriesMetadata | undefined = undefined;
 
 
   constructor(private route: ActivatedRoute, private seriesService: SeriesService,
@@ -87,6 +89,9 @@ export class SeriesDetailComponent implements OnInit {
 
     const seriesId = parseInt(routeId, 10);
     this.libraryId = parseInt(libraryId, 10);
+    this.seriesService.getMetadata(seriesId).subscribe(metadata => {
+      this.seriesMetadata = metadata;
+    });
     this.libraryService.getLibraryType(this.libraryId).subscribe(type => {
       this.libraryType = type;
       this.loadSeries(seriesId);

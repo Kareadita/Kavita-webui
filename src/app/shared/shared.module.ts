@@ -14,6 +14,7 @@ import { RegisterMemberComponent } from './register-member/register-member.compo
 import { ReadMoreComponent } from './read-more/read-more.component';
 import { RouterModule } from '@angular/router';
 import { DrawerComponent } from './drawer/drawer.component';
+import { TagBadgeComponent } from './tag-badge/tag-badge.component';
 
 
 @NgModule({
@@ -27,7 +28,8 @@ import { DrawerComponent } from './drawer/drawer.component';
     SafeHtmlPipe,
     CardActionablesComponent,
     ReadMoreComponent,
-    DrawerComponent
+    DrawerComponent,
+    TagBadgeComponent
   ],
   imports: [
     CommonModule,
@@ -47,7 +49,8 @@ import { DrawerComponent } from './drawer/drawer.component';
     SafeHtmlPipe,
     CardActionablesComponent,
     ReadMoreComponent,
-    DrawerComponent
+    DrawerComponent,
+    TagBadgeComponent
   ]
 })
 export class SharedModule { }

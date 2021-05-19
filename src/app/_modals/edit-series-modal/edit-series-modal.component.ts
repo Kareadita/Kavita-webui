@@ -1,9 +1,10 @@
 import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
-import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { of, Subject } from 'rxjs';
+import { delay, share, takeUntil } from 'rxjs/operators';
 import { UtilityService } from 'src/app/shared/_services/utility.service';
+import { TypeaheadSettings } from 'src/app/typeahead/typeahead-settings';
 import { Chapter } from 'src/app/_models/chapter';
 import { Series } from 'src/app/_models/series';
 import { ImageService } from 'src/app/_services/image.service';
@@ -29,6 +30,8 @@ export class EditSeriesModalComponent implements OnInit, OnDestroy {
   libraryName: string | undefined = undefined;
   private readonly onDestroy = new Subject<void>();
 
+  settings: TypeaheadSettings = new TypeaheadSettings();
+
 
   constructor(public modal: NgbActiveModal,
               private seriesService: SeriesService,
@@ -43,6 +46,13 @@ export class EditSeriesModalComponent implements OnInit, OnDestroy {
       this.libraryName = names[this.series.libraryId];
     });
 
+    this.settings.displayFn = ((data => data.value));
+    this.settings.minCharacters = 2;
+    this.settings.multiple = true;
+    this.settings.id = 'id';
+    this.settings.fetchFn = (filter) => this.fetchCollectionTags(filter);
+    
+
     this.editSeriesForm = this.fb.group({
       id: new FormControl(this.series.id, []),
       summary: new FormControl(this.series.summary, []),
@@ -50,11 +60,21 @@ export class EditSeriesModalComponent implements OnInit, OnDestroy {
       localizedName: new FormControl(this.series.localizedName, []),
       sortName: new FormControl(this.series.sortName, []),
       rating: new FormControl(this.series.userRating, []),
-      genres: new FormControl([''], []),
-      author: new FormControl('', []),
-      collections: new FormControl([''], []),
-      artist: new FormControl('', []),
+
+      genres: new FormControl(this.fb.array([]), []),
+      collections: new FormControl(this.fb.array([]), []),
+      author: new FormControl(this.fb.array([]), []),
+      artist: new FormControl(this.fb.array([]), []),
+
       coverImageIndex: new FormControl(0, [])
+    });
+
+    this.seriesService.getMetadata(this.series.id).subscribe(metadata => {
+      if (metadata) {
+        this.editSeriesForm.get('collections')?.setValue(metadata.tags);
+        this.editSeriesForm.get('genres')?.setValue(metadata.genres);
+        this.settings.savedData = metadata.tags;
+      }
     });
 
     this.isLoadingVolumes = true;
@@ -82,6 +102,11 @@ export class EditSeriesModalComponent implements OnInit, OnDestroy {
     this.modal.close({success: true, series: undefined});
   }
 
+  fetchCollectionTags(filter: string = '') {
+    //return this.seriesService.getCollectionTags();
+    return of([{value: 'Favs', id: 0}, {value: 'Home', id: 1}]).pipe(delay(500), share());
+  }
+
   formatChapterNumber(chapter: Chapter) {
     if (chapter.number === '0') {
       return '1';
@@ -94,6 +119,10 @@ export class EditSeriesModalComponent implements OnInit, OnDestroy {
     this.seriesService.updateSeries(this.editSeriesForm.value).subscribe(() => {
       this.modal.close({success: true, series: this.editSeriesForm.value});
     });
+  }
+
+  updateCollections(event: any) {
+
   }
 
 }
