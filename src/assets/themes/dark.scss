@@ -50,6 +50,14 @@ $dark-form-readonly: #434648;
   .autocomplete-container .input-container .x {
     color: $dark-text-color;
   }
+  .autocomplete-container .not-found {
+    color: $dark-text-color;
+    background-color: $dark-bg-color;
+  }
+
+  .autocomplete-container .input-container .x i {
+    color: $dark-icon-color;
+  }
   .autocomplete-container .suggestions-container, .dropdown-menu, .list-group-item {
     color: $dark-text-color;
     background-color: $dark-bg-color;
