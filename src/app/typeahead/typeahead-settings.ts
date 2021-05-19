@@ -11,5 +11,7 @@ export class TypeaheadSettings {
     displayFn!: ( (data: any) => string);
     minCharacters: number = 1;
     formControl?: FormControl;
+    unique: boolean = true; // If true, typeahead will remove already selected items from fetchFn results. Only applies with multiple=true
+    addIfNonExisting: boolean = false;
 
 }

@@ -7,6 +7,7 @@ import { UtilityService } from 'src/app/shared/_services/utility.service';
 import { TypeaheadSettings } from 'src/app/typeahead/typeahead-settings';
 import { Chapter } from 'src/app/_models/chapter';
 import { Series } from 'src/app/_models/series';
+import { CollectionTagService } from 'src/app/_services/collection-tag.service';
 import { ImageService } from 'src/app/_services/image.service';
 import { LibraryService } from 'src/app/_services/library.service';
 import { SeriesService } from 'src/app/_services/series.service';
@@ -38,7 +39,8 @@ export class EditSeriesModalComponent implements OnInit, OnDestroy {
               public utilityService: UtilityService,
               private fb: FormBuilder,
               public imageService: ImageService, 
-              private libraryService: LibraryService) { }
+              private libraryService: LibraryService,
+              private collectionService: CollectionTagService) { }
 
   ngOnInit(): void {
 
@@ -46,10 +48,11 @@ export class EditSeriesModalComponent implements OnInit, OnDestroy {
       this.libraryName = names[this.series.libraryId];
     });
 
-    this.settings.displayFn = ((data => data.value));
-    this.settings.minCharacters = 2;
+    this.settings.displayFn = ((data => data.title));
+    this.settings.minCharacters = 0;
     this.settings.multiple = true;
     this.settings.id = 'id';
+    this.settings.unique = true;
     this.settings.fetchFn = (filter) => this.fetchCollectionTags(filter);
     
 
@@ -104,6 +107,7 @@ export class EditSeriesModalComponent implements OnInit, OnDestroy {
 
   fetchCollectionTags(filter: string = '') {
     //return this.seriesService.getCollectionTags();
+    return this.collectionService.search(filter);
     return of([{value: 'Favs', id: 0}, {value: 'Home', id: 1}]).pipe(delay(500), share());
   }
 

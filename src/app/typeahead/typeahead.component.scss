@@ -7,3 +7,55 @@
         padding: 0;
     }
 }
+
+.list-group-item {
+    cursor: pointer;
+}
+
+input {
+    width: 4px;
+    opacity: 1px;
+    position: relative;
+    left: 0px;
+}
+
+.typeahead-input {
+    border: 1px solid #ccc;
+    padding: 6px 12px;
+    display: inline-block;
+    width: 100%;
+    overflow: hidden;
+    position: relative;
+    z-index: 1;
+    box-sizing: border-box;
+    box-shadow: none;
+    border-radius: 4px;
+    background: #fff;
+    cursor: text;
+    min-height: 34px;
+    //height: calc(1.5em + 0.75rem + 2px);
+    background-color: #fff;
+
+
+    input {
+        line-height: 20px;
+        outline: 0 !important;
+        margin: 0 !important;
+        border-radius: .28571429rem;
+        display: inline-block !important;
+        padding: 0px !important;
+        min-height: 0px !important;
+        max-width: 100% !important;
+        margin: 0px !important;
+        border: 0 !important;
+        text-indent: 0 !important;
+        line-height: inherit !important;
+        box-shadow: none !important;
+
+    }
+
+    .has-items {
+        padding-left: 9px;
+        padding-right: 9px;
+    }
+}

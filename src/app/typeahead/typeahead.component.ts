@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
 import { Observable, of } from 'rxjs';
 import { debounceTime, distinctUntilChanged, filter, shareReplay, switchMap, tap } from 'rxjs/operators';
@@ -55,11 +55,15 @@ export class TypeaheadComponent implements OnInit {
 
   @Input() settings!: TypeaheadSettings;
   @Output() selectedData = new EventEmitter<any[] | any>();
+  @Output() newItemAdded = new EventEmitter<any[] | any>();
 
   selectedOptionIds: any[] = [];
   selectedOptions: any[] = [];
 
   optionSelection!: SelectionModel<any>;
+
+  hasFocus = false; // Whether input has active focus
+  @ViewChild('input') inputElem!: ElementRef<HTMLInputElement>;
 
   constructor(private httpClient: HttpClient) { }
 
@@ -99,10 +103,11 @@ export class TypeaheadComponent implements OnInit {
           let results: Observable<any[]>;
           if (Array.isArray(this.settings.fetchFn)) {
             const filteredArray = this.settings.compareFn(this.settings.fetchFn, this.typeaheadControl.value);
-            results = of(filteredArray);
+            results = of(filteredArray).pipe(filter((item: any) => this.filterSelected(item)));
           } else {
-            results = this.settings.fetchFn(this.typeaheadControl.value);
+            results = this.settings.fetchFn(this.typeaheadControl.value).pipe(filter((item: any) => this.filterSelected(item)));
           }
+
           return results;
         }), // TODO: need to make sure results don't match anything in the selected items already
         tap(() => this.isLoadingOptions = false),
@@ -139,6 +144,8 @@ export class TypeaheadComponent implements OnInit {
     }
 
     this.selectedData.emit(this.selectedOptions);
+    this.typeaheadControl.setValue('');
+    this.shiftFocus();
   }
 
   removeSelectedOption(opt: any) {
@@ -149,6 +156,38 @@ export class TypeaheadComponent implements OnInit {
 
     this.selectedData.emit(this.selectedOptions);
 
+  }
+
+  shiftFocus() {
+    if (this.inputElem) {
+      this.inputElem.nativeElement.focus();
+    }
+  }
+
+  filterSelected(item: any) {
+    if (this.settings.unique && this.settings.multiple && this.selectedOptionIds.length > 0) {
+      return this.selectedOptionIds.indexOf(item[this.settings.id]) >= 0;
+    }
+    return true;
+  }
+
+  setFocus() {
+    this.hasFocus = true;
+
+    if (this.settings.minCharacters === 0) {
+      this.isLoadingOptions = true;
+      let results: Observable<any[]>;
+      if (Array.isArray(this.settings.fetchFn)) {
+        const filteredArray = this.settings.compareFn(this.settings.fetchFn, '');
+        results = of(filteredArray).pipe(filter((item: any) => this.filterSelected(item)));
+      } else {
+        results = this.settings.fetchFn('').pipe(filter((item: any) => this.filterSelected(item)));
+      }
+
+
+      this.filteredOptions = results;
+      this.isLoadingOptions = false;
+    }
   }
 
 }

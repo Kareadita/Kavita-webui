@@ -61,6 +61,7 @@
                                 <label for="collections">Collections</label>
                                 <!-- <input id="collections" class="form-control" placeholder="Not Implemented" readonly="true" formControlName="collections" type="text"> -->
                                 <app-typeahead (selectedData)="updateCollections($event)" [settings]="settings"></app-typeahead>
+                                <!-- <ng-selectize  [formControl]="editSeriesForm.get('collections')" [config]="requiredDropdownConfig" [options]="requiredDropdownOptions"></ng-selectize> -->
                             </div>
                         </div>
                     </div>
