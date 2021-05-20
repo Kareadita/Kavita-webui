@@ -158,6 +158,19 @@ export class TypeaheadComponent implements OnInit {
 
   }
 
+  addNewItem(title: string) {
+    if (this.settings.addTransformFn == undefined) {
+      return;
+    }
+    const newItem = this.settings.addTransformFn(title);
+    this.newItemAdded.emit(newItem);
+    this.toggleSelection(undefined, newItem);
+
+    
+    // this.typeaheadControl.setValue('');
+    // this.shiftFocus();
+  }
+
   shiftFocus() {
     if (this.inputElem) {
       this.inputElem.nativeElement.focus();

@@ -23,7 +23,7 @@
                 <span class="invisible">Loading...</span>
               </div>
             </li>
-            <li *ngIf="settings.addIfNonExisting && typeaheadControl.value && typeaheadControl.value.length > settings.minCharacters && typeaheadControl.dirty" class="list-group-item">
+            <li (click)="addNewItem(typeaheadControl.value)" *ngIf="settings.addIfNonExisting && typeaheadControl.value && typeaheadControl.value.length > settings.minCharacters && typeaheadControl.dirty" class="list-group-item">
               Add {{typeaheadControl.value}}...
             </li>
             <li *ngFor="let option of filteredOptions | async" (click)="toggleSelection($event, option)" class="list-group-item">

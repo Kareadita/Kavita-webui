@@ -1,12 +1,14 @@
 import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
-import { of, Subject } from 'rxjs';
+import { forkJoin, of, Subject } from 'rxjs';
 import { delay, share, takeUntil } from 'rxjs/operators';
 import { UtilityService } from 'src/app/shared/_services/utility.service';
 import { TypeaheadSettings } from 'src/app/typeahead/typeahead-settings';
 import { Chapter } from 'src/app/_models/chapter';
+import { CollectionTag } from 'src/app/_models/collection-tag';
 import { Series } from 'src/app/_models/series';
+import { SeriesMetadata } from 'src/app/_models/series-metadata';
 import { CollectionTagService } from 'src/app/_services/collection-tag.service';
 import { ImageService } from 'src/app/_services/image.service';
 import { LibraryService } from 'src/app/_services/library.service';
@@ -32,6 +34,9 @@ export class EditSeriesModalComponent implements OnInit, OnDestroy {
   private readonly onDestroy = new Subject<void>();
 
   settings: TypeaheadSettings = new TypeaheadSettings();
+  newTags: CollectionTag[] = [];
+  tags: CollectionTag[] = [];
+  metadata!: SeriesMetadata;
 
 
   constructor(public modal: NgbActiveModal,
@@ -53,7 +58,11 @@ export class EditSeriesModalComponent implements OnInit, OnDestroy {
     this.settings.multiple = true;
     this.settings.id = 'id';
     this.settings.unique = true;
+    this.settings.addIfNonExisting = true;
     this.settings.fetchFn = (filter) => this.fetchCollectionTags(filter);
+    this.settings.addTransformFn = ((title: string) => {
+      return {id: 0, title: title, promoted: false };
+    });
     
 
     this.editSeriesForm = this.fb.group({
@@ -74,6 +83,7 @@ export class EditSeriesModalComponent implements OnInit, OnDestroy {
 
     this.seriesService.getMetadata(this.series.id).subscribe(metadata => {
       if (metadata) {
+        this.metadata = metadata;
         this.editSeriesForm.get('collections')?.setValue(metadata.tags);
         this.editSeriesForm.get('genres')?.setValue(metadata.genres);
         this.settings.savedData = metadata.tags;
@@ -120,13 +130,24 @@ export class EditSeriesModalComponent implements OnInit, OnDestroy {
 
   save() {
     // TODO: In future (once locking or metadata implemented), do a converstion to updateSeriesDto
-    this.seriesService.updateSeries(this.editSeriesForm.value).subscribe(() => {
+
+    forkJoin([
+      this.seriesService.updateSeries(this.editSeriesForm.value),
+      this.seriesService.updateMetadata(this.metadata, this.tags)
+    ]).subscribe(results => {
       this.modal.close({success: true, series: this.editSeriesForm.value});
     });
   }
 
-  updateCollections(event: any) {
+  updateCollections(tags: CollectionTag[]) {
+    this.tags = tags;
+    console.log('tags: ', this.tags);
+  }
 
+  addNewCollectionTag(newTag: CollectionTag) {
+    this.newTags.push(newTag);
+    //this.collectionService.addTag(newTag);
+    console.log('new tags: ', this.newTags);
   }
 
 }

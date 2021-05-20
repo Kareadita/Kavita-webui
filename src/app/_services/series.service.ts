@@ -4,6 +4,7 @@ import { Observable, of } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
 import { Chapter } from '../_models/chapter';
+import { CollectionTag } from '../_models/collection-tag';
 import { InProgressChapter } from '../_models/in-progress-chapter';
 import { PaginatedResult } from '../_models/pagination';
 import { Series } from '../_models/series';
@@ -103,5 +104,13 @@ export class SeriesService {
 
   getMetadata(seriesId: number) {
     return this.httpClient.get<SeriesMetadata>(this.baseUrl + 'series/metadata?seriesId=' + seriesId);
+  }
+
+  updateMetadata(seriesMetadata: SeriesMetadata, tags: CollectionTag[]) {
+    const data = {
+      seriesMetadata,
+      tags
+    };
+    return this.httpClient.post(this.baseUrl + 'series/metadata', data);
   }
 }
