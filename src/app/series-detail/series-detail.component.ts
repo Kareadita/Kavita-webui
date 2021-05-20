@@ -55,7 +55,7 @@ export class SeriesDetailComponent implements OnInit {
   seriesSummary: string = '';
   userReview: string = '';
   libraryType: LibraryType = LibraryType.Manga;
-  seriesMetadata: SeriesMetadata | undefined = undefined;
+  seriesMetadata: SeriesMetadata | null = null;
 
 
   constructor(private route: ActivatedRoute, private seriesService: SeriesService,
@@ -89,9 +89,9 @@ export class SeriesDetailComponent implements OnInit {
 
     const seriesId = parseInt(routeId, 10);
     this.libraryId = parseInt(libraryId, 10);
-    this.seriesService.getMetadata(seriesId).subscribe(metadata => {
-      this.seriesMetadata = metadata;
-    });
+    // this.seriesService.getMetadata(seriesId).subscribe(metadata => {
+    //   this.seriesMetadata = metadata;
+    // });
     this.libraryService.getLibraryType(this.libraryId).subscribe(type => {
       this.libraryType = type;
       this.loadSeries(seriesId);

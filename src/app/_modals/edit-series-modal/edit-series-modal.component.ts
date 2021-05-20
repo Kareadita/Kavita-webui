@@ -116,9 +116,7 @@ export class EditSeriesModalComponent implements OnInit, OnDestroy {
   }
 
   fetchCollectionTags(filter: string = '') {
-    //return this.seriesService.getCollectionTags();
     return this.collectionService.search(filter);
-    return of([{value: 'Favs', id: 0}, {value: 'Home', id: 1}]).pipe(delay(500), share());
   }
 
   formatChapterNumber(chapter: Chapter) {
