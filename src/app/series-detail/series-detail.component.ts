@@ -194,9 +194,13 @@ export class SeriesDetailComponent implements OnInit {
   }
 
   loadSeries(seriesId: number) {
+    this.seriesService.getMetadata(seriesId).subscribe(metadata => {
+      this.seriesMetadata = metadata;
+    });
     this.seriesService.getSeries(seriesId).subscribe(series => {
       this.series = series;
       this.createHTML();
+      
 
       this.seriesService.getVolumes(this.series.id).subscribe(volumes => {
         this.chapters = volumes.filter(v => v.number === 0).map(v => v.chapters || []).flat().sort(this.utilityService.sortChapters); 

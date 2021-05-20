@@ -112,7 +112,7 @@ export class EditSeriesModalComponent implements OnInit, OnDestroy {
   }
 
   close() {
-    this.modal.close({success: true, series: undefined});
+    this.modal.close({success: false, series: undefined});
   }
 
   fetchCollectionTags(filter: string = '') {
