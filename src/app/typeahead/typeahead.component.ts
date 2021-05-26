@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
+import { Component, ElementRef, EventEmitter, HostListener, Input, OnInit, Output, Renderer2, RendererStyleFlags2, ViewChild } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
 import { Observable, of } from 'rxjs';
 import { debounceTime, distinctUntilChanged, filter, shareReplay, switchMap, tap } from 'rxjs/operators';
@@ -65,7 +65,7 @@ export class TypeaheadComponent implements OnInit {
   hasFocus = false; // Whether input has active focus
   @ViewChild('input') inputElem!: ElementRef<HTMLInputElement>;
 
-  constructor(private httpClient: HttpClient) { }
+  constructor(private httpClient: HttpClient, private renderer2: Renderer2) { }
 
   ngOnInit() {
 
@@ -124,6 +124,19 @@ export class TypeaheadComponent implements OnInit {
       }
     }
   }
+
+  @HostListener('window:keydown', ['$event'])
+  handleKeyPress(event: KeyboardEvent) { 
+    if (!this.hasFocus) { return; }
+    // if event not control key (is visible key)
+    //this.inputElem.nativeElement.style.width += 20;
+    const width = parseInt(this.inputElem.nativeElement.style.width, 10) || this.inputElem.nativeElement.getBoundingClientRect().width
+    console.log('width: ', width);
+    this.renderer2.setStyle(this.inputElem.nativeElement, 'width', width + 20, RendererStyleFlags2.Important);
+    console.log(event);
+  }
+
+
 
   toggleSingle(opt: any): void {
     this.selectedData.emit(opt);
