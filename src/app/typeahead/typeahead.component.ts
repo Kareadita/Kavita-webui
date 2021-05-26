@@ -2,7 +2,8 @@ import { HttpClient } from '@angular/common/http';
 import { Component, ElementRef, EventEmitter, HostListener, Input, OnInit, Output, Renderer2, RendererStyleFlags2, ViewChild } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
 import { Observable, of } from 'rxjs';
-import { debounceTime, distinctUntilChanged, filter, shareReplay, switchMap, tap } from 'rxjs/operators';
+import { debounceTime, distinctUntilChanged, filter, map, shareReplay, skip, switchMap, take, tap } from 'rxjs/operators';
+import { KEY_CODES } from '../shared/_services/utility.service';
 import { TypeaheadSettings } from './typeahead-settings';
 
 export class SelectionModel<T> {
@@ -21,10 +22,16 @@ export class SelectionModel<T> {
     });
   }
 
+  /**
+   * Will toggle if the data item is selected or not. If data option is not tracked, will add it and set state to true.
+   * @param data Item to toggle
+   */
   toggle(data: T) {
     const dataItem = this._data.filter(d => d.value == data);
     if (dataItem.length > 0) {
       dataItem[0].selected = !dataItem[0].selected;
+    } else {
+      this._data.push({value: data, selected: true});
     }
   }
 
@@ -49,6 +56,7 @@ export class SelectionModel<T> {
 export class TypeaheadComponent implements OnInit {
 
   filteredOptions!: Observable<string[]>;
+  filteredOptionsLength: number = 0;
   typeaheadControl!: FormControl;
   typeaheadForm!: FormGroup;
   isLoadingOptions: boolean = false;
@@ -59,11 +67,12 @@ export class TypeaheadComponent implements OnInit {
 
   selectedOptionIds: any[] = [];
   selectedOptions: any[] = [];
-
   optionSelection!: SelectionModel<any>;
 
   hasFocus = false; // Whether input has active focus
   @ViewChild('input') inputElem!: ElementRef<HTMLInputElement>;
+  @ViewChild('results') resultsElem!: ElementRef<HTMLUListElement>;
+  focusedIndex: number = 0;
 
   constructor(private httpClient: HttpClient, private renderer2: Renderer2) { }
 
@@ -108,6 +117,10 @@ export class TypeaheadComponent implements OnInit {
             results = this.settings.fetchFn(this.typeaheadControl.value).pipe(filter((item: any) => this.filterSelected(item)));
           }
 
+          results.pipe(take(1)).subscribe((i: Array<any>) => {
+            this.filteredOptionsLength = i.length;
+          });
+
           return results;
         }), // TODO: need to make sure results don't match anything in the selected items already
         tap(() => this.isLoadingOptions = false),
@@ -117,7 +130,7 @@ export class TypeaheadComponent implements OnInit {
 
     if (this.settings.savedData) {
       if (this.typeaheadControl.pristine && this.settings.multiple) {
-        this.settings.savedData.forEach((data: any) => this.toggleSelection(null, data));
+        this.settings.savedData.forEach((data: any) => this.toggleSelection(data));
       } else if (this.typeaheadControl.pristine && !this.settings.multiple) {
         this.typeaheadControl.setValue(this.settings.displayFn(this.settings.savedData));
         this.toggleSingle(this.settings.savedData);
@@ -128,12 +141,45 @@ export class TypeaheadComponent implements OnInit {
   @HostListener('window:keydown', ['$event'])
   handleKeyPress(event: KeyboardEvent) { 
     if (!this.hasFocus) { return; }
-    // if event not control key (is visible key)
-    //this.inputElem.nativeElement.style.width += 20;
-    const width = parseInt(this.inputElem.nativeElement.style.width, 10) || this.inputElem.nativeElement.getBoundingClientRect().width
-    console.log('width: ', width);
-    this.renderer2.setStyle(this.inputElem.nativeElement, 'width', width + 20, RendererStyleFlags2.Important);
     console.log(event);
+    
+    if (event.key === KEY_CODES.DOWN_ARROW) {
+      this.focusedIndex = Math.min(this.focusedIndex + 1, this.filteredOptionsLength - 1);
+      this.updateHighlight();
+    } else if (event.key === KEY_CODES.UP_ARROW) {
+      this.focusedIndex = Math.max(this.focusedIndex - 1, 0);
+      this.updateHighlight();
+    } else if (event.key === KEY_CODES.ENTER) {
+      document.querySelectorAll('.list-group-item').forEach((item, index) => {
+        if (item.classList.contains('active')) {
+          this.filteredOptions.pipe(take(1)).subscribe((res: any) => {
+            var result = res.filter((item: any, index: number) => index === this.focusedIndex);
+            if (result.length === 1) {
+              this.toggleSelection(result[0]);
+            }
+          });
+        }
+      });
+    }
+    else {
+      // Adjust input box to grow
+       // if event not control key (is visible key)
+      //this.inputElem.nativeElement.style.width += 20;
+      const width = parseInt(this.inputElem.nativeElement.style.width, 10) || this.inputElem.nativeElement.getBoundingClientRect().width
+      console.log('width: ', width);
+      this.renderer2.setStyle(this.inputElem.nativeElement, 'width', width + 20, RendererStyleFlags2.Important);
+    
+    }
+
+    
+
+  }
+  highlight(event: any) {
+    console.log(event);
+  }
+
+  removeHighlight(event: any) {
+
   }
 
 
@@ -143,7 +189,7 @@ export class TypeaheadComponent implements OnInit {
   }
 
 
-  toggleSelection(event: any, opt: any): void {
+  toggleSelection(opt: any): void {
 
     this.optionSelection.toggle(opt[this.settings.id]);
 
@@ -157,7 +203,13 @@ export class TypeaheadComponent implements OnInit {
     }
 
     this.selectedData.emit(this.selectedOptions);
+    this.resetField();
+  }
+
+  resetField() {
+    this.renderer2.setStyle(this.inputElem.nativeElement, 'width', 4, RendererStyleFlags2.Important);
     this.typeaheadControl.setValue('');
+    // TODO: Update the rendered items to filter out 
     this.shiftFocus();
   }
 
@@ -168,6 +220,7 @@ export class TypeaheadComponent implements OnInit {
     this.selectedOptions = this.selectedOptions.filter(item => item[this.settings.id] !== opt[this.settings.id]);
 
     this.selectedData.emit(this.selectedOptions);
+    this.resetField();
 
   }
 
@@ -177,11 +230,9 @@ export class TypeaheadComponent implements OnInit {
     }
     const newItem = this.settings.addTransformFn(title);
     this.newItemAdded.emit(newItem);
-    this.toggleSelection(undefined, newItem);
+    this.toggleSelection(newItem);
 
-    
-    // this.typeaheadControl.setValue('');
-    // this.shiftFocus();
+    this.resetField();
   }
 
   shiftFocus() {
@@ -210,10 +261,30 @@ export class TypeaheadComponent implements OnInit {
         results = this.settings.fetchFn('').pipe(filter((item: any) => this.filterSelected(item)));
       }
 
+      results.pipe(take(1)).subscribe((i: Array<any>) => {
+        this.filteredOptionsLength = i.length;
+      });
 
+      this.focusedIndex = 0;
       this.filteredOptions = results;
       this.isLoadingOptions = false;
+      setTimeout(() => {
+        this.updateHighlight();
+      }, 100);
     }
+  }
+
+  // Updates the highlight to focus on the selected item
+  updateHighlight() {
+    document.querySelectorAll('.list-group-item').forEach((item, index) => {
+      if (index === this.focusedIndex) {
+        // apply active class
+        this.renderer2.addClass(item, 'active');
+      } else {
+        // remove active class
+        this.renderer2.removeClass(item, 'active');
+      }
+    });
   }
 
 }

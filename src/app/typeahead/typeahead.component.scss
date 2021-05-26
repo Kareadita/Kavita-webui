@@ -1,22 +1,10 @@
-.search-field {
-    display: inline-block;
-    border: 1px inset #ccc;
-
-    input {
-        border:none;
-        padding: 0;
-    }
-}
-
-.list-group-item {
-    cursor: pointer;
-}
 
 input {
     width: 4px;
     opacity: 1px;
     position: relative;
     left: 0px;
+    border: 1px solid red;
 }
 
 .typeahead-input {
@@ -47,11 +35,10 @@ input {
         min-height: 0px !important;
         max-width: 100% !important;
         margin: 0px !important;
-        border: 0 !important;
+        //border: 0 !important;
         text-indent: 0 !important;
         line-height: inherit !important;
         box-shadow: none !important;
-
     }
 
     .has-items {
@@ -76,4 +63,12 @@ input {
     li {
         list-style: none;
     }
+}
+
+.list-group-item {
+    cursor: pointer;
+
+    // &:hover  {
+    //     background-color: #4ac694;
+    // }
 }

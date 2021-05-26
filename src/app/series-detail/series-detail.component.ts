@@ -8,6 +8,7 @@ import { ConfirmConfig } from '../shared/confirm-dialog/_models/confirm-config';
 import { ConfirmService } from '../shared/confirm.service';
 import { CardDetailsModalComponent } from '../shared/_modals/card-details-modal/card-details-modal.component';
 import { UtilityService } from '../shared/_services/utility.service';
+import { TypeaheadSettings } from '../typeahead/typeahead-settings';
 import { EditSeriesModalComponent } from '../_modals/edit-series-modal/edit-series-modal.component';
 import { ReviewSeriesModalComponent } from '../_modals/review-series-modal/review-series-modal.component';
 import { Chapter } from '../_models/chapter';
@@ -17,6 +18,7 @@ import { SeriesMetadata } from '../_models/series-metadata';
 import { Volume } from '../_models/volume';
 import { AccountService } from '../_services/account.service';
 import { ActionItem, ActionFactoryService, Action } from '../_services/action-factory.service';
+import { CollectionTagService } from '../_services/collection-tag.service';
 import { ImageService } from '../_services/image.service';
 import { LibraryService } from '../_services/library.service';
 import { ReaderService } from '../_services/reader.service';
@@ -57,6 +59,8 @@ export class SeriesDetailComponent implements OnInit {
   libraryType: LibraryType = LibraryType.Manga;
   seriesMetadata: SeriesMetadata | null = null;
 
+  settings: TypeaheadSettings = new TypeaheadSettings();; // DEBUG ONLY
+
 
   constructor(private route: ActivatedRoute, private seriesService: SeriesService,
               ratingConfig: NgbRatingConfig, private router: Router,
@@ -64,14 +68,25 @@ export class SeriesDetailComponent implements OnInit {
               private utilityService: UtilityService, private toastr: ToastrService,
               private accountService: AccountService, public imageService: ImageService,
               private actionFactoryService: ActionFactoryService, private libraryService: LibraryService,
-              private confirmService: ConfirmService) {
+              private confirmService: ConfirmService, private collectionService: CollectionTagService) {
     ratingConfig.max = 5;
     this.router.routeReuseStrategy.shouldReuseRoute = () => false;
     this.accountService.currentUser$.pipe(take(1)).subscribe(user => {
       if (user) {
         this.isAdmin = this.accountService.hasAdminRole(user);
       }
-    })
+    });
+
+    this.settings.displayFn = ((data => data.title));
+    this.settings.minCharacters = 0;
+    this.settings.multiple = true;
+    this.settings.id = 'id';
+    this.settings.unique = true;
+    this.settings.addIfNonExisting = true;
+    this.settings.fetchFn = (filter) => this.collectionService.search(filter);
+    this.settings.addTransformFn = ((title: string) => {
+      return {id: 0, title: title, promoted: false };
+    });
   }
 
   ngOnInit(): void {

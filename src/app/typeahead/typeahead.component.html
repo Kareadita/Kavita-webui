@@ -6,14 +6,14 @@
         <div class="{{selectedOptions.length > 0 ? 'has-items': ''}}">
           <app-tag-badge *ngFor="let option of selectedOptions">
             {{ settings.displayFn(option) }}
-            <i class="fa fa-times" (click)="toggleSelection(undefined, option)" tabindex="0" aria-label="close"></i>
+            <i class="fa fa-times" (click)="toggleSelection(option)" tabindex="0" aria-label="close"></i>
           </app-tag-badge>
           <!-- TODO: As we type, we need to adjust the width -->
           <input #input type="text" autocomplete="off" tabindex="0" (focus)="setFocus()" (blur)="hasFocus = false" formControlName="typeahead">
         </div>
       </div>
-      <div class="dropdown" *ngIf="hasFocus">
-        <ul class="list-group results">
+      <div class="dropdown" *ngIf="hasFocus || true">
+        <ul class="list-group results" #results>
           <!-- <li *ngIf="hasFocus && !typeaheadControl.value" class="list-group-item">
             Type to search
           </li> -->
@@ -22,11 +22,16 @@
               <span class="invisible">Loading...</span>
             </div>
           </li>
-          <li (click)="addNewItem(typeaheadControl.value)" *ngIf="settings.addIfNonExisting && typeaheadControl.value && typeaheadControl.value.length > settings.minCharacters && typeaheadControl.dirty" class="list-group-item">
+          <li (click)="addNewItem(typeaheadControl.value)" *ngIf="settings.addIfNonExisting && typeaheadControl.value && typeaheadControl.value.length > settings.minCharacters && typeaheadControl.dirty" 
+            class="list-group-item" tabindex="0" role="option"
+            (focus)="highlight($event)" (blur)="removeHighlight($event)">
             Add {{typeaheadControl.value}}...
           </li>
-          <li *ngFor="let option of filteredOptions | async" (click)="toggleSelection($event, option)" class="list-group-item">
+          <li *ngFor="let option of filteredOptions | async; let index = index;" (click)="toggleSelection(option)" 
+              class="list-group-item" role="option" 
+              (focus)="highlight($event)" (blur)="removeHighlight($event)">
             <!-- <div class="form-check">
+              {{index == focusedIndex ? 'active' : ''}}
                 <input id="option-{{1}}" type="checkbox" class="form-check-input">
                 {{ settings.displayFn(option) }}
             </div> -->
