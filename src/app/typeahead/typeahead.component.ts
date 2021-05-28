@@ -46,12 +46,16 @@ export class SelectionModel<T> {
    * Will toggle if the data item is selected or not. If data option is not tracked, will add it and set state to true.
    * @param data Item to toggle
    */
-  toggle(data: T) {
+  toggle(data: T, selectedState?: boolean) {
     const dataItem = this._data.filter(d => d.value == data);
     if (dataItem.length > 0) {
-      dataItem[0].selected = !dataItem[0].selected;
+      if (selectedState != undefined) {
+        dataItem[0].selected = selectedState;
+      } else {
+        dataItem[0].selected = !dataItem[0].selected;
+      }
     } else {
-      this._data.push({value: data, selected: true});
+      this._data.push({value: data, selected: (selectedState === undefined ? true : selectedState)});
     }
   }
 

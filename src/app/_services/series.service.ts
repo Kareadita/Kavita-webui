@@ -119,7 +119,7 @@ export class SeriesService {
       seriesMetadata,
       tags
     };
-    return this.httpClient.post(this.baseUrl + 'series/metadata', data);
+    return this.httpClient.post(this.baseUrl + 'series/metadata', data, {responseType: 'text' as 'json'});
   }
 
   getSeriesForTag(collectionTagId: number, pageNum?: number, itemsPerPage?: number) {

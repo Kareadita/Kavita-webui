@@ -15,7 +15,7 @@
     [pagination]="seriesPagination"
     >
         <ng-template #cardItem let-item let-position="idx">
-            <app-series-card [data]="item" [libraryId]="item.libraryId" [suppressLibraryLink]="true" (reload)="loadPage()"></app-series-card>
+            <app-series-card [data]="item" [libraryId]="item.libraryId" (reload)="loadPage()"></app-series-card>
         </ng-template>
     </app-card-detail-layout>
 </ng-template>

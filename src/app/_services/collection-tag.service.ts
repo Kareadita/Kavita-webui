@@ -30,8 +30,8 @@ export class CollectionTagService {
     }));
   }
 
-  updatePromotion(tag: CollectionTag) {
-    return this.httpClient.post<string>(this.baseUrl + 'collection/update-promotion', tag);
+  updateTag(tag: CollectionTag) {
+    return this.httpClient.post(this.baseUrl + 'collection/update', tag, {responseType: 'text' as 'json'});
   }
 
   exists() {

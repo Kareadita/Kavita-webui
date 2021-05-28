@@ -16,6 +16,7 @@ import { RouterModule } from '@angular/router';
 import { DrawerComponent } from './drawer/drawer.component';
 import { TagBadgeComponent } from './tag-badge/tag-badge.component';
 import { CardDetailLayoutComponent } from './card-detail-layout/card-detail-layout.component';
+import { ShowIfScrollbarDirective } from './show-if-scrollbar.directive';
 
 
 @NgModule({
@@ -31,7 +32,8 @@ import { CardDetailLayoutComponent } from './card-detail-layout/card-detail-layo
     ReadMoreComponent,
     DrawerComponent,
     TagBadgeComponent,
-    CardDetailLayoutComponent
+    CardDetailLayoutComponent,
+    ShowIfScrollbarDirective
   ],
   imports: [
     CommonModule,
@@ -54,7 +56,8 @@ import { CardDetailLayoutComponent } from './card-detail-layout/card-detail-layo
     ReadMoreComponent,
     DrawerComponent,
     TagBadgeComponent,
-    CardDetailLayoutComponent
+    CardDetailLayoutComponent,
+    ShowIfScrollbarDirective
   ]
 })
 export class SharedModule { }
