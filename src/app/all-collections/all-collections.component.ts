@@ -38,16 +38,9 @@ export class AllCollectionsComponent implements OnInit {
   }
 
   ngOnInit() {
-
     this.loadPage();
-
   }
 
-  
-
-  openCollectionDetail(event: CollectionTag) {
-    console.log(event);
-  }
 
   loadCollection(item: CollectionTag) {
     this.collectionTagId = item.id;
@@ -57,8 +50,7 @@ export class AllCollectionsComponent implements OnInit {
   }
 
   loadPage() {
-    // Reload page after a series is updated or first load:
-
+    // Reload page after a series is updated or first load
     if (this.collectionTagId === 0) {
       this.collectionService.allTags().subscribe(tags => {
         this.collections = tags;
@@ -71,8 +63,6 @@ export class AllCollectionsComponent implements OnInit {
         this.isLoading = false;
       });
     }
-
   }
-  
 
 }

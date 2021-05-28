@@ -2,13 +2,9 @@
     <app-card-detail-layout header="Collections" 
     [isLoading]="isLoading"
     [items]="collections"
-    (itemClicked)="openCollectionDetail($event)"
     >
-
         <ng-template #cardItem let-item let-position="idx">
-            <div class="card p-2 clickable" (click)="loadCollection(item)">
-                {{item.title}}
-            </div>
+            <app-card-item [title]="item.title" [entity]="item" (clicked)="loadCollection(item)"></app-card-item>
         </ng-template>
     </app-card-detail-layout>
 </ng-container>
@@ -17,9 +13,7 @@
     [isLoading]="isLoading"
     [items]="series"
     [pagination]="seriesPagination"
-    (itemClicked)="openCollectionDetail($event)"
     >
-
         <ng-template #cardItem let-item let-position="idx">
             <app-series-card [data]="item" [libraryId]="item.libraryId" [suppressLibraryLink]="true" (reload)="loadPage()"></app-series-card>
         </ng-template>
