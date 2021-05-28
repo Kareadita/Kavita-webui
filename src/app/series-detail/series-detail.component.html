@@ -72,7 +72,11 @@
                     <div class="col-md-6">
                         <div class="form-group">
                             <label for="collections">Collections</label>
-                            <app-typeahead [settings]="settings"></app-typeahead>
+                            <app-typeahead [settings]="settings">
+                                <ng-template #optionItem let-item let-position="idx">
+                                    {{item.title}}
+                                </ng-template>
+                            </app-typeahead>
                         </div>
                     </div>
                 </div>

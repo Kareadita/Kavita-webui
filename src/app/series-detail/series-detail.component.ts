@@ -12,6 +12,7 @@ import { TypeaheadSettings } from '../typeahead/typeahead-settings';
 import { EditSeriesModalComponent } from '../_modals/edit-series-modal/edit-series-modal.component';
 import { ReviewSeriesModalComponent } from '../_modals/review-series-modal/review-series-modal.component';
 import { Chapter } from '../_models/chapter';
+import { CollectionTag } from '../_models/collection-tag';
 import { LibraryType } from '../_models/library';
 import { Series } from '../_models/series';
 import { SeriesMetadata } from '../_models/series-metadata';
@@ -80,13 +81,17 @@ export class SeriesDetailComponent implements OnInit {
     this.settings.displayFn = ((data => data.title));
     this.settings.minCharacters = 0;
     this.settings.multiple = true;
-    this.settings.id = 'id';
+    this.settings.id = 'collections';
     this.settings.unique = true;
     this.settings.addIfNonExisting = true;
     this.settings.fetchFn = (filter) => this.collectionService.search(filter);
     this.settings.addTransformFn = ((title: string) => {
       return {id: 0, title: title, promoted: false };
     });
+    this.settings.compareFn = (options: CollectionTag[], filter: string) => {
+      const f = filter.toLowerCase();
+      return options.filter(m => m.title.toLowerCase().includes(f));
+    }
   }
 
   ngOnInit(): void {

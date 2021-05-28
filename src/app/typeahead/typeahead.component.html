@@ -2,43 +2,37 @@
     <ng-container *ngIf="settings.multiple" >
 
 
-      <div class="typeahead-input" (click)="shiftFocus()">
-        <div class="{{selectedOptions.length > 0 ? 'has-items': ''}}">
-          <app-tag-badge *ngFor="let option of selectedOptions">
+      <div class="typeahead-input" (click)="onInputFocus($event)">
+        <div class="{{optionSelection.selected().length > 0 ? 'has-items': ''}}">
+          <app-tag-badge *ngFor="let option of optionSelection.selected()">
             {{ settings.displayFn(option) }}
             <i class="fa fa-times" (click)="toggleSelection(option)" tabindex="0" aria-label="close"></i>
           </app-tag-badge>
-          <!-- TODO: As we type, we need to adjust the width -->
-          <input #input type="text" autocomplete="off" tabindex="0" (focus)="setFocus()" (blur)="hasFocus = false" formControlName="typeahead">
+
+          <input #input [id]="settings.id" type="text" autocomplete="off" (focus)="onInputFocus($event)" (blur)="hasFocus = false" formControlName="typeahead">
+          <div class="spinner-border spinner-border-sm" role="status" *ngIf="isLoadingOptions">
+            <span class="sr-only">Loading...</span>
+          </div>
         </div>
       </div>
-      <div class="dropdown" *ngIf="hasFocus || true">
+      <div class="dropdown" *ngIf="hasFocus">
         <ul class="list-group results" #results>
-          <!-- <li *ngIf="hasFocus && !typeaheadControl.value" class="list-group-item">
+          <!-- <li *ngIf="hasFocus && !typeaheadControl.value && (filteredOptions | async)?.length === 0" class="list-group-item">
             Type to search
           </li> -->
-          <li *ngIf="isLoadingOptions">
-            <div class="spinner-border text-secondary" role="status">
-              <span class="invisible">Loading...</span>
-            </div>
-          </li>
-          <li (click)="addNewItem(typeaheadControl.value)" *ngIf="settings.addIfNonExisting && typeaheadControl.value && typeaheadControl.value.length > settings.minCharacters && typeaheadControl.dirty" 
-            class="list-group-item" tabindex="0" role="option"
-            (focus)="highlight($event)" (blur)="removeHighlight($event)">
-            Add {{typeaheadControl.value}}...
-          </li>
-          <li *ngFor="let option of filteredOptions | async; let index = index;" (click)="toggleSelection(option)" 
-              class="list-group-item" role="option" 
-              (focus)="highlight($event)" (blur)="removeHighlight($event)">
-            <!-- <div class="form-check">
-              {{index == focusedIndex ? 'active' : ''}}
-                <input id="option-{{1}}" type="checkbox" class="form-check-input">
-                {{ settings.displayFn(option) }}
-            </div> -->
-            <!-- TODO: Replace this with templateRef -->
-            {{ settings.displayFn(option) }}
-          </li>
-      </ul>
+          <ng-container *ngIf="filteredOptions | async as options">
+            <li (click)="addNewItem(typeaheadControl.value)" 
+              *ngIf="showAddItem" 
+              class="list-group-item add-item" tabindex="0" role="option" (mouseenter)="focusedIndex = 0; updateHighlight();">
+              Add {{typeaheadControl.value}}...
+            </li>
+            <li *ngFor="let option of options; let index = index;" (click)="toggleSelection(option)"  
+                class="list-group-item" role="option"
+                (mouseenter)="focusedIndex = index + (showAddItem ? 1 : 0); updateHighlight();">
+              <ng-container [ngTemplateOutlet]="optionTemplate" [ngTemplateOutletContext]="{ $implicit: option, idx: index }"></ng-container>
+            </li>
+          </ng-container>
+        </ul>
       </div>
 
 
@@ -52,7 +46,9 @@
           </mat-option>
           <ng-container *ngIf="(filteredOptions | async)?.length > 0; else noResults">
             <mat-option *ngFor="let option of (filteredOptions | async)" [value]="settings.displayFn(option)" (click)="toggleSingle(option)">
-              <div style="width:100%">{{ settings.displayFn(option) }}</div>
+              <div style="width:100%">
+                <ng-container [ngTemplateOutlet]="optionTemplate" [ngTemplateOutletContext]="{ $implicit: option, idx: index }"></ng-container>
+              </div>
             </mat-option>
           </ng-container>
           <mat-option *ngIf="isLoadingOptions" disabled> 
