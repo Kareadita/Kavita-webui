@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Chapter } from '../_models/chapter';
+import { CollectionTag } from '../_models/collection-tag';
 import { Library } from '../_models/library';
 import { Series } from '../_models/series';
 import { Volume } from '../_models/volume';
@@ -12,7 +13,8 @@ export enum Action {
   Delete = 3,
   Edit = 4,
   Info = 5,
-  RefreshMetadata = 6
+  RefreshMetadata = 6,
+  Promote = 7
 }
 
 export interface ActionItem<T> {
@@ -35,6 +37,8 @@ export class ActionFactoryService {
 
   chapterActions: Array<ActionItem<Chapter>> = [];
 
+  collectionTagActions: Array<ActionItem<CollectionTag>> = [];
+
   isAdmin = false;
 
   constructor(private accountService: AccountService) {
@@ -49,6 +53,18 @@ export class ActionFactoryService {
       this._resetActions();
 
       if (this.isAdmin) {
+        this.collectionTagActions.push({
+          action: Action.Promote,
+          title: 'Promote',
+          callback: this.dummyCallback
+        });
+
+        this.collectionTagActions.push({
+          action: Action.Edit,
+          title: 'Edit',
+          callback: this.dummyCallback
+        });
+
         this.seriesActions.push({
           action: Action.ScanLibrary,
           title: 'Scan Library',
@@ -106,6 +122,11 @@ export class ActionFactoryService {
   getChapterActions(callback: (action: Action, chapter: Chapter) => void) {
     this.chapterActions.forEach(action => action.callback = callback);
     return this.chapterActions;
+  }
+
+  getCollectionTagActions(callback: (action: Action, collectionTag: CollectionTag) => void) {
+    this.collectionTagActions.forEach(action => action.callback = callback);
+    return this.collectionTagActions;
   }
 
   dummyCallback(action: Action, data: any) {}

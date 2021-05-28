@@ -7,10 +7,11 @@ import { Library } from '../_models/library';
 import { Series } from '../_models/series';
 import { User } from '../_models/user';
 import { AccountService } from '../_services/account.service';
+import { Action, ActionFactoryService, ActionItem } from '../_services/action-factory.service';
 import { CollectionTagService } from '../_services/collection-tag.service';
-import { ImageService } from '../_services/image.service';
 import { LibraryService } from '../_services/library.service';
 import { SeriesService } from '../_services/series.service';
+
 @Component({
   selector: 'app-library',
   templateUrl: './library.component.html',
@@ -27,9 +28,10 @@ export class LibraryComponent implements OnInit {
   inProgress: Series[] = [];
   continueReading: InProgressChapter[] = [];
   collectionTags: CollectionTag[] = [];
+  collectionTagActions: ActionItem<CollectionTag>[] = [];
 
   constructor(public accountService: AccountService, private libraryService: LibraryService, 
-    private seriesService: SeriesService, private imageService: ImageService,
+    private seriesService: SeriesService, private actionFactoryService: ActionFactoryService,
     private collectionService: CollectionTagService, private router: Router) { }
 
   ngOnInit(): void {
@@ -42,6 +44,8 @@ export class LibraryComponent implements OnInit {
         this.isLoading = false;
       });
     });
+
+    this.collectionTagActions = this.actionFactoryService.getCollectionTagActions(this.handleCollectionActionCallback.bind(this));
 
     this.reloadSeries();
   }
@@ -72,6 +76,19 @@ export class LibraryComponent implements OnInit {
 
   loadCollection(item: CollectionTag) {
     this.router.navigate(['collections', item.id]);
+  }
+
+  handleCollectionActionCallback(action: Action, collectionTag: CollectionTag) {
+    switch (action) {
+      case(Action.Edit):
+        //this.markChapterAsRead(chapter);
+        break;
+      case(Action.Promote):
+        //this.markChapterAsUnread(chapter);
+        break;
+      default:
+        break;
+    }
   }
 
 }

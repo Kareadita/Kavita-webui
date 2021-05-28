@@ -35,6 +35,7 @@ import { Dedupe as DedupeIntegration } from "@sentry/integrations";
 import { PersonBadgeComponent } from './person-badge/person-badge.component';
 import { TypeaheadModule } from './typeahead/typeahead.module';
 import { AllCollectionsComponent } from './all-collections/all-collections.component';
+import { EditCollectionTagsComponent } from './_modals/edit-collection-tags/edit-collection-tags.component';
 
 let sentryProviders: any[] = [];
 
@@ -99,7 +100,7 @@ if (environment.production) {
     UserPreferencesComponent, // Move into SettingsModule
     EditSeriesModalComponent, 
     ReviewSeriesModalComponent, 
-    PersonBadgeComponent, AllCollectionsComponent, 
+    PersonBadgeComponent, AllCollectionsComponent, EditCollectionTagsComponent, 
   ],
   imports: [
     HttpClientModule,

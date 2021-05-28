@@ -70,4 +70,9 @@ export class CardItemComponent implements OnInit, OnDestroy {
       action.callback(action.action, this.entity);
     }
   }
+
+  isPromoted() {
+    const tag = this.entity as CollectionTag;
+    return tag.hasOwnProperty('promoted') && tag.promoted;
+  }
 }
