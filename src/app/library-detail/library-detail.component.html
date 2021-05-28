@@ -1,4 +1,15 @@
-<div class="container-fluid" style="padding-top: 10px">
+<app-card-detail-layout header="{{libraryName}}" 
+    [isLoading]="loadingSeries"
+    [items]="series"
+    [pagination]="pagination"
+    (pageChange)="onPageChange($event)"
+    >
+
+        <ng-template #cardItem let-item let-position="idx">
+            <app-series-card [data]="item" [libraryId]="libraryId" [suppressLibraryLink]="true" (reload)="loadPage()"></app-series-card>
+        </ng-template>
+    </app-card-detail-layout>
+<!-- <div class="container-fluid" style="padding-top: 10px">
     <div class="d-flex justify-content-center" *ngIf="pagination && series.length !== 0">
         <ngb-pagination
             [(page)]="pageNumber"
@@ -30,4 +41,4 @@
     <ng-container *ngIf="series.length === 0 && !loadingSeries">
         There are no Series.
     </ng-container>
-</div>
+</div> -->

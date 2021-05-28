@@ -15,6 +15,7 @@ export class CollectionTagService {
   constructor(private httpClient: HttpClient) { }
 
   allTags() {
+    // TODO: Pipe then tags.forEach(s => s.coverImage = this.imageService.getSeriesCoverImage(s.id));
     return this.httpClient.get<CollectionTag[]>(this.baseUrl + 'collection/');
   }
 

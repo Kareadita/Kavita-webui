@@ -2,7 +2,7 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
 import { CardItemComponent } from './card-item/card-item.component';
-import { NgbCollapseModule, NgbDropdownModule, NgbProgressbarModule, NgbTooltipModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbCollapseModule, NgbDropdownModule, NgbPaginationModule, NgbProgressbarModule, NgbTooltipModule } from '@ng-bootstrap/ng-bootstrap';
 import { LibraryCardComponent } from './library-card/library-card.component';
 import { SeriesCardComponent } from './series-card/series-card.component';
 import { CardDetailsModalComponent } from './_modals/card-details-modal/card-details-modal.component';
@@ -15,6 +15,7 @@ import { ReadMoreComponent } from './read-more/read-more.component';
 import { RouterModule } from '@angular/router';
 import { DrawerComponent } from './drawer/drawer.component';
 import { TagBadgeComponent } from './tag-badge/tag-badge.component';
+import { CardDetailLayoutComponent } from './card-detail-layout/card-detail-layout.component';
 
 
 @NgModule({
@@ -29,7 +30,8 @@ import { TagBadgeComponent } from './tag-badge/tag-badge.component';
     CardActionablesComponent,
     ReadMoreComponent,
     DrawerComponent,
-    TagBadgeComponent
+    TagBadgeComponent,
+    CardDetailLayoutComponent
   ],
   imports: [
     CommonModule,
@@ -39,7 +41,8 @@ import { TagBadgeComponent } from './tag-badge/tag-badge.component';
     NgbProgressbarModule,
     NgbTooltipModule,
     NgbCollapseModule,
-    LazyLoadImageModule
+    LazyLoadImageModule,
+    NgbPaginationModule // CardDetailLayoutComponent
   ],
   exports: [
     RegisterMemberComponent, // TODO: Move this out and put in normal app
@@ -50,7 +53,8 @@ import { TagBadgeComponent } from './tag-badge/tag-badge.component';
     CardActionablesComponent,
     ReadMoreComponent,
     DrawerComponent,
-    TagBadgeComponent
+    TagBadgeComponent,
+    CardDetailLayoutComponent
   ]
 })
 export class SharedModule { }

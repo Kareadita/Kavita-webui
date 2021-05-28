@@ -30,5 +30,15 @@
             </ng-template>
         </app-carousel-reel>
     </div>
+
+    <div class="">
+        <app-carousel-reel [items]="collectionTags" title="Collections" (sectionClick)="handleSectionClick($event)">
+            <ng-template #carouselItem let-item let-position="idx">
+                <div class="card p-2 clickable" (click)="loadCollection(item)">
+                    {{item.title}}
+                </div>
+            </ng-template>
+        </app-carousel-reel>
+    </div>
     
 </div>

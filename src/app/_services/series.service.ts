@@ -113,4 +113,28 @@ export class SeriesService {
     };
     return this.httpClient.post(this.baseUrl + 'series/metadata', data);
   }
+
+  getSeriesForTag(collectionTagId: number, pageNum?: number, itemsPerPage?: number) {
+    let params = new HttpParams();
+    if (pageNum !== null && pageNum !== undefined && itemsPerPage !== null && itemsPerPage !== undefined) {
+      params = params.append('pageNumber', pageNum + '');
+      params = params.append('pageSize', itemsPerPage + '');
+    }
+    return this.httpClient.get<PaginatedResult<Series[]>>(this.baseUrl + 'series/series-by-collection?collectionId=' + collectionTagId, {observe: 'response', params}).pipe(
+      map((response: any) => {
+        if (response.body === null) {
+          this.paginatedResults.result = [];
+        } else {
+          this.paginatedResults.result = response.body;
+        }
+
+        const pageHeader = response.headers.get('Pagination');
+        if (pageHeader !== null) {
+          this.paginatedResults.pagination = JSON.parse(pageHeader);
+        }
+
+        return this.paginatedResults;
+      })
+    );
+  }
 }

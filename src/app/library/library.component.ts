@@ -1,10 +1,13 @@
 import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 import { take } from 'rxjs/operators';
+import { CollectionTag } from '../_models/collection-tag';
 import { InProgressChapter } from '../_models/in-progress-chapter';
 import { Library } from '../_models/library';
 import { Series } from '../_models/series';
 import { User } from '../_models/user';
 import { AccountService } from '../_services/account.service';
+import { CollectionTagService } from '../_services/collection-tag.service';
 import { ImageService } from '../_services/image.service';
 import { LibraryService } from '../_services/library.service';
 import { SeriesService } from '../_services/series.service';
@@ -23,8 +26,11 @@ export class LibraryComponent implements OnInit {
   recentlyAdded: Series[] = [];
   inProgress: Series[] = [];
   continueReading: InProgressChapter[] = [];
+  collectionTags: CollectionTag[] = [];
 
-  constructor(public accountService: AccountService, private libraryService: LibraryService, private seriesService: SeriesService, private imageService: ImageService) { }
+  constructor(public accountService: AccountService, private libraryService: LibraryService, 
+    private seriesService: SeriesService, private imageService: ImageService,
+    private collectionService: CollectionTagService, private router: Router) { }
 
   ngOnInit(): void {
     this.isLoading = true;
@@ -47,6 +53,11 @@ export class LibraryComponent implements OnInit {
       this.inProgress = series;
     });
 
+    this.collectionService.allTags().subscribe(tags => {
+      //tags.forEach(s => s.coverImage = this.imageService.getSeriesCoverImage(s.id));
+      this.collectionTags = tags;
+    });
+
     // this.seriesService.getContinueReading().subscribe((chapters) => {
     //   chapters.forEach(s => s.coverImage = this.imageService.getChapterCoverImage(s.id));
     //   this.continueReading = chapters;
@@ -66,7 +77,17 @@ export class LibraryComponent implements OnInit {
   }
 
   handleSectionClick(sectionTitle: string) {
-    // TODO: Implement this in future. For now, it is not supported
+    if (sectionTitle.toLowerCase() === 'collections') {
+      this.router.navigate(['collections']);
+    } else if (sectionTitle.toLowerCase() === 'recently added') {
+      this.router.navigate(['recently-added']);
+    } else if (sectionTitle.toLowerCase() === 'in progress') {
+      this.router.navigate(['in-progress']);
+    }
+  }
+
+  loadCollection(item: CollectionTag) {
+    this.router.navigate(['collections', item.id]);
   }
 
 }

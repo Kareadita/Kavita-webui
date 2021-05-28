@@ -34,6 +34,7 @@ import { RewriteFrames as RewriteFramesIntegration } from "@sentry/integrations"
 import { Dedupe as DedupeIntegration } from "@sentry/integrations";
 import { PersonBadgeComponent } from './person-badge/person-badge.component';
 import { TypeaheadModule } from './typeahead/typeahead.module';
+import { AllCollectionsComponent } from './all-collections/all-collections.component';
 
 let sentryProviders: any[] = [];
 
@@ -98,7 +99,7 @@ if (environment.production) {
     UserPreferencesComponent, // Move into SettingsModule
     EditSeriesModalComponent, 
     ReviewSeriesModalComponent, 
-    PersonBadgeComponent, 
+    PersonBadgeComponent, AllCollectionsComponent, 
   ],
   imports: [
     HttpClientModule,
