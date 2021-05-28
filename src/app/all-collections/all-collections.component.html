@@ -4,7 +4,7 @@
     [items]="collections"
     >
         <ng-template #cardItem let-item let-position="idx">
-            <app-card-item [title]="item.title" [entity]="item" (clicked)="loadCollection(item)"></app-card-item>
+            <app-card-item [title]="item.title" [entity]="item" [imageUrl]="item.coverImage" (clicked)="loadCollection(item)"></app-card-item>
         </ng-template>
     </app-card-detail-layout>
 </ng-container>

@@ -43,36 +43,20 @@ export class LibraryComponent implements OnInit {
       });
     });
 
-    this.seriesService.getRecentlyAdded().subscribe((series) => {
-      series.forEach(s => s.coverImage = this.imageService.getSeriesCoverImage(s.id));
-      this.recentlyAdded = series;
-    });
-
-    this.seriesService.getInProgress().subscribe((series) => {
-      series.forEach(s => s.coverImage = this.imageService.getSeriesCoverImage(s.id));
-      this.inProgress = series;
-    });
-
-    this.collectionService.allTags().subscribe(tags => {
-      //tags.forEach(s => s.coverImage = this.imageService.getSeriesCoverImage(s.id));
-      this.collectionTags = tags;
-    });
-
-    // this.seriesService.getContinueReading().subscribe((chapters) => {
-    //   chapters.forEach(s => s.coverImage = this.imageService.getChapterCoverImage(s.id));
-    //   this.continueReading = chapters;
-    // });
+    this.reloadSeries();
   }
 
   reloadSeries() {
     this.seriesService.getRecentlyAdded().subscribe((series) => {
-      series.forEach(s => s.coverImage = this.imageService.getSeriesCoverImage(s.id));
       this.recentlyAdded = series;
     });
 
     this.seriesService.getInProgress().subscribe((series) => {
-      series.forEach(s => s.coverImage = this.imageService.getSeriesCoverImage(s.id));
       this.inProgress = series;
+    });
+
+    this.collectionService.allTags().subscribe(tags => {
+      this.collectionTags = tags;
     });
   }
 

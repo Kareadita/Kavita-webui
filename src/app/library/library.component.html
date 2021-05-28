@@ -34,7 +34,7 @@
     <div class="">
         <app-carousel-reel [items]="collectionTags" title="Collections" (sectionClick)="handleSectionClick($event)">
             <ng-template #carouselItem let-item let-position="idx">
-                <app-card-item [title]="item.title" [entity]="item" (clicked)="loadCollection(item)"></app-card-item>
+                <app-card-item [title]="item.title" [entity]="item" [imageUrl]="item.coverImage" (clicked)="loadCollection(item)"></app-card-item>
             </ng-template>
         </app-carousel-reel>
     </div>

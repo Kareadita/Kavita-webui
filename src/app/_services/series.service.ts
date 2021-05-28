@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
+import { isTemplateExpression } from 'typescript';
 import { Chapter } from '../_models/chapter';
 import { CollectionTag } from '../_models/collection-tag';
 import { InProgressChapter } from '../_models/in-progress-chapter';
@@ -10,6 +11,7 @@ import { PaginatedResult } from '../_models/pagination';
 import { Series } from '../_models/series';
 import { SeriesMetadata } from '../_models/series-metadata';
 import { Volume } from '../_models/volume';
+import { ImageService } from './image.service';
 
 @Injectable({
   providedIn: 'root'
@@ -19,7 +21,7 @@ export class SeriesService {
   baseUrl = environment.apiUrl;
   paginatedResults: PaginatedResult<Series[]> = new PaginatedResult<Series[]>();
 
-  constructor(private httpClient: HttpClient) { }
+  constructor(private httpClient: HttpClient, private imageService: ImageService) { }
 
   getSeriesForLibrary(libraryId: number, pageNum?: number, itemsPerPage?: number) {
     let params = new HttpParams();
@@ -87,11 +89,17 @@ export class SeriesService {
   }
 
   getRecentlyAdded(libraryId: number = 0) {
-    return this.httpClient.get<Series[]>(this.baseUrl + 'series/recently-added?libraryId=' + libraryId);
+    return this.httpClient.get<Series[]>(this.baseUrl + 'series/recently-added?libraryId=' + libraryId).pipe(map(series => {
+      series.forEach(s => s.coverImage = this.imageService.getSeriesCoverImage(s.id));
+      return series;
+    }));
   }
 
   getInProgress(libraryId: number = 0) {
-    return this.httpClient.get<Series[]>(this.baseUrl + 'series/in-progress?libraryId=' + libraryId);
+    return this.httpClient.get<Series[]>(this.baseUrl + 'series/in-progress?libraryId=' + libraryId).pipe(map(series => {
+      series.forEach(s => s.coverImage = this.imageService.getSeriesCoverImage(s.id));
+      return series;
+    }));
   }
 
   getContinueReading(libraryId: number = 0) {
