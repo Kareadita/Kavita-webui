@@ -61,6 +61,10 @@ export class LibraryComponent implements OnInit {
       this.inProgress = series;
     });
 
+    this.reloadTags();
+  }
+
+  reloadTags() {
     this.collectionService.allTags().subscribe(tags => {
       this.collectionTags = tags;
     });
@@ -85,9 +89,10 @@ export class LibraryComponent implements OnInit {
       case(Action.Edit):
         const modalRef = this.modalService.open(EditCollectionTagsComponent, { size: 'lg', scrollable: true });
         modalRef.componentInstance.tag = collectionTag;
-        modalRef.closed.subscribe((closeResult: {success: boolean, tag: CollectionTag}) => {
-          if (closeResult.success) {
-            collectionTag = closeResult.tag;
+        modalRef.closed.subscribe((reloadNeeded: boolean) => {
+          if (reloadNeeded) {
+            // Reload tags
+            this.reloadTags();
           }
         });
         break;

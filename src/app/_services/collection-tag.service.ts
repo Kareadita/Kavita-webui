@@ -46,8 +46,8 @@ export class CollectionTagService {
 
   }
 
-  getTagsForSeries(seriesId: number, seriesMetadataId: number) {
-
+  updateSeriesForTag(tag: CollectionTag, seriesIdsToRemove: Array<number>) {
+    return this.httpClient.post(this.baseUrl + 'collection/update-series', {tag, seriesIdsToRemove}, {responseType: 'text' as 'json'});
   }
 
 

@@ -1,6 +1,7 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { ToastrService } from 'ngx-toastr';
+import { ConfirmService } from 'src/app/shared/confirm.service';
 import { SelectionModel } from 'src/app/typeahead/typeahead.component';
 import { CollectionTag } from 'src/app/_models/collection-tag';
 import { Pagination } from 'src/app/_models/pagination';
@@ -24,7 +25,9 @@ export class EditCollectionTagsComponent implements OnInit {
   selectAll: boolean = true;
 
 
-  constructor(public modal: NgbActiveModal, private seriesService: SeriesService, private collectionService: CollectionTagService, private toastr: ToastrService) { }
+  constructor(public modal: NgbActiveModal, private seriesService: SeriesService, 
+    private collectionService: CollectionTagService, private toastr: ToastrService,
+    private confirmSerivce: ConfirmService) { }
 
   ngOnInit(): void {
     if (this.pagination == undefined) {
@@ -77,20 +80,17 @@ export class EditCollectionTagsComponent implements OnInit {
   }
 
   close() {
-    this.modal.close({success: false, tag: undefined});
+    this.modal.close(false);
   }
 
-  save() {
-    console.log('selected: ', this.selections._data);
-    //this.modal.close({success: true, tag: this.tag});
-    // if (this.member?.username === undefined) {
-    //   return;
-    // }
-
-    // const selectedLibraries = this.selectedLibraries.filter(item => item.selected).map(item => item.data);
-    // this.libraryService.updateLibrariesForMember(this.member?.username, selectedLibraries).subscribe(() => {
-    //   this.modal.close(true);
-    // });
+  async save() {
+    const unselectedIds = this.selections.unselected().map(s => s.id);
+    if (unselectedIds.length == this.series.length && await this.confirmSerivce.confirm('Warning! No series are selected, saving will delete the tag. Are you sure you want to continue?')) {
+      this.collectionService.updateSeriesForTag(this.tag, this.selections.unselected().map(s => s.id)).subscribe(() => {
+        this.toastr.success('Tag updated');
+        this.modal.close(true);
+      });
+    }
   }
 
   get someSelected() {

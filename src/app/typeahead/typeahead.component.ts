@@ -79,6 +79,14 @@ export class SelectionModel<T> {
   selected(): Array<T> {
     return this._data.filter(d => d.selected).map(d => d.value);
   }
+
+  /**
+   * 
+   * @returns All Non-Selected items
+   */
+   unselected(): Array<T> {
+    return this._data.filter(d => !d.selected).map(d => d.value);
+  }
 }
 
 @Component({
