@@ -30,6 +30,10 @@ export class CollectionTagService {
     }));
   }
 
+  updatePromotion(tag: CollectionTag) {
+    return this.httpClient.post<string>(this.baseUrl + 'collection/update-promotion', tag);
+  }
+
   exists() {
     // TODO
   }

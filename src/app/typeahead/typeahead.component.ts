@@ -2,25 +2,45 @@ import { HttpClient } from '@angular/common/http';
 import { Component, ElementRef, EventEmitter, HostListener, Input, OnInit, Output, Renderer2, RendererStyleFlags2, ViewChild } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
 import { Observable, of } from 'rxjs';
-import { debounceTime, distinctUntilChanged, filter, map, shareReplay, skip, switchMap, take, tap } from 'rxjs/operators';
+import { debounceTime, distinctUntilChanged, filter, shareReplay, switchMap, take, tap } from 'rxjs/operators';
 import { KEY_CODES } from '../shared/_services/utility.service';
 import { TypeaheadSettings } from './typeahead-settings';
 
+/**
+   * SelectionModel<T> is used for keeping track of multiple selections. Simple interface with ability to toggle. 
+   * @param selectedState Optional state to set selectedOptions to. If not passed, defaults to false.
+   * @param selectedOptions Optional data elements to inform the SelectionModel of. If not passed, as toggle() occur, items are tracked.
+   * @param propAccessor Optional string that points to a unique field within the T type. Used for quickly looking up.
+   */
 export class SelectionModel<T> {
   _data!: Array<{value: T, selected: boolean}>;
+  _propAccessor: string = '';
 
-  constructor(selectedState: boolean, selectedOptions: Array<T>) {
+  constructor(selectedState: boolean = false, selectedOptions: Array<T> = [], propAccessor: string = '') {
     this._data = [];
 
+    if (propAccessor != undefined || propAccessor !== '') {
+      this._propAccessor = propAccessor;
+    }
+
     selectedOptions.forEach(d => {
-      const dataItem = this._data.filter(data => data.value == d);
-      if (dataItem.length > 0) {
-        dataItem[0].selected = selectedState;
-      } else {
-        this._data.push({value: d, selected: selectedState});
-      }
+      this._data.push({value: d, selected: selectedState});
+      // why did i have those checks in the constructor?
+      // const dataItem = this._data.filter(data => data.value == d);
+      // if (dataItem.length > 0) {
+      //   dataItem[0].selected = selectedState;
+      // } else {
+      //   this._data.push({value: d, selected: selectedState});
+      // }
     });
   }
+
+  // __lookupItem(item: T) {
+  //   if (this._propAccessor != '') {
+  //     // TODO: Implement this code to speedup lookups (use a map rather than array)
+  //   }
+  //   const dataItem = this._data.filter(data => data.value == d);
+  // }
 
   /**
    * Will toggle if the data item is selected or not. If data option is not tracked, will add it and set state to true.
@@ -35,6 +55,11 @@ export class SelectionModel<T> {
     }
   }
 
+  /**
+   * Is the passed item selected
+   * @param data item to check against
+   * @returns boolean
+   */
   isSelected(data: T): boolean {
     const dataItem = this._data.filter(d => d.value == data);
     if (dataItem.length > 0) {
@@ -43,6 +68,10 @@ export class SelectionModel<T> {
     return false;
   }
 
+  /**
+   * 
+   * @returns All Selected items
+   */
   selected(): Array<T> {
     return this._data.filter(d => d.selected).map(d => d.value);
   }

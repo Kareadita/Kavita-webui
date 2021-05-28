@@ -13,8 +13,7 @@ export enum Action {
   Delete = 3,
   Edit = 4,
   Info = 5,
-  RefreshMetadata = 6,
-  Promote = 7
+  RefreshMetadata = 6
 }
 
 export interface ActionItem<T> {
@@ -53,12 +52,6 @@ export class ActionFactoryService {
       this._resetActions();
 
       if (this.isAdmin) {
-        this.collectionTagActions.push({
-          action: Action.Promote,
-          title: 'Promote',
-          callback: this.dummyCallback
-        });
-
         this.collectionTagActions.push({
           action: Action.Edit,
           title: 'Edit',

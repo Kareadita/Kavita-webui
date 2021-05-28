@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { take } from 'rxjs/operators';
+import { EditCollectionTagsComponent } from '../_modals/edit-collection-tags/edit-collection-tags.component';
 import { CollectionTag } from '../_models/collection-tag';
 import { InProgressChapter } from '../_models/in-progress-chapter';
 import { Library } from '../_models/library';
@@ -32,7 +34,7 @@ export class LibraryComponent implements OnInit {
 
   constructor(public accountService: AccountService, private libraryService: LibraryService, 
     private seriesService: SeriesService, private actionFactoryService: ActionFactoryService,
-    private collectionService: CollectionTagService, private router: Router) { }
+    private collectionService: CollectionTagService, private router: Router, private modalService: NgbModal) { }
 
   ngOnInit(): void {
     this.isLoading = true;
@@ -81,10 +83,13 @@ export class LibraryComponent implements OnInit {
   handleCollectionActionCallback(action: Action, collectionTag: CollectionTag) {
     switch (action) {
       case(Action.Edit):
-        //this.markChapterAsRead(chapter);
-        break;
-      case(Action.Promote):
-        //this.markChapterAsUnread(chapter);
+        const modalRef = this.modalService.open(EditCollectionTagsComponent, { size: 'lg', scrollable: true });
+        modalRef.componentInstance.tag = collectionTag;
+        modalRef.closed.subscribe((closeResult: {success: boolean, tag: CollectionTag}) => {
+          if (closeResult.success) {
+            collectionTag = closeResult.tag;
+          }
+        });
         break;
       default:
         break;
