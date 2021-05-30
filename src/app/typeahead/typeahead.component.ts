@@ -88,6 +88,18 @@ export class SelectionModel<T> {
     return this._data.filter(d => !d.selected).map(d => d.value);
   }
 
+  /**
+   * 
+   * @returns Last element added/tracked or undefined if nothing is tracked
+   */
+  peek(): T | undefined {
+    if (this._data.length > 0) {
+      return this._data[this._data.length - 1].value;
+    }
+
+    return undefined;
+  }
+
   shallowEqual(object1: T, object2: T) {
     const keys1 = Object.keys(object1);
     const keys2 = Object.keys(object2);
@@ -213,7 +225,7 @@ export class TypeaheadComponent implements OnInit, OnDestroy {
   @HostListener('window:keydown', ['$event'])
   handleKeyPress(event: KeyboardEvent) { 
     if (!this.hasFocus) { return; }
-
+    console.log(event.key);
     switch(event.key) {
       case KEY_CODES.DOWN_ARROW:
       case KEY_CODES.RIGHT_ARROW:
@@ -249,8 +261,16 @@ export class TypeaheadComponent implements OnInit, OnDestroy {
       }
       case KEY_CODES.BACKSPACE:
       case KEY_CODES.DELETE:
-        // TODO: Delete last element/selection
-          break;
+      {
+        if (this.typeaheadControl.value !== null && this.typeaheadControl.value !== undefined && this.typeaheadControl.value.trim() !== '') {
+          return;
+        }
+        const selected = this.optionSelection.selected();
+        if (selected.length > 0) {
+          this.removeSelectedOption(selected.pop());
+        }
+        break;
+      }
       default:
         // Adjust input box to grow
         if (this.inputElem && this.inputElem.nativeElement) {
@@ -304,15 +324,15 @@ export class TypeaheadComponent implements OnInit, OnDestroy {
   }
 
   filterSelected(item: any) {
-    //const selected = this.optionSelection.selected();
-    
-    if (this.settings.unique && this.settings.multiple) { //  && selected.length > 0
-      console.log('Filtering ', item);
+    if (this.settings.unique && this.settings.multiple) {
       return !this.optionSelection.isSelected(item);
     }
 
-
     return true;
+  }
+
+  openDropdown() {
+    this.typeaheadControl.setValue(this.typeaheadControl.value);
   }
 
   onInputFocus(event: any) {
@@ -329,8 +349,8 @@ export class TypeaheadComponent implements OnInit, OnDestroy {
       this.hasFocus = true;
     }
    
+    this.openDropdown();
     this.isLoadingOptions = true;
-    this.typeaheadControl.setValue(this.typeaheadControl.value);
   }
 
 
