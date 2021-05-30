@@ -77,10 +77,9 @@ export class EditSeriesModalComponent implements OnInit, OnDestroy {
       sortName: new FormControl(this.series.sortName, []),
       rating: new FormControl(this.series.userRating, []),
 
-      genres: new FormControl(this.fb.array([]), []),
-      collections: new FormControl(this.fb.array([]), []),
-      author: new FormControl(this.fb.array([]), []),
-      artist: new FormControl(this.fb.array([]), []),
+      genres: new FormControl('', []),
+      author: new FormControl('', []),
+      artist: new FormControl('', []),
 
       coverImageIndex: new FormControl(0, [])
     });
@@ -88,8 +87,8 @@ export class EditSeriesModalComponent implements OnInit, OnDestroy {
     this.seriesService.getMetadata(this.series.id).subscribe(metadata => {
       if (metadata) {
         this.metadata = metadata;
-        this.editSeriesForm.get('collections')?.setValue(metadata.tags);
-        this.editSeriesForm.get('genres')?.setValue(metadata.genres);
+        //this.editSeriesForm.get('collections')?.setValue(metadata.tags);
+        //this.editSeriesForm.get('genres')?.setValue((metadata.genres || []).join(', '));
         this.settings.savedData = metadata.tags;
       }
     });
