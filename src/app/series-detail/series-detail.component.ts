@@ -91,7 +91,8 @@ export class SeriesDetailComponent implements OnInit {
     });
     this.settings.compareFn = (options: CollectionTag[], filter: string) => {
       const f = filter.toLowerCase();
-      return options.filter(m => m.title.toLowerCase().includes(f));
+      return options.filter(m => m.title.toLowerCase() === f);
+      //return options.filter(m => m.title.toLowerCase().includes(f));
     }
   }
 
@@ -110,9 +111,9 @@ export class SeriesDetailComponent implements OnInit {
 
     const seriesId = parseInt(routeId, 10);
     this.libraryId = parseInt(libraryId, 10);
-    // this.seriesService.getMetadata(seriesId).subscribe(metadata => {
-    //   this.seriesMetadata = metadata;
-    // });
+    this.seriesService.getMetadata(seriesId).subscribe(metadata => {
+      this.seriesMetadata = metadata;
+    });
     this.libraryService.getLibraryType(this.libraryId).subscribe(type => {
       this.libraryType = type;
       this.loadSeries(seriesId);

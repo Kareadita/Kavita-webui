@@ -56,13 +56,18 @@ export class EditSeriesModalComponent implements OnInit, OnDestroy {
     this.settings.displayFn = ((data => data.title));
     this.settings.minCharacters = 0;
     this.settings.multiple = true;
-    this.settings.id = 'id';
+    this.settings.id = 'collections';
     this.settings.unique = true;
     this.settings.addIfNonExisting = true;
     this.settings.fetchFn = (filter) => this.fetchCollectionTags(filter);
     this.settings.addTransformFn = ((title: string) => {
       return {id: 0, title: title, promoted: false };
     });
+    this.settings.compareFn = (options: CollectionTag[], filter: string) => {
+      const f = filter.toLowerCase();
+      return options.filter(m => m.title.toLowerCase() === f);
+    }
+
     
 
     this.editSeriesForm = this.fb.group({

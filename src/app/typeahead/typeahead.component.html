@@ -9,7 +9,6 @@
             <i class="fa fa-times" (click)="toggleSelection(option)" tabindex="0" aria-label="close"></i>
           </app-tag-badge>
 
-          <!--  (focus)="onInputFocus($event)"-->
           <input #input [id]="settings.id" type="text" autocomplete="off" formControlName="typeahead">
           <div class="spinner-border spinner-border-sm" role="status" *ngIf="isLoadingOptions">
             <span class="sr-only">Loading...</span>
@@ -26,7 +25,7 @@
               class="list-group-item add-item" role="option" (mouseenter)="focusedIndex = 0; updateHighlight();" (click)="addNewItem(typeaheadControl.value)" >
               Add {{typeaheadControl.value}}...
             </li>
-            <li *ngFor="let option of options; let index = index;" (click)="toggleSelection(option)"  
+            <li *ngFor="let option of options; let index = index;" (click)="handleOptionClick(option)"  
                 class="list-group-item" role="option"
                 (mouseenter)="focusedIndex = index + (showAddItem ? 1 : 0); updateHighlight();">
               <ng-container [ngTemplateOutlet]="optionTemplate" [ngTemplateOutletContext]="{ $implicit: option, idx: index }"></ng-container>

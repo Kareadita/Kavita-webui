@@ -35,17 +35,18 @@ export class CardItemComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    this.libraryService.getLibraryNames().pipe(takeUntil(this.onDestroy)).subscribe(names => {
-      if (this.entity !== undefined && this.entity.hasOwnProperty('libraryId')) {
-        this.libraryId = (this.entity as Series).libraryId;
-        this.libraryName = names[this.libraryId];
-      }
-    });
-
     if (this.entity.hasOwnProperty('promoted') && this.entity.hasOwnProperty('title')) {
       this.supressArchiveWarning = true;
     }
-    
+
+    if (this.supressLibraryLink === false) {
+      this.libraryService.getLibraryNames().pipe(takeUntil(this.onDestroy)).subscribe(names => {
+        if (this.entity !== undefined && this.entity.hasOwnProperty('libraryId')) {
+          this.libraryId = (this.entity as Series).libraryId;
+          this.libraryName = names[this.libraryId];
+        }
+      });
+    }
   }
 
   ngOnDestroy() {

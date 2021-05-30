@@ -111,7 +111,10 @@ export class SeriesService {
   }
 
   getMetadata(seriesId: number) {
-    return this.httpClient.get<SeriesMetadata>(this.baseUrl + 'series/metadata?seriesId=' + seriesId);
+    return this.httpClient.get<SeriesMetadata>(this.baseUrl + 'series/metadata?seriesId=' + seriesId).pipe(map(items => {
+      items.tags.forEach(tag => tag.coverImage = this.imageService.getCollectionCoverImage(tag.id));
+      return items;
+    }));
   }
 
   updateMetadata(seriesMetadata: SeriesMetadata, tags: CollectionTag[]) {

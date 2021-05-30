@@ -1,8 +1,7 @@
 import { Component, ContentChild, ElementRef, EventEmitter, HostListener, Input, OnDestroy, OnInit, Output, Renderer2, RendererStyleFlags2, TemplateRef, ViewChild } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
-import { Angular } from '@sentry/integrations';
-import { Observable, of, Subject } from 'rxjs';
-import { debounceTime, distinctUntilChanged, filter, shareReplay, switchMap, take, takeUntil, tap } from 'rxjs/operators';
+import { Observable, Observer, of, Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged, filter, map, shareReplay, switchMap, take, takeUntil, tap } from 'rxjs/operators';
 import { KEY_CODES } from '../shared/_services/utility.service';
 import { TypeaheadSettings } from './typeahead-settings';
 
@@ -25,13 +24,6 @@ export class SelectionModel<T> {
 
     selectedOptions.forEach(d => {
       this._data.push({value: d, selected: selectedState});
-      // why did i have those checks in the constructor?
-      // const dataItem = this._data.filter(data => data.value == d);
-      // if (dataItem.length > 0) {
-      //   dataItem[0].selected = selectedState;
-      // } else {
-      //   this._data.push({value: d, selected: selectedState});
-      // }
     });
   }
 
@@ -47,7 +39,8 @@ export class SelectionModel<T> {
    * @param data Item to toggle
    */
   toggle(data: T, selectedState?: boolean) {
-    const dataItem = this._data.filter(d => d.value == data);
+    //const dataItem = this._data.filter(d => d.value == data);
+    const dataItem = this._data.filter(d => this.shallowEqual(d.value, data));
     if (dataItem.length > 0) {
       if (selectedState != undefined) {
         dataItem[0].selected = selectedState;
@@ -62,10 +55,17 @@ export class SelectionModel<T> {
   /**
    * Is the passed item selected
    * @param data item to check against
+   * @param compareFn optional method to use to perform comparisons
    * @returns boolean
    */
-  isSelected(data: T): boolean {
-    const dataItem = this._data.filter(d => d.value == data);
+  isSelected(data: T, compareFn?: ((d: T) => boolean)): boolean {
+    let dataItem: Array<any>;
+    if (compareFn != undefined || compareFn != null) {
+      dataItem = this._data.filter(d => compareFn(d.value));
+    } else {
+      dataItem = this._data.filter(d => this.shallowEqual(d.value, data));
+    }
+    
     if (dataItem.length > 0) {
       return dataItem[0].selected;
     }
@@ -86,6 +86,23 @@ export class SelectionModel<T> {
    */
    unselected(): Array<T> {
     return this._data.filter(d => !d.selected).map(d => d.value);
+  }
+
+  shallowEqual(object1: T, object2: T) {
+    const keys1 = Object.keys(object1);
+    const keys2 = Object.keys(object2);
+  
+    if (keys1.length !== keys2.length) {
+      return false;
+    }
+  
+    for (let key of keys1) {
+      if ((object1 as any)[key] !== (object2 as any)[key]) {
+        return false;
+      }
+    }
+  
+    return true;
   }
 }
 
@@ -136,7 +153,7 @@ export class TypeaheadComponent implements OnInit, OnDestroy {
     });
 
 
-    this.optionSelection = new SelectionModel<any>(true, this.settings.savedData);
+    //this.optionSelection = new SelectionModel<any>(true, this.settings.savedData);
 
     this.filteredOptions = this.typeaheadForm.get('typeahead')!.valueChanges
       .pipe(
@@ -157,9 +174,9 @@ export class TypeaheadComponent implements OnInit, OnDestroy {
           let results: Observable<any[]>;
           if (Array.isArray(this.settings.fetchFn)) {
             const filteredArray = this.settings.compareFn(this.settings.fetchFn, val.trim());
-            results = of(filteredArray).pipe(filter((item: any) => this.filterSelected(item)));
+            results = of(filteredArray).pipe(map((items: any[]) => items.filter(item => this.filterSelected(item))));
           } else {
-            results = this.settings.fetchFn(val.trim()).pipe(filter((item: any) => this.filterSelected(item)));
+            results = this.settings.fetchFn(val.trim()).pipe(map((items: any[]) => items.filter(item => this.filterSelected(item))));
           }
 
           return results;
@@ -176,16 +193,17 @@ export class TypeaheadComponent implements OnInit, OnDestroy {
 
 
     if (this.settings.savedData) {
-      if (this.typeaheadControl.pristine && this.settings.multiple) {
-        this.settings.savedData.forEach((data: any) => this.toggleSelection(data));
-      } else if (this.typeaheadControl.pristine && !this.settings.multiple) {
-        this.typeaheadControl.setValue(this.settings.displayFn(this.settings.savedData));
-        this.toggleSingle(this.settings.savedData);
+      if (this.settings.multiple) {
+        this.optionSelection = new SelectionModel<any>(true, this.settings.savedData);  
       } else {
-        this.typeaheadControl.setValue('');
+        this.optionSelection = new SelectionModel<any>(true, this.settings.savedData[0]);
+        this.typeaheadControl.setValue(this.settings.displayFn(this.settings.savedData))
       }
+    } else {
+      this.optionSelection = new SelectionModel<any>();
     }
   }
+
 
   @HostListener('window:click', ['$event'])
   handleDocumentClick() {
@@ -241,7 +259,6 @@ export class TypeaheadComponent implements OnInit, OnDestroy {
   toggleSelection(opt: any): void {
     this.optionSelection.toggle(opt);
     this.selectedData.emit(this.optionSelection.selected());
-    this.resetField();
   }
 
   
@@ -250,6 +267,13 @@ export class TypeaheadComponent implements OnInit, OnDestroy {
     this.optionSelection.toggle(opt);
     this.selectedData.emit(this.optionSelection.selected());
     this.resetField();
+  }
+
+  handleOptionClick(opt: any) {
+    this.toggleSelection(opt);
+
+    this.resetField();
+    this.onInputFocus(undefined);
   }
 
   addNewItem(title: string) {
@@ -261,12 +285,14 @@ export class TypeaheadComponent implements OnInit, OnDestroy {
     this.toggleSelection(newItem);
 
     this.resetField();
+    this.onInputFocus(undefined);
   }
 
   filterSelected(item: any) {
-    const selected = this.optionSelection.selected();
+    //const selected = this.optionSelection.selected();
     
-    if (this.settings.unique && this.settings.multiple && selected.length > 0) {
+    if (this.settings.unique && this.settings.multiple) { //  && selected.length > 0
+      console.log('Filtering ', item);
       return !this.optionSelection.isSelected(item);
     }
 
@@ -275,22 +301,29 @@ export class TypeaheadComponent implements OnInit, OnDestroy {
   }
 
   onInputFocus(event: any) {
-    event.stopPropagation();
-    event.preventDefault();
+    if (event) {
+      event.stopPropagation();
+      event.preventDefault();
+    }
+    
 
-    if (this.hasFocus) { return; }
+    //if (this.hasFocus) { return; }
 
     if (this.inputElem) {
       this.inputElem.nativeElement.focus();
       this.hasFocus = true;
     }
    
-    this.typeaheadControl.patchValue(this.typeaheadControl.value.trim() + ' ');
+    this.isLoadingOptions = true;
+    this.typeaheadControl.setValue(this.typeaheadControl.value.trim() + ' ');
   }
 
 
   resetField() {
-    this.renderer2.setStyle(this.inputElem.nativeElement, 'width', 4, RendererStyleFlags2.Important);
+    if (this.inputElem && this.inputElem.nativeElement) {
+      this.renderer2.setStyle(this.inputElem.nativeElement, 'width', 4, RendererStyleFlags2.Important);  
+    }
+    // BUG: This is causing the issue with valueChanges on first click i think
     this.typeaheadControl.setValue('');
   }
 
