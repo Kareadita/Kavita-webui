@@ -3,7 +3,6 @@ import { Injectable } from '@angular/core';
 import { map } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
 import { CollectionTag } from '../_models/collection-tag';
-import { PaginatedResult } from '../_models/pagination';
 import { ImageService } from './image.service';
 
 @Injectable({
@@ -12,7 +11,6 @@ import { ImageService } from './image.service';
 export class CollectionTagService {
 
   baseUrl = environment.apiUrl;
-  //paginatedResults: PaginatedResult<CollectionTag[]> = new PaginatedResult<CollectionTag[]>();
 
   constructor(private httpClient: HttpClient, private imageService: ImageService) { }
 
@@ -34,23 +32,7 @@ export class CollectionTagService {
     return this.httpClient.post(this.baseUrl + 'collection/update', tag, {responseType: 'text' as 'json'});
   }
 
-  exists() {
-    // TODO
-  }
-
-  addTag() {
-    // TODO
-  }
-
-  removeTagFromSeries(seriesId: number) {
-
-  }
-
   updateSeriesForTag(tag: CollectionTag, seriesIdsToRemove: Array<number>) {
     return this.httpClient.post(this.baseUrl + 'collection/update-series', {tag, seriesIdsToRemove}, {responseType: 'text' as 'json'});
   }
-
-
-
-
 }

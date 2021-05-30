@@ -1,8 +1,8 @@
 import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
-import { forkJoin, of, Subject } from 'rxjs';
-import { delay, share, takeUntil } from 'rxjs/operators';
+import { forkJoin, Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { UtilityService } from 'src/app/shared/_services/utility.service';
 import { TypeaheadSettings } from 'src/app/typeahead/typeahead-settings';
 import { Chapter } from 'src/app/_models/chapter';
@@ -52,7 +52,7 @@ export class EditSeriesModalComponent implements OnInit, OnDestroy {
       this.libraryName = names[this.series.libraryId];
     });
 
-    this.settings.displayFn = ((data => data.title));
+    this.settings.displayFn = (data => data.title);
     this.settings.minCharacters = 0;
     this.settings.multiple = true;
     this.settings.id = 'collections';
@@ -87,8 +87,6 @@ export class EditSeriesModalComponent implements OnInit, OnDestroy {
     this.seriesService.getMetadata(this.series.id).subscribe(metadata => {
       if (metadata) {
         this.metadata = metadata;
-        //this.editSeriesForm.get('collections')?.setValue(metadata.tags);
-        //this.editSeriesForm.get('genres')?.setValue((metadata.genres || []).join(', '));
         this.settings.savedData = metadata.tags;
       }
     });
