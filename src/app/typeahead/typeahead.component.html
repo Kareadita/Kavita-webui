@@ -9,7 +9,7 @@
             <i class="fa fa-times" (click)="toggleSelection(option)" tabindex="0" aria-label="close"></i>
           </app-tag-badge>
 
-          <input #input [id]="settings.id" type="text" autocomplete="off" formControlName="typeahead" style="">
+          <input #input [id]="settings.id" type="text" autocomplete="off" formControlName="typeahead">
           <div class="spinner-border spinner-border-sm" role="status" *ngIf="isLoadingOptions">
             <span class="sr-only">Loading...</span>
           </div>
@@ -17,10 +17,10 @@
       </div>
       <div class="dropdown" *ngIf="hasFocus">
         <ul class="list-group results" #results>
-          <!-- <li *ngIf="hasFocus && !typeaheadControl.value && (filteredOptions | async)?.length === 0" class="list-group-item">
+          <ng-container *ngIf="filteredOptions | async as options">
+            <!-- <li *ngIf="hasFocus && !typeaheadControl.value && (filteredOptions | async)?.length === 0" class="list-group-item">
             Type to search
           </li> -->
-          <ng-container *ngIf="filteredOptions | async as options">
             <li *ngIf="showAddItem" 
               class="list-group-item add-item" role="option" (mouseenter)="focusedIndex = 0; updateHighlight();" (click)="addNewItem(typeaheadControl.value)" >
               Add {{typeaheadControl.value}}...

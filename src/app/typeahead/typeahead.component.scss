@@ -1,10 +1,11 @@
+@import '../../assets/themes/dark.scss';
 
 input {
     width: 15px;
     opacity: 1px;
     position: relative;
     left: 0px;
-    border: 1px solid red;
+    border: none;
 }
 
 .typeahead-input {
@@ -18,7 +19,6 @@ input {
     box-sizing: border-box;
     box-shadow: none;
     border-radius: 4px;
-    background: #fff;
     cursor: text;
     min-height: 34px;
     background-color: #fff;
@@ -34,7 +34,6 @@ input {
         min-height: 0px !important;
         max-width: 100% !important;
         margin: 0px !important;
-        //border: 0 !important;
         text-indent: 0 !important;
         line-height: inherit !important;
         box-shadow: none !important;
@@ -46,19 +45,26 @@ input {
     }
 }
 
+::ng-deep .bg-dark .typeahead-input {
+    color: #efefef;
+    background-color: $dark-bg-color;
+}
+
+::ng-deep .bg-dark .list-group-item.active {
+    background-color: $dark-hover-color;
+}
+
 .dropdown {
     width: 100%;
     background: white;
     z-index:1000;
     margin: 2px 0 0;
     border-radius: 4px;
-    margin-top: -8px;
+    margin-top: -7px;
     border-top-left-radius: 0px;
     border-top-right-radius: 0px;
-    //position: absolute;
-    // top: 34px;
-    // width: 100%;
-    // left: 0px;
+
+
     li {
         list-style: none;
     }
@@ -66,10 +72,6 @@ input {
 
 .list-group-item {
     cursor: pointer;
-
-    // &:hover  {
-    //     background-color: #4ac694;
-    // }
 }
 
 .spinner-border {

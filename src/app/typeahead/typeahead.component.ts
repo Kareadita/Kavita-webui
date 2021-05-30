@@ -198,8 +198,10 @@ export class TypeaheadComponent implements OnInit, OnDestroy {
         tap((val) => {
           this.isLoadingOptions = false; 
           this.focusedIndex = 0; 
-          this.updateHighlight();
-          this.updateShowAddItem(val);
+          setTimeout(() => {
+            this.updateHighlight();
+            this.updateShowAddItem(val);
+          }, 10);
         }),
         shareReplay(),
         takeUntil(this.onDestroy)
@@ -325,6 +327,7 @@ export class TypeaheadComponent implements OnInit, OnDestroy {
   }
 
   openDropdown() {
+    console.log('typeahead value: ', this.typeaheadControl.value);
     this.typeaheadControl.setValue(this.typeaheadControl.value);
   }
 
@@ -351,7 +354,6 @@ export class TypeaheadComponent implements OnInit, OnDestroy {
     if (this.inputElem && this.inputElem.nativeElement) {
       this.renderer2.setStyle(this.inputElem.nativeElement, 'width', 4, RendererStyleFlags2.Important);  
     }
-    // BUG: This is causing the issue with valueChanges on first click i think
     this.typeaheadControl.setValue('');
   }
 

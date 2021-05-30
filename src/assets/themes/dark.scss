@@ -34,7 +34,7 @@ $dark-form-readonly: #434648;
     background-color: $dark-bg-color;
   }
 
-  input:not(read-only), textarea, .autocomplete-container .input-container input, .form-control {
+  input:not(read-only), textarea, .autocomplete-container .input-container input, .form-control, .typeahead-input {
     color: $dark-text-color;
     background-color: $dark-bg-color;
   }
@@ -62,6 +62,10 @@ $dark-form-readonly: #434648;
     color: $dark-text-color;
     background-color: $dark-bg-color;
     border-color: $dark-form-border;
+  }
+
+  .list-group-item:hover {
+    background-color: $dark-hover-color;
   }
 
   .ngx-slider .ngx-slider-bubble {
@@ -119,4 +123,5 @@ $dark-form-readonly: #434648;
   .error-banner, .dropdown-toggle {
     color: #efefef;
   }
+
 }
