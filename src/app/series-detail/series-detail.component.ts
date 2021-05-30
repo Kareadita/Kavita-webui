@@ -60,9 +60,6 @@ export class SeriesDetailComponent implements OnInit {
   libraryType: LibraryType = LibraryType.Manga;
   seriesMetadata: SeriesMetadata | null = null;
 
-  settings: TypeaheadSettings = new TypeaheadSettings();; // DEBUG ONLY
-
-
   constructor(private route: ActivatedRoute, private seriesService: SeriesService,
               ratingConfig: NgbRatingConfig, private router: Router,
               private modalService: NgbModal, public readerService: ReaderService,
@@ -77,23 +74,6 @@ export class SeriesDetailComponent implements OnInit {
         this.isAdmin = this.accountService.hasAdminRole(user);
       }
     });
-
-    this.settings.displayFn = ((data => data.title));
-    this.settings.minCharacters = 0;
-    this.settings.multiple = true;
-    this.settings.id = 'collections';
-    this.settings.debounce = 200;
-    this.settings.unique = true;
-    this.settings.addIfNonExisting = true;
-    this.settings.fetchFn = (filter) => this.collectionService.search(filter);
-    this.settings.addTransformFn = ((title: string) => {
-      return {id: 0, title: title, promoted: false };
-    });
-    this.settings.compareFn = (options: CollectionTag[], filter: string) => {
-      const f = filter.toLowerCase();
-      return options.filter(m => m.title.toLowerCase() === f);
-      //return options.filter(m => m.title.toLowerCase().includes(f));
-    }
   }
 
   ngOnInit(): void {

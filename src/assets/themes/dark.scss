@@ -82,11 +82,11 @@ $dark-form-readonly: #434648;
     border-color: $dark-form-border;
   }
 
-  .nav-tabs {
+  .nav-tabs, .tagbadge {
       border-color: $dark-form-border;
   }
 
-  .nav-tabs .nav-link.active, .nav-tabs .nav-item.show .nav-link {
+  .nav-tabs .nav-link.active, .nav-tabs .nav-item.show .nav-link, .tagbadge {
       border-color: $dark-form-border;
       color: $dark-text-color;
       background-color: $dark-hover-color;
