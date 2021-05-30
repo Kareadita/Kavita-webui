@@ -213,41 +213,56 @@ export class TypeaheadComponent implements OnInit, OnDestroy {
   @HostListener('window:keydown', ['$event'])
   handleKeyPress(event: KeyboardEvent) { 
     if (!this.hasFocus) { return; }
-    console.log(event);
-    
-    if (event.key === KEY_CODES.DOWN_ARROW) {
-      this.focusedIndex = Math.min(this.focusedIndex + 1, document.querySelectorAll('.list-group-item').length - 1);
-      this.updateHighlight();
-    } else if (event.key === KEY_CODES.UP_ARROW) {
-      this.focusedIndex = Math.max(this.focusedIndex - 1, 0);
-      this.updateHighlight();
-    } else if (event.key === KEY_CODES.ENTER) {
-      document.querySelectorAll('.list-group-item').forEach((item, index) => {
-        if (item.classList.contains('active')) {
-          this.filteredOptions.pipe(take(1)).subscribe((res: any) => {
-            var result = res.filter((item: any, index: number) => index === this.focusedIndex);
-            if (result.length === 1) {
-              if (item.classList.contains('add-item')) {
-                this.addNewItem(this.typeaheadControl.value)
-              } else {
-                this.toggleSelection(result[0]);
+
+    switch(event.key) {
+      case KEY_CODES.DOWN_ARROW:
+      case KEY_CODES.RIGHT_ARROW:
+      {
+        this.focusedIndex = Math.min(this.focusedIndex + 1, document.querySelectorAll('.list-group-item').length - 1);
+        this.updateHighlight();
+        break;
+      }
+      case KEY_CODES.UP_ARROW:
+      case KEY_CODES.LEFT_ARROW:
+      {
+        this.focusedIndex = Math.max(this.focusedIndex - 1, 0);
+        this.updateHighlight();
+        break;
+      }
+      case KEY_CODES.ENTER:
+      {
+        document.querySelectorAll('.list-group-item').forEach((item, index) => {
+          if (item.classList.contains('active')) {
+            this.filteredOptions.pipe(take(1)).subscribe((res: any) => {
+              var result = res.filter((item: any, index: number) => index === this.focusedIndex);
+              if (result.length === 1) {
+                if (item.classList.contains('add-item')) {
+                  this.addNewItem(this.typeaheadControl.value)
+                } else {
+                  this.toggleSelection(result[0]);
+                }
               }
-            }
-          });
+            });
+          }
+        });
+        break;
+      }
+      case KEY_CODES.BACKSPACE:
+      case KEY_CODES.DELETE:
+        // TODO: Delete last element/selection
+          break;
+      default:
+        // Adjust input box to grow
+        if (this.inputElem && this.inputElem.nativeElement) {
+          console.log('input element exists');
+          const width = parseInt(this.inputElem.nativeElement.style.width, 10);// || this.inputElem.nativeElement.getBoundingClientRect().width
+          console.log('style width: ', width);
+          console.log('rect width: ', this.inputElem.nativeElement.getBoundingClientRect().width);
+          //this.renderer2.setStyle(this.inputElem.nativeElement, 'width', width + 20, RendererStyleFlags2.Important);
         }
-      });
+        break;
     }
-    else {
-      // Adjust input box to grow
-       // if event not control key (is visible key)
-      //this.inputElem.nativeElement.style.width += 20;
-      const width = parseInt(this.inputElem.nativeElement.style.width, 10) || this.inputElem.nativeElement.getBoundingClientRect().width
-      console.log('width: ', width);
-      this.renderer2.setStyle(this.inputElem.nativeElement, 'width', width + 20, RendererStyleFlags2.Important);
     
-    }
-
-
   }
 
   toggleSingle(opt: any): void {
@@ -315,7 +330,7 @@ export class TypeaheadComponent implements OnInit, OnDestroy {
     }
    
     this.isLoadingOptions = true;
-    this.typeaheadControl.setValue(this.typeaheadControl.value.trim() + ' ');
+    this.typeaheadControl.setValue(this.typeaheadControl.value);
   }
 
 
@@ -330,7 +345,7 @@ export class TypeaheadComponent implements OnInit, OnDestroy {
   // Updates the highlight to focus on the selected item
   updateHighlight() {
     document.querySelectorAll('.list-group-item').forEach((item, index) => {
-      if (index === this.focusedIndex) {
+      if (index === this.focusedIndex && !item.classList.contains('no-hover')) {
         // apply active class
         this.renderer2.addClass(item, 'active');
       } else {

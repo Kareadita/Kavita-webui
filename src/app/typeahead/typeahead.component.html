@@ -30,6 +30,9 @@
                 (mouseenter)="focusedIndex = index + (showAddItem ? 1 : 0); updateHighlight();">
               <ng-container [ngTemplateOutlet]="optionTemplate" [ngTemplateOutletContext]="{ $implicit: option, idx: index }"></ng-container>
             </li>
+            <li *ngIf="options.length === 0" class="list-group-item no-hover" role="status">
+              No data{{this.settings.addIfNonExisting ? ', type to add a custom item.' : '.'}}
+            </li>
           </ng-container>
         </ul>
       </div>

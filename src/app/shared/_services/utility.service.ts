@@ -11,7 +11,9 @@ export enum KEY_CODES {
   ESC_KEY = 'Escape',
   SPACE = ' ',
   ENTER = 'Enter',
-  G = 'g'
+  G = 'g',
+  BACKSPACE = 'Backspace',
+  DELETE = 'Delete'
 }
 
 @Injectable({
