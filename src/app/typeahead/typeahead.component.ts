@@ -1,7 +1,7 @@
 import { Component, ContentChild, ElementRef, EventEmitter, HostListener, Input, OnDestroy, OnInit, Output, Renderer2, RendererStyleFlags2, TemplateRef, ViewChild } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
 import { Observable, Observer, of, Subject } from 'rxjs';
-import { debounceTime, distinctUntilChanged, filter, map, shareReplay, switchMap, take, takeUntil, tap } from 'rxjs/operators';
+import { debounceTime, distinctUntilChanged, filter, map, shareReplay, switchMap, take, takeUntil, tap, withLatestFrom } from 'rxjs/operators';
 import { KEY_CODES } from '../shared/_services/utility.service';
 import { TypeaheadSettings } from './typeahead-settings';
 
@@ -181,6 +181,7 @@ export class TypeaheadComponent implements OnInit, OnDestroy {
           if (!val || val.trim().length < this.settings.minCharacters) {
             return false;
           }
+
           return true;
         }),
         switchMap(val => {
@@ -229,7 +230,7 @@ export class TypeaheadComponent implements OnInit, OnDestroy {
   @HostListener('window:keydown', ['$event'])
   handleKeyPress(event: KeyboardEvent) { 
     if (!this.hasFocus) { return; }
-    console.log('KEY: ', event.key);
+
     switch(event.key) {
       case KEY_CODES.DOWN_ARROW:
       case KEY_CODES.RIGHT_ARROW:
@@ -327,8 +328,9 @@ export class TypeaheadComponent implements OnInit, OnDestroy {
   }
 
   openDropdown() {
-    console.log('typeahead value: ', this.typeaheadControl.value);
-    this.typeaheadControl.setValue(this.typeaheadControl.value);
+    setTimeout(() => {
+      this.typeaheadControl.setValue(this.typeaheadControl.value);
+    });
   }
 
   onInputFocus(event: any) {
@@ -346,7 +348,7 @@ export class TypeaheadComponent implements OnInit, OnDestroy {
     }
    
     this.openDropdown();
-    this.isLoadingOptions = true;
+    //this.isLoadingOptions = true;
   }
 
 
