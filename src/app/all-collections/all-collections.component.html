@@ -2,6 +2,7 @@
     <app-card-detail-layout header="Collections" 
     [isLoading]="isLoading"
     [items]="collections"
+    (pageChange)="onPageChange($event)"
     >
         <ng-template #cardItem let-item let-position="idx">
             <app-card-item [title]="item.title" [entity]="item" [imageUrl]="item.coverImage" (clicked)="loadCollection(item)"></app-card-item>
@@ -13,6 +14,7 @@
     [isLoading]="isLoading"
     [items]="series"
     [pagination]="seriesPagination"
+    (pageChange)="onPageChange($event)"
     >
         <ng-template #cardItem let-item let-position="idx">
             <app-series-card [data]="item" [libraryId]="item.libraryId" (reload)="loadPage()"></app-series-card>

@@ -34,7 +34,6 @@ export class EditSeriesModalComponent implements OnInit, OnDestroy {
   private readonly onDestroy = new Subject<void>();
 
   settings: TypeaheadSettings = new TypeaheadSettings();
-  newTags: CollectionTag[] = [];
   tags: CollectionTag[] = [];
   metadata!: SeriesMetadata;
 
@@ -144,13 +143,6 @@ export class EditSeriesModalComponent implements OnInit, OnDestroy {
 
   updateCollections(tags: CollectionTag[]) {
     this.tags = tags;
-    console.log('tags: ', this.tags);
-  }
-
-  addNewCollectionTag(newTag: CollectionTag) {
-    this.newTags.push(newTag);
-    //this.collectionService.addTag(newTag);
-    console.log('new tags: ', this.newTags);
   }
 
 }

@@ -126,6 +126,8 @@ export class ActionFactoryService {
 
   _resetActions() {
     this.libraryActions = [];
+
+    this.collectionTagActions = [];
     
     this.seriesActions = [
       {

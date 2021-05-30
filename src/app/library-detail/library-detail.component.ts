@@ -53,7 +53,6 @@ export class LibraryDetailComponent implements OnInit {
   }
 
   onPageChange(pagination: Pagination) {
-    //this.pagination = pagination;
     this.router.navigate(['library', this.libraryId], {replaceUrl: true, queryParamsHandling: 'merge', queryParams: {page: this.pagination.currentPage} });
   }
 

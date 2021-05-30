@@ -52,8 +52,12 @@ export class AllCollectionsComponent implements OnInit {
   loadCollection(item: CollectionTag) {
     this.collectionTagId = item.id;
     this.collectionTagName = item.title;
-    this.router.navigate(['collections', this.collectionTagId], {replaceUrl: true, queryParamsHandling: 'merge', queryParams: {} });
+    this.router.navigate(['collections', this.collectionTagId]);
     this.loadPage();
+  }
+
+  onPageChange(pagination: Pagination) {
+    this.router.navigate(['collections', this.collectionTagId], {replaceUrl: true, queryParamsHandling: 'merge', queryParams: {page: this.seriesPagination.currentPage} });
   }
 
   loadPage() {
@@ -67,6 +71,7 @@ export class AllCollectionsComponent implements OnInit {
       this.seriesService.getSeriesForTag(this.collectionTagId).subscribe(tags => {
         this.series = tags.result;
         this.seriesPagination = tags.pagination;
+
         this.isLoading = false;
       });
     }

@@ -10,6 +10,14 @@
         This tag is currently {{tag?.promoted ? 'promoted' : 'not promoted'}} (<i class="fa fa-angle-double-up" aria-hidden="true"></i>). 
         Promotion means that the tag can be seen server-wide, not just for admin users. All series that have this tag will still have user-access restrictions placed on them.
     </p>
+
+    <form [formGroup]="collectionTagForm">
+        <div class="form-group">
+            <label for="summary">Summary</label>
+            <textarea id="summary" class="form-control" formControlName="summary" rows="3"></textarea>
+        </div>
+    </form>
+
     <div class="list-group" *ngIf="!isLoading">
         <h6>Applies to Series</h6>
         <div class="form-check">
@@ -21,7 +29,7 @@
             <div class="form-check">
                 <input id="series-{{i}}" type="checkbox" class="form-check-input" 
                     [ngModel]="selections.isSelected(item)" (change)="handleSelection(item)">
-                <label attr.for="series-{{i}}" class="form-check-label">{{item.name}}</label>
+                <label attr.for="series-{{i}}" class="form-check-label">{{item.name}} ({{libraryName(item.libraryId)}})</label>
             </div>
         </li>
     </div>

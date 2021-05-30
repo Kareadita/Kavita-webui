@@ -18,11 +18,6 @@ export class CardDetailLayoutComponent implements OnInit {
   
   @ContentChild('cardItem') itemTemplate!: TemplateRef<any>;
 
-  
-  //pageNumber = 1;
-  //pageSize = 30;
-
-
   constructor() { }
 
   ngOnInit(): void {

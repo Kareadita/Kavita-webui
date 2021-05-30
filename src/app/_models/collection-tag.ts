@@ -3,4 +3,5 @@ export interface CollectionTag {
     title: string;
     promoted: boolean;
     coverImage: string;
+    summary: string;
 }

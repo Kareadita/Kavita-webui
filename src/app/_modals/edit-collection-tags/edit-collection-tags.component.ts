@@ -1,12 +1,15 @@
 import { Component, Input, OnInit } from '@angular/core';
+import { FormControl, FormGroup } from '@angular/forms';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { ToastrService } from 'ngx-toastr';
+import { forkJoin } from 'rxjs';
 import { ConfirmService } from 'src/app/shared/confirm.service';
 import { SelectionModel } from 'src/app/typeahead/typeahead.component';
 import { CollectionTag } from 'src/app/_models/collection-tag';
 import { Pagination } from 'src/app/_models/pagination';
 import { Series } from 'src/app/_models/series';
 import { CollectionTagService } from 'src/app/_services/collection-tag.service';
+import { LibraryService } from 'src/app/_services/library.service';
 import { SeriesService } from 'src/app/_services/series.service';
 
 @Component({
@@ -23,16 +26,21 @@ export class EditCollectionTagsComponent implements OnInit {
 
   pagination!: Pagination;
   selectAll: boolean = true;
+  libraryNames!: any;
+  collectionTagForm!: FormGroup;
 
 
   constructor(public modal: NgbActiveModal, private seriesService: SeriesService, 
     private collectionService: CollectionTagService, private toastr: ToastrService,
-    private confirmSerivce: ConfirmService) { }
+    private confirmSerivce: ConfirmService, private libraryService: LibraryService) { }
 
   ngOnInit(): void {
     if (this.pagination == undefined) {
       this.pagination = {totalPages: 1, totalItems: 200, itemsPerPage: 200, currentPage: 0};
     }
+    this.collectionTagForm = new FormGroup({
+      summary: new FormControl(this.tag.summary, []),
+    });
     this.loadSeries();
   }
 
@@ -47,11 +55,18 @@ export class EditCollectionTagsComponent implements OnInit {
   }
 
   loadSeries() {
-    this.seriesService.getSeriesForTag(this.tag.id, this.pagination.currentPage, this.pagination.itemsPerPage).subscribe(series => {
+    forkJoin([
+      this.seriesService.getSeriesForTag(this.tag.id, this.pagination.currentPage, this.pagination.itemsPerPage),
+      this.libraryService.getLibraryNames()
+    ]).subscribe(results => {
+      const series = results[0];
+
       this.pagination = series.pagination;
       this.series = series.result;
       this.selections = new SelectionModel<Series>(true, this.series);
       this.isLoading = false;
+
+      this.libraryNames = results[1];
     });
   }
 
@@ -75,8 +90,8 @@ export class EditCollectionTagsComponent implements OnInit {
     });
   }
 
-  reset() {
-
+  libraryName(libraryId: number) {
+    return this.libraryNames[libraryId];
   }
 
   close() {
@@ -85,12 +100,17 @@ export class EditCollectionTagsComponent implements OnInit {
 
   async save() {
     const unselectedIds = this.selections.unselected().map(s => s.id);
-    if (unselectedIds.length == this.series.length && await this.confirmSerivce.confirm('Warning! No series are selected, saving will delete the tag. Are you sure you want to continue?')) {
-      this.collectionService.updateSeriesForTag(this.tag, this.selections.unselected().map(s => s.id)).subscribe(() => {
-        this.toastr.success('Tag updated');
-        this.modal.close(true);
-      });
+    const tag: CollectionTag = {...this.tag};
+    tag.summary = this.collectionTagForm.get('summary')?.value;
+    
+    if (unselectedIds.length == this.series.length && !await this.confirmSerivce.confirm('Warning! No series are selected, saving will delete the tag. Are you sure you want to continue?')) {
+      return;
     }
+
+    this.collectionService.updateSeriesForTag(tag, this.selections.unselected().map(s => s.id)).subscribe(() => {
+      this.toastr.success('Tag updated');
+      this.modal.close(true);
+    });
   }
 
   get someSelected() {
