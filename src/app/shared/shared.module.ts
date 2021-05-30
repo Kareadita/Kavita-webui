@@ -17,6 +17,7 @@ import { DrawerComponent } from './drawer/drawer.component';
 import { TagBadgeComponent } from './tag-badge/tag-badge.component';
 import { CardDetailLayoutComponent } from './card-detail-layout/card-detail-layout.component';
 import { ShowIfScrollbarDirective } from './show-if-scrollbar.directive';
+import { A11yClickDirective } from './a11y-click.directive';
 
 
 @NgModule({
@@ -33,7 +34,8 @@ import { ShowIfScrollbarDirective } from './show-if-scrollbar.directive';
     DrawerComponent,
     TagBadgeComponent,
     CardDetailLayoutComponent,
-    ShowIfScrollbarDirective
+    ShowIfScrollbarDirective,
+    A11yClickDirective
   ],
   imports: [
     CommonModule,
@@ -57,7 +59,8 @@ import { ShowIfScrollbarDirective } from './show-if-scrollbar.directive';
     DrawerComponent,
     TagBadgeComponent,
     CardDetailLayoutComponent,
-    ShowIfScrollbarDirective
+    ShowIfScrollbarDirective,
+    A11yClickDirective
   ]
 })
 export class SharedModule { }

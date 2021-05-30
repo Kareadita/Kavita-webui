@@ -1,9 +1,12 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ToastrService } from 'ngx-toastr';
+import { EditCollectionTagsComponent } from '../_modals/edit-collection-tags/edit-collection-tags.component';
 import { CollectionTag } from '../_models/collection-tag';
 import { Pagination } from '../_models/pagination';
 import { Series } from '../_models/series';
+import { Action, ActionFactoryService, ActionItem } from '../_services/action-factory.service';
 import { CollectionTagService } from '../_services/collection-tag.service';
 import { SeriesService } from '../_services/series.service';
 
@@ -23,9 +26,11 @@ export class AllCollectionsComponent implements OnInit {
   collectionTagName: string = '';
   series: Array<Series> = [];
   seriesPagination!: Pagination;
+  collectionTagActions: ActionItem<CollectionTag>[] = [];
 
   constructor(private collectionService: CollectionTagService, private router: Router, 
-    private route: ActivatedRoute, private seriesService: SeriesService, private toastr: ToastrService) {
+    private route: ActivatedRoute, private seriesService: SeriesService, private toastr: ToastrService, 
+    private actionFactoryService: ActionFactoryService, private modalService: NgbModal) {
     this.router.routeReuseStrategy.shouldReuseRoute = () => false;
 
     const routeId = this.route.snapshot.paramMap.get('id');
@@ -46,6 +51,7 @@ export class AllCollectionsComponent implements OnInit {
 
   ngOnInit() {
     this.loadPage();
+    this.collectionTagActions = this.actionFactoryService.getCollectionTagActions(this.handleCollectionActionCallback.bind(this));
   }
 
 
@@ -74,6 +80,22 @@ export class AllCollectionsComponent implements OnInit {
 
         this.isLoading = false;
       });
+    }
+  }
+
+  handleCollectionActionCallback(action: Action, collectionTag: CollectionTag) {
+    switch (action) {
+      case(Action.Edit):
+        const modalRef = this.modalService.open(EditCollectionTagsComponent, { size: 'lg', scrollable: true });
+        modalRef.componentInstance.tag = collectionTag;
+        modalRef.closed.subscribe((reloadNeeded: boolean) => {
+          if (reloadNeeded) {
+            this.loadPage();
+          }
+        });
+        break;
+      default:
+        break;
     }
   }
 

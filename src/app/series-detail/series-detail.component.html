@@ -52,7 +52,7 @@
                         <h5>Collections</h5>
                     </div>
                     <div class="col-md-8">
-                        <app-tag-badge *ngFor="let tag of seriesMetadata.tags">
+                        <app-tag-badge *ngFor="let tag of seriesMetadata.tags" a11y-click="13,32" class="clickable" routerLink="/collections/{{tag.id}}">
                             {{tag.title}}
                         </app-tag-badge>
                     </div>
