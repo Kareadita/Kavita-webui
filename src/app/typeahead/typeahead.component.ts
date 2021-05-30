@@ -129,7 +129,7 @@ export class TypeaheadComponent implements OnInit, OnDestroy {
     if (this.settings.hasOwnProperty('formControl') && this.settings.formControl) {
       this.typeaheadControl = this.settings.formControl;
     } else {
-      this.typeaheadControl = new FormControl();
+      this.typeaheadControl = new FormControl('');
     }
     this.typeaheadForm = new FormGroup({
       'typeahead': this.typeaheadControl
@@ -138,24 +138,20 @@ export class TypeaheadComponent implements OnInit, OnDestroy {
 
     this.optionSelection = new SelectionModel<any>(true, this.settings.savedData);
 
-    if (!Array.isArray(this.settings.fetchFn)) {
-      if (this.settings.compareFn !== undefined) {
-        console.error('compareFn is only used when fetchFn is passed in as an array');
-      }
-    }
-
     this.filteredOptions = this.typeaheadForm.get('typeahead')!.valueChanges
       .pipe(
         debounceTime(this.settings.debounce),
-        distinctUntilChanged(),
-        // filter(val => {
-        //   // If minimum filter characters not met, do not filter
-        //   console.log('will ' + val + ' pass filter? ', !val || val.trim().length < this.settings.minCharacters);
-        //   if (!val || val.trim().length < this.settings.minCharacters) {
-        //     return false;
-        //   }
-        //   return true;
-        // }),
+        //distinctUntilChanged(),
+        filter(val => {
+          // If minimum filter characters not met, do not filter
+          console.log('will ' + val + ' pass filter? ', !val || val.trim().length < this.settings.minCharacters);
+          if (this.settings.minCharacters === 0) return true;
+
+          if (!val || val.trim().length < this.settings.minCharacters) {
+            return false;
+          }
+          return true;
+        }),
         switchMap(val => {
           this.isLoadingOptions = true;
           let results: Observable<any[]>;
@@ -185,8 +181,15 @@ export class TypeaheadComponent implements OnInit, OnDestroy {
       } else if (this.typeaheadControl.pristine && !this.settings.multiple) {
         this.typeaheadControl.setValue(this.settings.displayFn(this.settings.savedData));
         this.toggleSingle(this.settings.savedData);
+      } else {
+        this.typeaheadControl.setValue('');
       }
     }
+  }
+
+  @HostListener('window:click', ['$event'])
+  handleDocumentClick() {
+    this.hasFocus = false;
   }
 
   @HostListener('window:keydown', ['$event'])
@@ -275,18 +278,14 @@ export class TypeaheadComponent implements OnInit, OnDestroy {
     event.stopPropagation();
     event.preventDefault();
 
+    if (this.hasFocus) { return; }
+
     if (this.inputElem) {
       this.inputElem.nativeElement.focus();
       this.hasFocus = true;
     }
-    
-    
-    const originalVal = this.typeaheadControl.value;
-    if (originalVal == null) {
-      this.typeaheadControl.setValue(' ');
-    } else {
-      this.typeaheadControl.setValue(originalVal.trim() + ' ');
-    }
+   
+    this.typeaheadControl.patchValue(this.typeaheadControl.value.trim() + ' ');
   }
 
 

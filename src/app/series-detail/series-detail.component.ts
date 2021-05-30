@@ -82,6 +82,7 @@ export class SeriesDetailComponent implements OnInit {
     this.settings.minCharacters = 0;
     this.settings.multiple = true;
     this.settings.id = 'collections';
+    this.settings.debounce = 200;
     this.settings.unique = true;
     this.settings.addIfNonExisting = true;
     this.settings.fetchFn = (filter) => this.collectionService.search(filter);
