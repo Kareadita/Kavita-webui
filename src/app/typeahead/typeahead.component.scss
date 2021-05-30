@@ -1,10 +1,10 @@
 
 input {
-    //width: 4px;
+    width: 15px;
     opacity: 1px;
     position: relative;
     left: 0px;
-    border: none;
+    border: 1px solid red;
 }
 
 .typeahead-input {
@@ -21,7 +21,6 @@ input {
     background: #fff;
     cursor: text;
     min-height: 34px;
-    //height: calc(1.5em + 0.75rem + 2px);
     background-color: #fff;
 
 

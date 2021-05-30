@@ -164,16 +164,18 @@ export class TypeaheadComponent implements OnInit, OnDestroy {
       'typeahead': this.typeaheadControl
     });
 
-
-    //this.optionSelection = new SelectionModel<any>(true, this.settings.savedData);
-
     this.filteredOptions = this.typeaheadForm.get('typeahead')!.valueChanges
       .pipe(
+        // Adjust input box to grow
+        tap(val => {
+          if (this.inputElem != null && this.inputElem.nativeElement != null) {
+            console.log(this.inputElem.nativeElement.value);
+            this.renderer2.setStyle(this.inputElem.nativeElement, 'width', 15 * ((this.typeaheadControl.value + '').length + 1) + 'px');
+          }
+        }),
         debounceTime(this.settings.debounce),
-        //distinctUntilChanged(),
         filter(val => {
           // If minimum filter characters not met, do not filter
-          console.log('will ' + val + ' pass filter? ', !val || val.trim().length < this.settings.minCharacters);
           if (this.settings.minCharacters === 0) return true;
 
           if (!val || val.trim().length < this.settings.minCharacters) {
@@ -225,7 +227,7 @@ export class TypeaheadComponent implements OnInit, OnDestroy {
   @HostListener('window:keydown', ['$event'])
   handleKeyPress(event: KeyboardEvent) { 
     if (!this.hasFocus) { return; }
-    console.log(event.key);
+    console.log('KEY: ', event.key);
     switch(event.key) {
       case KEY_CODES.DOWN_ARROW:
       case KEY_CODES.RIGHT_ARROW:
@@ -272,17 +274,8 @@ export class TypeaheadComponent implements OnInit, OnDestroy {
         break;
       }
       default:
-        // Adjust input box to grow
-        if (this.inputElem && this.inputElem.nativeElement) {
-          console.log('input element exists');
-          const width = parseInt(this.inputElem.nativeElement.style.width, 10);// || this.inputElem.nativeElement.getBoundingClientRect().width
-          console.log('style width: ', width);
-          console.log('rect width: ', this.inputElem.nativeElement.getBoundingClientRect().width);
-          //this.renderer2.setStyle(this.inputElem.nativeElement, 'width', width + 20, RendererStyleFlags2.Important);
-        }
         break;
     }
-    
   }
 
   toggleSingle(opt: any): void {
