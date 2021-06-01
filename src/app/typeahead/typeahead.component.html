@@ -3,7 +3,7 @@
 
 
       <div class="typeahead-input" (click)="onInputFocus($event)">
-        <div class="{{optionSelection.selected().length > 0 ? 'has-items': ''}}">
+        <div>
           <app-tag-badge *ngFor="let option of optionSelection.selected()">
             {{ settings.displayFn(option) }}
             <i class="fa fa-times" (click)="toggleSelection(option)" tabindex="0" aria-label="close"></i>
