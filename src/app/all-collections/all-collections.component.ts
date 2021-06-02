@@ -67,6 +67,7 @@ export class AllCollectionsComponent implements OnInit {
   }
 
   loadPage() {
+    // TODO: See if we can move this pagination code into layout code
     const page = this.route.snapshot.queryParamMap.get('page');
     if (page != null) {
       if (this.seriesPagination == undefined || this.seriesPagination == null) {

@@ -4,8 +4,9 @@
 
       <div class="typeahead-input" (click)="onInputFocus($event)">
         <div>
-          <app-tag-badge *ngFor="let option of optionSelection.selected()">
-            {{ settings.displayFn(option) }}
+          <app-tag-badge *ngFor="let option of optionSelection.selected(); let i = index">
+            <!-- {{ settings.displayFn(option) }} -->
+            <ng-container [ngTemplateOutlet]="badgeTemplate" [ngTemplateOutletContext]="{ $implicit: option, idx: i }"></ng-container>
             <i class="fa fa-times" (click)="toggleSelection(option)" tabindex="0" aria-label="close"></i>
           </app-tag-badge>
 
