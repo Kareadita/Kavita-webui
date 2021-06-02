@@ -55,6 +55,14 @@ input {
     margin-top: -7px;
     border-top-left-radius: 0px;
     border-top-right-radius: 0px;
+    position: absolute;
+    max-height: 400px;
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    .list-group-item {
+        padding: 5px 5px;
+    }
 
 
     li {

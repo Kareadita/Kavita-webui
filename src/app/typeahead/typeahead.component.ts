@@ -260,6 +260,7 @@ export class TypeaheadComponent implements OnInit, OnDestroy {
 
             this.filteredOptions.pipe(take(1)).subscribe((res: any[]) => {  
               // This isn't giving back the filtered array, but everything
+              //console.log(res);
               const result = res.filter((item: any, index: number) => index === focusedIndex);
               if (result.length === 1) {
                 if (item.classList.contains('add-item')) {
@@ -368,6 +369,7 @@ export class TypeaheadComponent implements OnInit, OnDestroy {
       this.renderer2.setStyle(this.inputElem.nativeElement, 'width', 4, RendererStyleFlags2.Important);  
     }
     this.typeaheadControl.setValue('');
+    this.focusedIndex = 0;
   }
 
   // Updates the highlight to focus on the selected item
