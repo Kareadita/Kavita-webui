@@ -331,7 +331,8 @@ export class BookReaderComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   /**
-   * Adds the 'kavita-page' 
+   * Adds a click handler for any anchors that have 'kavita-page'. If 'kavita-page' present, changes page to kavita-page and optionally passes a part value 
+   * from 'kavita-part', which will cause the reader to scroll to the marker. 
    */
   addLinkClickHandlers() {
     var links = this.readingSectionElemRef.nativeElement.querySelectorAll('a');
@@ -343,12 +344,13 @@ export class BookReaderComponent implements OnInit, AfterViewInit, OnDestroy {
             this.adhocPageHistory.push({page: this.pageNum, scrollOffset: window.pageYOffset});
           }
           
-          this.setPageNum(page);
           var partValue = e.target.attributes.hasOwnProperty('kavita-part') ? e.target.attributes['kavita-part'].value : undefined;
           if (partValue && page === this.pageNum) {
             this.scrollTo(e.target.attributes['kavita-part'].value);
             return;
           }
+          
+          this.setPageNum(page);
           this.loadPage(partValue);
         });
       });
