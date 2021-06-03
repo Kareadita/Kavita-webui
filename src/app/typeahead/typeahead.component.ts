@@ -207,8 +207,8 @@ export class TypeaheadComponent implements OnInit, OnDestroy {
           this.focusedIndex = 0; 
           setTimeout(() => {
             this.updateShowAddItem(val);
-            this.updateHighlight();
           }, 10);
+          setTimeout(() => this.updateHighlight(), 20);
         }),
         shareReplay(),
         takeUntil(this.onDestroy)
@@ -257,13 +257,6 @@ export class TypeaheadComponent implements OnInit, OnDestroy {
       {
         document.querySelectorAll('.list-group-item').forEach((item, index) => {
           if (item.classList.contains('active')) {
-            // const classes = [...item.classList.value.split(' ')];
-            // const indexClass = classes.filter(item => item.startsWith('index-'));
-            // let focusedIndex = this.focusedIndex;
-            // if (indexClass.length > 0) {
-            //   focusedIndex = parseInt(indexClass[0].split('-')[1], 10);  
-            // }
-
             this.filteredOptions.pipe(take(1)).subscribe((res: any[]) => {  
               // This isn't giving back the filtered array, but everything
               const result = this.settings.compareFn(res, (item.textContent || '').trim());
@@ -302,18 +295,10 @@ export class TypeaheadComponent implements OnInit, OnDestroy {
     }
   }
 
-  toggleSingle(opt: any): void {
-    this.optionSelection.toggle(opt);
-    this.selectedData.emit(opt);
-  }
-
-
   toggleSelection(opt: any): void {
     this.optionSelection.toggle(opt);
     this.selectedData.emit(this.optionSelection.selected());
   }
-
-  
 
   removeSelectedOption(opt: any) {
     this.optionSelection.toggle(opt);
@@ -379,12 +364,15 @@ export class TypeaheadComponent implements OnInit, OnDestroy {
 
   // Updates the highlight to focus on the selected item
   updateHighlight() {
+    console.log('updating highlight for index: ', this.focusedIndex);
     document.querySelectorAll('.list-group-item').forEach((item, index) => {
       if (index === this.focusedIndex && !item.classList.contains('no-hover')) {
         // apply active class
+        console.log('Adding to ', item.textContent);
         this.renderer2.addClass(item, 'active');
       } else {
         // remove active class
+        console.log('Removing from ', item.textContent);
         this.renderer2.removeClass(item, 'active');
       }
     });

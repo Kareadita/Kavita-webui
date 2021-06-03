@@ -30,10 +30,6 @@ export class TypeaheadSettings<T> {
      */
     fetchFn!: ((filter: string) => Observable<T[]>) | T[];
     /**
-     * Not used any longer. 
-     */
-    displayFn!: ( (data: T) => string); // No longer used (unless we keep for single typeahead, which maybe we should split to another code)
-    /**
      * Minimum number of characters needed to type to trigger the fetch pipeline
      */
     minCharacters: number = 1;
