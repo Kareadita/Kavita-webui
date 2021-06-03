@@ -411,10 +411,13 @@ export class BookReaderComponent implements OnInit, AfterViewInit, OnDestroy {
 
           // Find all the part ids and their top offset
           const ids = this.chapters.map(item => item.children).flat().filter(item => item.page === this.pageNum).map(item => item.part);
-          const elems = document.querySelectorAll(ids.map(id => '#' + id).join(', '));
-          elems.forEach(elem => {
-            this.pageAnchors[elem.id] = elem.getBoundingClientRect().top;
-          })
+          if (ids.length > 0) {
+            const elems = document.querySelectorAll(ids.map(id => '#' + id).join(', '));
+            elems.forEach(elem => {
+              this.pageAnchors[elem.id] = elem.getBoundingClientRect().top;
+            });
+          }
+          
 
           if (part !== undefined && part !== '') {
             this.scrollTo(part);
