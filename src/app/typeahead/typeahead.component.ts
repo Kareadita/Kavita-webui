@@ -207,6 +207,7 @@ export class TypeaheadComponent implements OnInit, OnDestroy {
           this.focusedIndex = 0; 
           setTimeout(() => {
             this.updateShowAddItem(val);
+            this.updateHighlight();
           }, 10);
           setTimeout(() => this.updateHighlight(), 20);
         }),
