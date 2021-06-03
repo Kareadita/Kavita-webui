@@ -42,9 +42,11 @@ export class LibraryDetailComponent implements OnInit {
         this.pagination = {currentPage: 0, itemsPerPage: 30, totalItems: 0, totalPages: 1};
       }
       this.pagination.currentPage = parseInt(page, 10);
+    } else {
+      this.pagination = {currentPage: 0, itemsPerPage: 30, totalItems: 0, totalPages: 1};
     }
     this.loadingSeries = true;
-    this.seriesService.getSeriesForLibrary(this.libraryId, this.pagination.currentPage, this.pagination.itemsPerPage).subscribe(series => {
+    this.seriesService.getSeriesForLibrary(this.libraryId, this.pagination?.currentPage, this.pagination?.itemsPerPage).subscribe(series => {
       this.series = series.result;
       this.pagination = series.pagination;
       this.loadingSeries = false;

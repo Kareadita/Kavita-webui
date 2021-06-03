@@ -53,7 +53,7 @@ export class LibraryComponent implements OnInit {
   }
 
   reloadSeries() {
-    this.seriesService.getRecentlyAdded().subscribe((series) => {
+    this.seriesService.getRecentlyAdded(0, 20).subscribe((series) => {
       this.recentlyAdded = series;
     });
 

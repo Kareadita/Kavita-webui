@@ -20,6 +20,7 @@ export class SeriesService {
   baseUrl = environment.apiUrl;
   paginatedResults: PaginatedResult<Series[]> = new PaginatedResult<Series[]>();
   paginatedSeriesForTagsResults: PaginatedResult<Series[]> = new PaginatedResult<Series[]>();
+  paginatedSeriesForRecentResults: PaginatedResult<Series[]> = new PaginatedResult<Series[]>();
 
   constructor(private httpClient: HttpClient, private imageService: ImageService) { }
 
@@ -90,8 +91,8 @@ export class SeriesService {
     return this.httpClient.post<void>(this.baseUrl + 'reader/mark-unread', {seriesId});
   }
 
-  getRecentlyAdded(libraryId: number = 0) {
-    return this.httpClient.get<Series[]>(this.baseUrl + 'series/recently-added?libraryId=' + libraryId).pipe(map(series => {
+  getRecentlyAdded(libraryId: number = 0, limit: number) {
+    return this.httpClient.get<Series[]>(this.baseUrl + 'series/recently-added?libraryId=' + libraryId + '&limit=' + limit).pipe(map(series => {
       series.forEach(s => s.coverImage = this.imageService.getSeriesCoverImage(s.id));
       return series;
     }));
@@ -143,6 +144,19 @@ export class SeriesService {
       })
     );
   }
+
+  getSeriesForRecent(pageNum?: number, itemsPerPage?: number) {
+    let params = new HttpParams();
+
+    params = this._addPaginationIfExists(params, pageNum, itemsPerPage);
+    return this.httpClient.get<PaginatedResult<Series[]>>(this.baseUrl + 'series/series-by-recently-added', {observe: 'response', params}).pipe(
+      map((response: any) => {
+        return this._cachePaginatedResults(response, this.paginatedSeriesForRecentResults);
+      })
+    );
+    
+  }
+
 
   _addPaginationIfExists(params: HttpParams, pageNum?: number, itemsPerPage?: number) {
     if (pageNum !== null && pageNum !== undefined && itemsPerPage !== null && itemsPerPage !== undefined) {

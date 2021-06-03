@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
 import { AllCollectionsComponent } from './all-collections/all-collections.component';
+import { RecentlyAddedComponent } from './recently-added/recently-added.component';
 import { HomeComponent } from './home/home.component';
 import { LibraryDetailComponent } from './library-detail/library-detail.component';
 import { LibraryComponent } from './library/library.component';
@@ -42,8 +43,7 @@ const routes: Routes = [
     runGuardsAndResolvers: 'always',
     canActivate: [AuthGuard],
     children: [
-      //{path: 'recently-added', component: RecentlyAddedComponent},
-        
+      {path: 'recently-added', component: RecentlyAddedComponent},  
       {path: 'collections', component: AllCollectionsComponent},
       {path: 'collections/:id', component: AllCollectionsComponent},
     ]
