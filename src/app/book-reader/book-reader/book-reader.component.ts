@@ -458,12 +458,14 @@ export class BookReaderComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   prevPage() {
+    const oldPageNum = this.pageNum;
     if (this.readingDirection === ReadingDirection.LeftToRight) {
       this.setPageNum(this.pageNum - 1);
     } else {
       this.setPageNum(this.pageNum + 1);
     }
 
+    if (oldPageNum === this.pageNum) { return; }
     this.loadPage();
   }
 
@@ -473,12 +475,15 @@ export class BookReaderComponent implements OnInit, AfterViewInit, OnDestroy {
       event.preventDefault();
     }
 
+    const oldPageNum = this.pageNum;
     if (this.readingDirection === ReadingDirection.LeftToRight) {
       this.setPageNum(this.pageNum + 1);
     } else {
       this.setPageNum(this.pageNum - 1);
     }
     
+    if (oldPageNum === this.pageNum) { return; }
+
     this.loadPage();
   }
 
@@ -597,7 +602,7 @@ export class BookReaderComponent implements OnInit, AfterViewInit, OnDestroy {
       bookReaderFontSize: parseInt(this.pageStyles['font-size'].substr(0, this.pageStyles['font-size'].length - 1), 10),
       bookReaderLineSpacing: parseInt(this.pageStyles['line-height'].replace('!important', '').trim(), 10),
       bookReaderMargin: parseInt(this.pageStyles['margin-left'].replace('%', '').replace('!important', '').trim(), 10),
-      bookReaderTapToPaginate: this.user.preferences.bookReaderTapToPaginate,
+      bookReaderTapToPaginate: this.clickToPaginate,
       bookReaderReadingDirection: this.readingDirection,
       siteDarkMode: this.user.preferences.siteDarkMode,
     };
