@@ -26,12 +26,12 @@ import { LazyLoadImageModule} from 'ng-lazyload-image';
 import { CarouselModule } from './carousel/carousel.module';
 import { NgxSliderModule } from '@angular-slider/ngx-slider';
 
-import * as Sentry from "@sentry/angular";
+import * as Sentry from '@sentry/angular';
 import { environment } from 'src/environments/environment';
 import { version } from 'package.json';
 import { Router } from '@angular/router';
-import { RewriteFrames as RewriteFramesIntegration } from "@sentry/integrations";
-import { Dedupe as DedupeIntegration } from "@sentry/integrations";
+import { RewriteFrames as RewriteFramesIntegration } from '@sentry/integrations';
+import { Dedupe as DedupeIntegration } from '@sentry/integrations';
 import { PersonBadgeComponent } from './person-badge/person-badge.component';
 import { TypeaheadModule } from './typeahead/typeahead.module';
 import { AllCollectionsComponent } from './all-collections/all-collections.component';
@@ -42,11 +42,11 @@ let sentryProviders: any[] = [];
 
 if (environment.production) {
   Sentry.init({
-    dsn: "https://db1a1f6445994b13a6f479512aecdd48@o641015.ingest.sentry.io/5757426",
+    dsn: 'https://db1a1f6445994b13a6f479512aecdd48@o641015.ingest.sentry.io/5757426',
     environment: environment.production ? 'prod' : 'dev',
     release: version,
     integrations: [
-      new Sentry.Integrations.GlobalHandlers({ 
+      new Sentry.Integrations.GlobalHandlers({
         onunhandledrejection: true,
         onerror: true
       }),
@@ -56,7 +56,7 @@ if (environment.production) {
     ignoreErrors: [new RegExp(/\/api\/admin/)],
     tracesSampleRate: 0,
   });
-  
+
   Sentry.configureScope(scope => {
     scope.setUser({
       username: 'Not authorized'
@@ -83,11 +83,6 @@ if (environment.production) {
   }];
 }
 
-
-
-
-
-
 @NgModule({
   declarations: [
     AppComponent,
@@ -99,9 +94,12 @@ if (environment.production) {
     SeriesDetailComponent, // Move into MangaModule
     NotConnectedComponent, // Move into ExtrasModule
     UserPreferencesComponent, // Move into SettingsModule
-    EditSeriesModalComponent, 
-    ReviewSeriesModalComponent, 
-    PersonBadgeComponent, AllCollectionsComponent, EditCollectionTagsComponent, RecentlyAddedComponent, 
+    EditSeriesModalComponent,
+    ReviewSeriesModalComponent,
+    PersonBadgeComponent,
+    AllCollectionsComponent,
+    EditCollectionTagsComponent,
+    RecentlyAddedComponent,
   ],
   imports: [
     HttpClientModule,
