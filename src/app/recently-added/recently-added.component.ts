@@ -1,15 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { take } from 'rxjs/operators';
 import { ToastrService } from 'ngx-toastr';
-import { EditCollectionTagsComponent } from '../_modals/edit-collection-tags/edit-collection-tags.component';
 import { CollectionTag } from '../_models/collection-tag';
 import { Pagination } from '../_models/pagination';
 import { Series } from '../_models/series';
 import { Library } from '../_models/library';
 import { User } from '../_models/user';
-import { Action, ActionFactoryService, ActionItem } from '../_services/action-factory.service';
+import { ActionFactoryService, ActionItem } from '../_services/action-factory.service';
 import { SeriesService } from '../_services/series.service';
 import { CollectionTagService } from '../_services/collection-tag.service';
 import { AccountService } from '../_services/account.service';
@@ -39,8 +37,6 @@ export class RecentlyAddedComponent implements OnInit {
     private route: ActivatedRoute, private seriesService: SeriesService, private toastr: ToastrService, 
     private collectionService: CollectionTagService, private actionFactoryService: ActionFactoryService, private modalService: NgbModal) {
     this.router.routeReuseStrategy.shouldReuseRoute = () => false;
-
-    const routeId = this.route.snapshot.paramMap.get('id');
   }
 
   ngOnInit() {
