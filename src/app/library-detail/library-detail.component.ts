@@ -28,7 +28,7 @@ export class LibraryDetailComponent implements OnInit {
     this.libraryId = parseInt(routeId, 10);
     this.libraryService.getLibraryNames().subscribe(names => {
       this.libraryName = names[this.libraryId];
-    })
+    });
     this.loadPage();
   }
 
@@ -38,7 +38,7 @@ export class LibraryDetailComponent implements OnInit {
   loadPage() {
     const page = this.route.snapshot.queryParamMap.get('page');
     if (page != null) {
-      if (this.pagination == undefined || this.pagination == null) {
+      if (this.pagination === undefined || this.pagination === null) {
         this.pagination = {currentPage: 0, itemsPerPage: 30, totalItems: 0, totalPages: 1};
       }
       this.pagination.currentPage = parseInt(page, 10);
