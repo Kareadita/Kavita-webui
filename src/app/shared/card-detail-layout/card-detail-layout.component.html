@@ -1,6 +1,6 @@
 <div class="container-fluid" style="padding-top: 10px">
     <h2>{{header}}</h2>
-    <div class="content-container" *ngIf="!isLoading && items.length !== 0">
+    <div class="content-container" *ngIf="!isLoading && items.length !== 0 else: noData">
         <div class="d-flex justify-content-center" *ngIf="pagination && items.length !== 0">
             <ngb-pagination
                 *ngIf="pagination.totalPages > 1"
