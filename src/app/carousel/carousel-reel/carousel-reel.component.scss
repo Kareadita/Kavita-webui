@@ -17,6 +17,14 @@
     :hover {
         text-decoration: underline;
     }
+
+    :active {
+        text-decoration: underline;
+    }
+
+    :focus {
+        text-decoration: underline;
+    }
 }
 
 ::ng-deep .bg-light {
