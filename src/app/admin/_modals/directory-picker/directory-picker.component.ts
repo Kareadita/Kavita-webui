@@ -20,6 +20,7 @@ export class DirectoryPickerComponent implements OnInit {
   currentRoot = '';
   folders: string[] = [];
   routeStack: Stack<string> = new Stack<string>();
+  filterQuery: string = '';
 
   constructor(public modal: NgbActiveModal, private libraryService: LibraryService) {
 
@@ -27,6 +28,10 @@ export class DirectoryPickerComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadChildren(this.currentRoot);
+  }
+
+  filterFolder = (folder: string) => {
+    return folder.toLowerCase().indexOf((this.filterQuery || '').toLowerCase()) >= 0;
   }
 
   selectNode(folderName: string) {
@@ -37,6 +42,7 @@ export class DirectoryPickerComponent implements OnInit {
   }
 
   goBack() {
+    // BUG: When Going back to initial listing, this code gets stuck on first drive
     this.routeStack.pop();
     const stackPeek = this.routeStack.peek();
     if (stackPeek !== undefined) {
