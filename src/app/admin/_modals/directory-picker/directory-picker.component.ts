@@ -49,6 +49,9 @@ export class DirectoryPickerComponent implements OnInit {
       this.currentRoot = stackPeek;
       const fullPath = this.routeStack.items.join('/');
       this.loadChildren(fullPath);
+    } else {
+      this.currentRoot = '';
+      this.loadChildren(this.currentRoot);
     }
     
   }
