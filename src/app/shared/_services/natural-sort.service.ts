@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, OnDestroy } from '@angular/core';
 
 /**
  * Soley repsonsible for performing a "natural" sort. This is the UI counterpart to the BE NaturalSortComparer.
@@ -6,11 +6,15 @@ import { Injectable } from '@angular/core';
 @Injectable({
   providedIn: 'root',
 })
-export class NaturalSortService {
+export class NaturalSortService implements OnDestroy {
 
   private _table: Map<string, string[]> = new Map<string, string[]>();
 
   constructor() { }
+
+  ngOnDestroy(): void {
+    this._table = new Map<string, string[]>();
+  }
 
   private partCompare(left: string, right: string) {
 
