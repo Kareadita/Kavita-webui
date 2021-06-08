@@ -10,8 +10,6 @@ export class NaturalSortService implements OnDestroy {
 
   private _table: Map<string, string[]> = new Map<string, string[]>();
 
-  constructor() { }
-
   ngOnDestroy(): void {
     this._table = new Map<string, string[]>();
   }
@@ -64,8 +62,6 @@ export class NaturalSortService implements OnDestroy {
         returnVal = 1;
     } else if (x1.length > y1.length) { 
         returnVal = -1; 
-    } else {
-        returnVal = 0;
     }
 
     return isAscending ? returnVal : -returnVal;
