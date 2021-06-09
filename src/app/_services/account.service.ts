@@ -33,6 +33,10 @@ export class AccountService implements OnDestroy {
     return user && user.roles.includes('Admin');
   }
 
+  hasDownloadRole(user: User) {
+    return user && user.roles.includes('Download');
+  }
+
   login(model: any): Observable<any> {
     return this.httpClient.post<User>(this.baseUrl + 'account/login', model).pipe(
       map((response: User) => {
