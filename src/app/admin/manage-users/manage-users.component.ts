@@ -100,4 +100,8 @@ export class ManageUsersComponent implements OnInit {
   hasAdminRole(member: Member) {
     return member.roles.indexOf('Admin') >= 0;
   }
+
+  getRoles(member: Member) {
+    return member.roles.filter(item => item != 'Pleb');
+  }
 }
