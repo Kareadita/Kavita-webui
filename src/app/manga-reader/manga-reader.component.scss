@@ -169,3 +169,35 @@ canvas {
     z-index: 2;
     cursor: pointer;
 }
+
+
+// Splitting Icon
+.split {
+    height: 20px;
+    width: 40px;
+    z-index: 1;
+    top: 0;
+    overflow: hidden;
+    border: 2px solid #ccc;
+
+    /* Control the left side */
+    .left-side {
+        height: 20px;
+        width: 20px;
+        background-color: white;
+    }
+    
+    /* Control the right side */
+    .right-side {
+        height: 20px;
+        margin-left: 20px;
+        width: 20px;
+        background-color: rgba(255, 255, 255, 0.5);
+    }
+
+    .none {
+        background-color: rgba(255, 255, 255, 0.5);;
+    }
+  }
+  
+  

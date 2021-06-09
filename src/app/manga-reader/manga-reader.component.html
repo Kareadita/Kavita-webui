@@ -5,7 +5,109 @@
         </div>
     </ng-container>
 
-    <div *ngIf="menuOpen" class="overlay" (click)="toggleMenu()">
+    <app-drawer #commentDrawer="drawer" [isOpen]="menuOpen" [position]="'left'" [style.--drawer-width]="drawerWidth + '%'"  [style.--drawer-background-color]="'#343a40'" (drawerClosed)="closeDrawer()">
+        <div header>
+            <h2 style="margin-top: 0.5rem">Manga Settings
+                <button type="button" class="close" aria-label="Close" (click)="commentDrawer.close()">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </h2>
+            
+        </div>
+        <div body class="drawer-body">
+            <div class="row control-container">
+            
+                <div class="col-auto">
+                    <div class="text-center">Page {{pageNum + 1}} / {{maxPages}}</div>
+                    <div class="row no-gutters">
+                        <button class="btn btn-small btn-icon col-2" (click)="goToPage(0)" title="Jump to first page"><i class="fa fa-fast-backward" aria-hidden="true"></i></button>
+                        <div class="col-8">
+                            <ngb-progressbar title="Go to page" type="info" height="10px" [value]="pageNum + 1" [max]="maxPages" (click)="goToPage()" style="cursor: pointer; margin: 0 auto; margin-top: 13px"></ngb-progressbar>
+                        </div>
+                        <button class="btn btn-small btn-icon col-2" (click)="goToPage(maxPages)" title="Jump to last page"><i class="fa fa-fast-forward" aria-hidden="true"></i></button>
+                    </div>
+                </div>
+                <div class="col-auto">
+                    <!-- TODO: this control needs to be grouped with Reading Mode and disabled in "webtoon" mode-->
+                    <label id="reading-direction">Reading Direction&nbsp;<i class="fa fa-info-circle" aria-hidden="true" placement="top" [ngbTooltip]="readingDirectionTooltip" role="button" tabindex="0" aria-describedby="tap-pagination-help"></i></label>
+                    <ng-template #readingDirectionTooltip>The direction you tap to move to next image</ng-template>
+                    <span class="sr-only" id="reading-direction-help">The direction you tap to move to next image</span>
+                    <button class="btn btn-icon" (click)="setReadingDirection()" aria-describedby="reading-direction">
+                        <i class="fa fa-angle-double-{{readingDirection === ReadingDirection.LeftToRight ? 'right' : 'left'}}" aria-hidden="true" title="{{readingDirection === ReadingDirection.LeftToRight ? 'Left to Right' : 'Right to Left'}}"></i>
+                        <span class="not-phone-hidden">{{readingDirection === ReadingDirection.LeftToRight ? 'Left to Right' : 'Right to Left'}}</span>
+                    </button>
+                </div>
+                <div class="col-auto">
+                    <div *ngIf="fittingForm" class="col mt-4">
+                        <h4>Image Scaling</h4>
+                        <form [formGroup]="fittingForm">
+                            <div class="btn-group btn-group-toggle" ngbRadioGroup name="radioBasic" formControlName="fittingOption">
+                                <label ngbButtonLabel class="btn-primary">
+                                <input ngbButton type="radio" value="full-height">Height <i class="fa fa-arrows-alt-v" aria-hidden="true"></i>
+                                </label>
+                                <label ngbButtonLabel class="btn-primary">
+                                <input ngbButton type="radio" value="full-width">Width <i class="fa fa-arrows-alt-h" aria-hidden="true"></i>
+                                </label>
+                                <label ngbButtonLabel class="btn-primary">
+                                <input ngbButton type="radio" value="original"> Original <i class="fa fa-expand-arrows-alt" aria-hidden="true"></i>
+                                </label>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <div class="col-auto">
+                    <div *ngIf="splitForm" class="col mt-4">
+                        <h4>Image Splitting</h4>
+                        <div class="split">
+                            <div class="left-side"></div>
+                            <i class="fa fa-image" aria-hidden="true"></i>
+                        </div>
+                        <form [formGroup]="splitForm">
+                            <div class="btn-group btn-group-toggle" ngbRadioGroup name="radioBasic" formControlName="pageSplitOption">
+                                <label ngbButtonLabel class="btn-primary">
+                                <input ngbButton type="radio" value="1"><span class="not-phone-hidden">R2L</span><span class="phone-hidden">Right to Left</span>
+                                </label>
+                                <label ngbButtonLabel class="btn-primary">
+                                <input ngbButton type="radio" value="0"><span class="not-phone-hidden">L2R</span><span class="phone-hidden">Left to Right</span>
+                                </label>
+                                <label ngbButtonLabel class="btn-primary">
+                                <input ngbButton type="radio" value="2"><span class="not-phone-hidden">None</span><span class="phone-hidden">None</span>
+                                </label>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <div class="col-auto">Chapter Transition Page</div>
+                <div class="col-auto">Reading Mode (webtoon, managa, different flavors for where to tap)</div>
+                <div class="col-auto">
+                    Color Options: Sepia, Dark Mode (Reduced Brightness), Normal (Original)
+                </div>
+                <div class="col-auto"></div>
+                <div class="col-auto"></div>
+
+                <div class="col-auto">
+                    Some info about the manga
+
+                    File:
+                    <div class="col phone-hidden" *ngIf="mangaFileName !== ''">
+                        {{ mangaFileName }}
+                    </div>
+                    Volume/Chapter: 45
+                </div>
+
+                <div class="col-auto">
+                    <div class="row no-gutters justify-content-between">
+                        <button (click)="closeReader()" class="btn btn-secondary col">Close Reader</button>
+                        <button  class="btn btn-secondary col">Reset</button>
+                        <button  class="btn btn-primary col" style="margin-left:10px;">Save</button>
+                    </div>
+                </div>
+            </div>
+        
+        </div>
+    </app-drawer>
+
+    <!-- <div *ngIf="menuOpen" class="overlay" (click)="toggleMenu()">
         <div class="center-menu" (click)="$event.stopPropagation()">
             <div class="col phone-hidden" *ngIf="mangaFileName !== ''">
                 {{ mangaFileName }}
@@ -78,7 +180,7 @@
             <p>{{readingDirection === 0 ? 'Previous' : 'Next'}} Page</p>
             <i class="fa fa-arrow-left" aria-hidden="true"></i>
         </div>
-    </div>
+    </div> -->
 
     <div (click)="toggleMenu()">
         <canvas #content class="{{getFittingOptionClass()}}"></canvas>

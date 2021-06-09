@@ -81,6 +81,12 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
   prevPageDisabled = false;
   nextPageDisabled = false;
 
+  drawerWidth: number = 45;
+
+  get ReadingDirection(): typeof ReadingDirection {
+    return ReadingDirection;
+  };
+
 
   constructor(private route: ActivatedRoute, private router: Router, private accountService: AccountService,
               private seriesService: SeriesService, private readerService: ReaderService, private location: Location,
@@ -162,6 +168,10 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
     } else if (event.key === KEY_CODES.LEFT_ARROW) {
       this.readingDirection === ReadingDirection.LeftToRight ? this.prevPage() : this.nextPage();
     } else if (event.key === KEY_CODES.ESC_KEY) {
+      if (this.menuOpen) {
+        this.menuOpen = false;
+        return;
+      }
       this.closeReader();
     } else if (event.key === KEY_CODES.SPACE) {
       this.toggleMenu();
@@ -227,6 +237,11 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
         const windowHeight = window.innerHeight
                   || document.documentElement.clientHeight
                   || document.body.clientHeight;
+
+        // TODO: Move this logic to a new method (drawerWidth)
+        if (windowWidth < 800) {
+          this.drawerWidth = 75;
+        }
 
         const ratio = windowWidth / windowHeight;
         if (windowHeight > windowWidth) {
@@ -513,6 +528,11 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
     this.pageNum = page;
     this.loadPage();
 
+  }
+
+
+  closeDrawer() {
+    this.menuOpen = false;
   }
 
 }
