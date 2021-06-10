@@ -46,47 +46,38 @@ export class DownloadService {
     return this.httpClient.get(this.baseUrl + 'download/chapter?chapterId=' + chapterId, {responseType: 'blob' as 'text'});
   }
 
-  downloadSeries(series: Series, isLoading: boolean = false) {
-    isLoading = true;
+  downloadSeries(series: Series) {
     this.downloadSeriesSize(series.id).subscribe(async size => {
       if (size >= this.SIZE_WARNING && !await this.confirmService.confirm('The series is ' + this.humanFileSize(size) + '. Are you sure you want to continue?')) {
-        isLoading = false;
         return;
       }
       this.downloadSeriesAPI(series.id).subscribe(res => {
         const filename = series.name + '.zip';
         this.preformSave(res, filename);
-        isLoading = false;
       });
     });
   }
 
-  downloadChapter(chapter: Chapter, seriesName: string, isLoading: boolean = false) {
-    isLoading = true;
+  downloadChapter(chapter: Chapter, seriesName: string) {
     this.downloadChapterSize(chapter.id).subscribe(async size => {
       if (size >= this.SIZE_WARNING && !await this.confirmService.confirm('The chapter is ' + this.humanFileSize(size) + '. Are you sure you want to continue?')) {
-        isLoading = false;
         return;
       }
       this.downloadChapterAPI(chapter.id).subscribe(res => {
         const filename = seriesName + ' - Chapter ' + chapter.number + '.zip';
         this.preformSave(res, filename);
-        isLoading = false;
       });
     });
   }
 
-  downloadVolume(volume: Volume, seriesName: string, isLoading: boolean = false) {
-    isLoading = true;
+  downloadVolume(volume: Volume, seriesName: string) {
     this.downloadVolumeSize(volume.id).subscribe(async size => {
       if (size >= this.SIZE_WARNING && !await this.confirmService.confirm('The chapter is ' + this.humanFileSize(size) + '. Are you sure you want to continue?')) {
-        isLoading = false;
         return;
       }
       this.downloadVolumeAPI(volume.id).subscribe(res => {
         const filename = seriesName + ' - Volume ' + volume.name + '.zip';
         this.preformSave(res, filename);
-        isLoading = false;
       });
     });
   }

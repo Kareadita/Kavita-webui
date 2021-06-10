@@ -6,7 +6,7 @@
     </button>
 </div>
 <div class="modal-body">
-    <div class="list-group">
+    <ul class="list-group">
         <li class="list-group-item" *ngFor="let role of selectedRoles; let i = index">
             <div class="form-check">
                 <input id="library-{{i}}" type="checkbox" attr.aria-label="Library {{role.data}}" class="form-check-input" 
@@ -14,7 +14,7 @@
                 <label attr.for="library-{{i}}" class="form-check-label">{{role.data}}</label>
             </div>
         </li>
-    </div>
+    </ul>
 </div>
 <div class="modal-footer">
     <button type="button" class="btn btn-light" (click)="reset()">Reset</button>

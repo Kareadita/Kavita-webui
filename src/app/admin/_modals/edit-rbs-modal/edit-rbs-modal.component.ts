@@ -1,9 +1,7 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { FormBuilder } from '@angular/forms';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { Member } from 'src/app/_models/member';
 import { AccountService } from 'src/app/_services/account.service';
-import { LibraryService } from 'src/app/_services/library.service';
 import { MemberService } from 'src/app/_services/member.service';
 
 @Component({
@@ -27,14 +25,7 @@ export class EditRbsModalComponent implements OnInit {
         return {selected: false, data: item};
       });
 
-      if (this.member !== undefined) {
-        this.member.roles.forEach(role => {
-          const foundRole = this.selectedRoles.filter(item => item.data === role);
-          if (foundRole.length > 0) {
-            foundRole[0].selected = true;
-          }
-        });
-      }
+      this.preselect();
     });
   }
 
@@ -62,6 +53,10 @@ export class EditRbsModalComponent implements OnInit {
     });
 
 
+    this.preselect();
+  }
+
+  preselect() {
     if (this.member !== undefined) {
       this.member.roles.forEach(role => {
         const foundRole = this.selectedRoles.filter(item => item.data === role);
