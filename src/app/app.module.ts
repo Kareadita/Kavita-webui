@@ -1,4 +1,4 @@
-import { BrowserModule } from '@angular/platform-browser';
+import { BrowserModule, Title } from '@angular/platform-browser';
 import { APP_INITIALIZER, ErrorHandler, Injectable, NgModule } from '@angular/core';
 
 import { AppRoutingModule } from './app-routing.module';
@@ -122,10 +122,15 @@ if (environment.production) {
     TypeaheadModule,
     FormsModule, // EditCollection Modal
     ToastrModule.forRoot({
-      positionClass: 'toast-bottom-right'
+      positionClass: 'toast-bottom-right',
+      preventDuplicates: true,
+      timeOut: 6000,
+      countDuplicates: true,
+      autoDismiss: true
     }),
   ],
   providers: [
+    Title,
     {provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true},
     {provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true},
     //{ provide: LAZYLOAD_IMAGE_HOOKS, useClass: ScrollHooks } // Great, but causes flashing after modals close

@@ -11,6 +11,7 @@ import { ToastrService } from 'ngx-toastr';
 import { catchError, take } from 'rxjs/operators';
 import { AccountService } from '../_services/account.service';
 import { Stack } from '../shared/data-structures/stack';
+import { environment } from 'src/environments/environment';
 
 
 export interface ValidationError {
@@ -35,7 +36,9 @@ export class ErrorInterceptor implements HttpInterceptor, OnDestroy {
         if (error === undefined || error === null ||  error.status !== 200) {
           return throwError(error);
         }
-        console.error('error:', error);
+        if (!environment.production) {
+          console.error('error:', error);
+        }
 
         switch (error.status) {
           case 400:
@@ -73,6 +76,7 @@ export class ErrorInterceptor implements HttpInterceptor, OnDestroy {
   }
 
   private handleValidationError(error: any) {
+    // This 400 can also be a bad request for failing to load cover images
     // TODO: Use an interface for Error types like Validation
     // IF type of array, this comes from signin handler
     if (Array.isArray(error.error)) {
@@ -97,10 +101,11 @@ export class ErrorInterceptor implements HttpInterceptor, OnDestroy {
       }
       throw modalStateErrors.flat();
     } else {
-      console.error('error:', error);
+      // Don't log to console "Bad Request" which is usually cover image failing to load (if it doesn't exist) or bad api params
       if (error.statusText === 'Bad Request') {
         this.toastr.error(error.error, error.status);
       } else {
+        console.error('error:', error);
         this.toastr.error(error.statusText === 'OK' ? error.error : error.statusText, error.status);
       }
     }
@@ -111,6 +116,7 @@ export class ErrorInterceptor implements HttpInterceptor, OnDestroy {
   }
 
   private handleServerException(error: any) {
+    console.error('500 error:', error);
     const err = error.error;
     if (err.hasOwnProperty('message') && err.message.trim() !== '') {
       this.toastr.error(err.message);
