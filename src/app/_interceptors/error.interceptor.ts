@@ -10,32 +10,21 @@ import { Router } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 import { catchError, take } from 'rxjs/operators';
 import { AccountService } from '../_services/account.service';
-import { Stack } from '../shared/data-structures/stack';
 import { environment } from 'src/environments/environment';
 
-
-export interface ValidationError {
-  type: 'Validation' | 'Other';
-  issues: Array<string>;
-}
-
 @Injectable()
-export class ErrorInterceptor implements HttpInterceptor, OnDestroy {
-
-  errors: Stack<string> = new Stack<string>();
+export class ErrorInterceptor implements HttpInterceptor {
 
   constructor(private router: Router, private toastr: ToastrService, private accountService: AccountService) {}
 
-  ngOnDestroy() {
-    this.errors = new Stack<string>();
-  }
 
   intercept(request: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<unknown>> {
     return next.handle(request).pipe(
       catchError(error => {
-        if (error === undefined || error === null ||  error.status !== 200) {
+        if (error === undefined || error === null) {
           return throwError(error);
         }
+        
         if (!environment.production) {
           console.error('error:', error);
         }
@@ -76,9 +65,7 @@ export class ErrorInterceptor implements HttpInterceptor, OnDestroy {
   }
 
   private handleValidationError(error: any) {
-    // This 400 can also be a bad request for failing to load cover images
-    // TODO: Use an interface for Error types like Validation
-    // IF type of array, this comes from signin handler
+    // This 400 can also be a bad request 
     if (Array.isArray(error.error)) {
       const modalStateErrors: any[] = [];
       if (error.error.length > 0 && error.error[0].hasOwnProperty('message')) {
@@ -101,11 +88,10 @@ export class ErrorInterceptor implements HttpInterceptor, OnDestroy {
       }
       throw modalStateErrors.flat();
     } else {
-      // Don't log to console "Bad Request" which is usually cover image failing to load (if it doesn't exist) or bad api params
+      console.error('error:', error);
       if (error.statusText === 'Bad Request') {
         this.toastr.error(error.error, error.status);
       } else {
-        console.error('error:', error);
         this.toastr.error(error.statusText === 'OK' ? error.error : error.statusText, error.status);
       }
     }
@@ -126,6 +112,7 @@ export class ErrorInterceptor implements HttpInterceptor, OnDestroy {
   }
 
   private handleAuthError(error: any) {
+    // NOTE: Signin has error.error or error.statusText available. 
     // if statement is due to http/2 spec issue: https://github.com/angular/angular/issues/23334
     this.accountService.currentUser$.pipe(take(1)).subscribe(user => {
       if (user) {

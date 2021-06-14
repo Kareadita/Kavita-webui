@@ -1,5 +1,5 @@
 import { BrowserModule, Title } from '@angular/platform-browser';
-import { APP_INITIALIZER, ErrorHandler, Injectable, NgModule } from '@angular/core';
+import { APP_INITIALIZER, ErrorHandler, NgModule } from '@angular/core';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
@@ -70,6 +70,7 @@ if (environment.production) {
     useValue: Sentry.createErrorHandler({
       showDialog: false,
     }),
+    multi: true
   },
   {
     provide: Sentry.TraceService,
@@ -89,9 +90,9 @@ if (environment.production) {
     HomeComponent,
     NavHeaderComponent,
     UserLoginComponent,
-    LibraryComponent, // Move into MangaModule
-    LibraryDetailComponent, // Move into MangaModule
-    SeriesDetailComponent, // Move into MangaModule
+    LibraryComponent, 
+    LibraryDetailComponent, 
+    SeriesDetailComponent, 
     NotConnectedComponent, // Move into ExtrasModule
     UserPreferencesComponent, // Move into SettingsModule
     EditSeriesModalComponent,
@@ -130,11 +131,11 @@ if (environment.production) {
     }),
   ],
   providers: [
-    Title,
     {provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true},
     {provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true},
     //{ provide: LAZYLOAD_IMAGE_HOOKS, useClass: ScrollHooks } // Great, but causes flashing after modals close
-    ...sentryProviders
+    ...sentryProviders,
+    Title,
   ],
   entryComponents: [],
   bootstrap: [AppComponent]
