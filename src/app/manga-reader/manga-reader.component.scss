@@ -64,7 +64,7 @@ canvas {
 
 
 .overlay {
-  background-color: royalblue; // rgba(0,0,0,0.5);
+  background-color: rgba(0,0,0,0.5);// royalblue; // rgba(0,0,0,0.5);
   color: white;
 }
 
@@ -107,6 +107,16 @@ canvas {
     padding-right: 10px;
 }
 
+.colored-overlay {
+    &.left {
+        background: rgba(255, 0, 0, 0.5);
+    }
+
+    &.right {
+        background: rgba(0, 255, 0, 0.5);
+    }
+}
+
 .right {
     position: fixed;
     right: 0px;
@@ -116,6 +126,10 @@ canvas {
     background: rgba(0, 0, 0, 0);
     z-index: 2;
     cursor: pointer;
+
+    // &.colored-overlay {
+    //     background: rgba(0, 255, 0, 0.5);
+    // }
 }
 
 .left {
@@ -179,7 +193,7 @@ canvas {
       height: 16px;
       top: auto; /* to remove the default positioning */
       bottom: 0;
-      background-color: #333;
+      background-color: $primary-color; // #333;
       border-top-left-radius: 3px;
       border-top-right-radius: 3px;
     }

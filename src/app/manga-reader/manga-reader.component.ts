@@ -47,6 +47,21 @@ enum COLOR_FILTER {
   DARK = 'filter-dark'
 }
 
+enum READER_MODE {
+  /**
+   * Manga default left/right to page
+   */
+  MANGA_LR = 0,
+  /**
+   * Manga up and down to page
+   */
+  MANGA_UD = 1,
+  /**
+   * Webtoon reading (scroll) with optional areas to tap
+   */
+  WEBTOON = 2
+}
+
 const CHAPTER_ID_NOT_FETCHED = -2;
 const CHAPTER_ID_DOESNT_EXIST = -1;
 
@@ -143,10 +158,6 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
 
   colorMode: COLOR_FILTER = COLOR_FILTER.NONE; // TODO: Move this into User Preferences
 
-  get ReadingDirection(): typeof ReadingDirection {
-    return ReadingDirection;
-  };
-
   // These are not garunteed to be valid ChapterIds. Prefetch them on page load (non-blocking). -1 means doesn't exist, -2 means not yet fetched.
   nextChapterId: number = CHAPTER_ID_NOT_FETCHED;
   prevChapterId: number = CHAPTER_ID_NOT_FETCHED;
@@ -158,6 +169,11 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
   // Whether extended settings area is showing
   settingsOpen: boolean = false;
 
+  /**
+   * Whether the click areas show
+   */
+  showClickOverlay: boolean = false;
+
   get splitIconClass() {
     if (this.isSplitLeftToRight()) {
       return 'left-side';
@@ -165,6 +181,21 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
       return 'none';  
     }
     return 'right-side';
+  }
+
+  get ReadingDirection(): typeof ReadingDirection {
+    return ReadingDirection;
+  };
+
+  get colorOptionName() {
+    switch(this.colorMode) {
+      case COLOR_FILTER.NONE:
+        return 'None';
+      case COLOR_FILTER.DARK:
+        return 'Dark';
+      case COLOR_FILTER.SEPIA:
+        return 'Sepia';
+    }
   }
 
 
@@ -360,7 +391,6 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
                   || document.documentElement.clientHeight
                   || document.body.clientHeight;
 
-        // TODO: Move this logic to a new method (drawerWidth)
         if (windowWidth < 800) {
           this.drawerWidth = 75;
         }
@@ -409,6 +439,9 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
 
   toggleMenu() {
     this.menuOpen = !this.menuOpen;
+    if (!this.menuOpen) {
+      this.showClickOverlay = false;
+    }
   }
 
   isSplitLeftToRight() {
@@ -648,6 +681,12 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
     const newOptions: Options = Object.assign({}, this.pageOptions);
     this.pageOptions = newOptions;
     // TODO: Apply an overlay for a fixed amount of time showing click areas
+    if (this.menuOpen) {
+      this.showClickOverlay = true;
+      // setTimeout(() => {
+      //   this.showClickOverlay = false;
+      // }, 3000);
+    }
   }
 
   
@@ -721,16 +760,7 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
 
-  get colorOptionName() {
-    switch(this.colorMode) {
-      case COLOR_FILTER.NONE:
-        return 'None';
-      case COLOR_FILTER.DARK:
-        return 'Dark';
-      case COLOR_FILTER.SEPIA:
-        return 'Sepia';
-    }
-  }
+  
 
   toggleColorMode() {
     switch(this.colorMode) {
