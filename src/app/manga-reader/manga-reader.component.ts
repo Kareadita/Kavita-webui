@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, HostListener, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, HostListener, OnDestroy, OnInit, ViewChild, EventEmitter } from '@angular/core';
 import {Location} from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { take } from 'rxjs/operators';
@@ -18,6 +18,9 @@ import { KEY_CODES } from '../shared/_services/utility.service';
 import { CircularArray } from '../shared/data-structures/circular-array';
 import { MemberService } from '../_services/member.service';
 import { Stack } from '../shared/data-structures/stack';
+import { ChangeContext, LabelType, Options } from '@angular-slider/ngx-slider';
+import { trigger, state, style, transition, animate } from '@angular/animations';
+import { ChpaterInfo } from './_models/chapter-info';
 
 const PREFETCH_PAGES = 3;
 
@@ -38,11 +41,49 @@ enum PAGING_DIRECTION {
   BACKWARDS = -1,
 }
 
+enum COLOR_FILTER {
+  NONE = '',
+  SEPIA = 'filter-sepia',
+  DARK = 'filter-dark'
+}
+
+const CHAPTER_ID_NOT_FETCHED = -2;
+const CHAPTER_ID_DOESNT_EXIST = -1;
+
+const ANIMATION_SPEED = 200;
+
 
 @Component({
   selector: 'app-manga-reader',
   templateUrl: './manga-reader.component.html',
-  styleUrls: ['./manga-reader.component.scss']
+  styleUrls: ['./manga-reader.component.scss'],
+  animations: [
+    trigger('fade', [
+      state('true', style({opacity: 1.0})),
+      state('false', style({opacity: 0.0})),
+      transition('false <=> true', animate('4000ms'))
+    ]),
+    trigger('slideFromTop', [
+      state('in', style({ transform: 'translateY(0)'})),
+      transition('void => *', [
+        style({ transform: 'translateY(-100%)' }),
+        animate(ANIMATION_SPEED)
+      ]),
+      transition('* => void', [
+        animate(ANIMATION_SPEED, style({ transform: 'translateY(-100%)' })),
+      ])
+    ]),
+    trigger('slideFromBottom', [
+      state('in', style({ transform: 'translateY(0)'})),
+      transition('void => *', [
+        style({ transform: 'translateY(100%)' }),
+        animate(ANIMATION_SPEED)
+      ]),
+      transition('* => void', [
+        animate(ANIMATION_SPEED, style({ transform: 'translateY(100%)' })),
+      ])
+    ])
+  ]
 })
 export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
   libraryId!: number;
@@ -64,9 +105,8 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
   currentImageSplitPart: SPLIT_PAGE_PART = SPLIT_PAGE_PART.NO_SPLIT;
   pagingDirection: PAGING_DIRECTION = PAGING_DIRECTION.FORWARD;
 
-  menuOpen = false;
+  menuOpen = true;
   isLoading = true; 
-  mangaFileName = '';
 
   @ViewChild('content') canvas: ElementRef | undefined;
   private ctx!: CanvasRenderingContext2D;
@@ -82,10 +122,50 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
   nextPageDisabled = false;
 
   drawerWidth: number = 45;
+  pageOptions: Options = {
+    floor: 1,
+    ceil: 0,
+    step: 1,
+    showSelectionBar: true,
+    translate: (value: number, label: LabelType) => {
+      if (value === 1 || value === this.maxPages) {
+        return value + '';
+      }
+      return (value + 1) + '';
+    },
+    animate: false
+  };
+  manualRefreshSlider: EventEmitter<void> = new EventEmitter<void>();
+
+  chapterInfo!: ChpaterInfo;
+  title: string = '';
+  subtitle: string = '';
+
+  colorMode: COLOR_FILTER = COLOR_FILTER.NONE; // TODO: Move this into User Preferences
 
   get ReadingDirection(): typeof ReadingDirection {
     return ReadingDirection;
   };
+
+  // These are not garunteed to be valid ChapterIds. Prefetch them on page load (non-blocking). -1 means doesn't exist, -2 means not yet fetched.
+  nextChapterId: number = CHAPTER_ID_NOT_FETCHED;
+  prevChapterId: number = CHAPTER_ID_NOT_FETCHED;
+  // Used to keep track of if you can move to the next/prev chapter
+  nextChapterDisabled: boolean = false;
+  prevChapterDisabled: boolean = false;
+  nextChapterPrefetched: boolean = false;
+
+  // Whether extended settings area is showing
+  settingsOpen: boolean = false;
+
+  get splitIconClass() {
+    if (this.isSplitLeftToRight()) {
+      return 'left-side';
+    } else if (this.isNoSplit()) {
+      return 'none';  
+    }
+    return 'right-side';
+  }
 
 
   constructor(private route: ActivatedRoute, private router: Router, private accountService: AccountService,
@@ -163,39 +243,46 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
 
   @HostListener('window:keyup', ['$event'])
   handleKeyPress(event: KeyboardEvent) {
-    if (event.key === KEY_CODES.RIGHT_ARROW) {
+    if (event.key === KEY_CODES.RIGHT_ARROW || event.key === KEY_CODES.DOWN_ARROW) {
       this.readingDirection === ReadingDirection.LeftToRight ? this.nextPage() : this.prevPage();
-    } else if (event.key === KEY_CODES.LEFT_ARROW) {
+    } else if (event.key === KEY_CODES.LEFT_ARROW || event.key === KEY_CODES.UP_ARROW) {
       this.readingDirection === ReadingDirection.LeftToRight ? this.prevPage() : this.nextPage();
     } else if (event.key === KEY_CODES.ESC_KEY) {
       if (this.menuOpen) {
-        this.menuOpen = false;
+        this.toggleMenu();
+        event.stopPropagation();
+        event.preventDefault();
         return;
       }
       this.closeReader();
     } else if (event.key === KEY_CODES.SPACE) {
       this.toggleMenu();
-    } else if (event.key === KEY_CODES.G) {
-      this.goToPage();
     }
   }
 
   init() {
+    this.nextChapterId = CHAPTER_ID_NOT_FETCHED;
+    this.prevChapterId = CHAPTER_ID_NOT_FETCHED;
+    this.nextChapterDisabled = false;
+    this.prevChapterDisabled = false;
+    this.nextChapterPrefetched = false;
+
     forkJoin({
       chapter: this.seriesService.getChapter(this.chapterId),
       bookmark: this.readerService.getBookmark(this.chapterId),
-      chapterPath: this.readerService.getChapterPath(this.chapterId)
+      chapterInfo: this.readerService.getChapterInfo(this.chapterId)
     }).subscribe(results => {
       this.chapter = results.chapter;
       this.volumeId = results.chapter.volumeId;
       this.maxPages = results.chapter.pages;
+      this.pageOptions.ceil = this.maxPages;
+      setTimeout(() => this.manualRefreshSlider.emit());
 
-      this.pageNum = results.bookmark.pageNum;
-
+      let page = results.bookmark.pageNum;
       if (this.pageNum >= this.maxPages) {
-        this.pageNum = this.maxPages - 1;
+        page = this.maxPages - 1;
       }
-
+      this.setPageNum(page);
 
       const images = [];
       for (let i = 0; i < PREFETCH_PAGES + 2; i++) {
@@ -204,7 +291,21 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
 
       this.cachedImages = new CircularArray<HTMLImageElement>(images, 0);
 
-      this.mangaFileName = results.chapterPath;
+      this.updateTitle(results.chapterInfo);
+
+      this.readerService.getNextChapter(this.seriesId, this.volumeId, this.chapterId).subscribe(chapterId => {
+        this.nextChapterId = chapterId;
+        if (chapterId === CHAPTER_ID_DOESNT_EXIST) {
+          this.nextChapterDisabled = true;
+        }
+      });
+      this.readerService.getPrevChapter(this.seriesId, this.volumeId, this.chapterId).subscribe(chapterId => {
+        this.prevChapterId = chapterId;
+        if (chapterId === CHAPTER_ID_DOESNT_EXIST) {
+          this.prevChapterDisabled = true;
+        }
+      });
+      
 
       this.loadPage();
 
@@ -225,6 +326,27 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
       this.originalBodyColor = bodyNode.style.background;
       bodyNode.setAttribute('style', 'background-color: black !important');
     }
+  }
+
+  updateTitle(chapterInfo: ChpaterInfo) {
+    this.chapterInfo = chapterInfo;
+      this.title = chapterInfo.seriesName;
+      if (this.chapterInfo.chapterTitle.length > 0) {
+        this.title + ' - ' + this.chapterInfo.chapterTitle;
+      }
+
+      this.subtitle = '';
+      if (this.chapterInfo.isSpecial && this.chapterInfo.volumeNumber === '0') {
+        this.subtitle = this.chapterInfo.fileName;
+      } else if (!this.chapterInfo.isSpecial && this.chapterInfo.volumeNumber === '0') {
+        this.subtitle = 'Chapter ' + this.chapterInfo.chapterNumber;
+      } else {
+        this.subtitle = 'Volume ' + this.chapterInfo.volumeNumber;
+
+        if (this.chapterInfo.chapterNumber !== '0') {
+          this.subtitle += ' Chapter ' + this.chapterInfo.chapterNumber;
+        }
+      }
   }
 
   translateScalingOption(option: ScalingOption) {
@@ -267,6 +389,22 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
       return FITTING_OPTION.HEIGHT;
     }
     return this.fittingForm.value.fittingOption;
+  }
+
+  getFittingIcon() {
+    let value = FITTING_OPTION.HEIGHT;
+    if (this.fittingForm !== undefined) {
+      value = this.fittingForm.value.fittingOption
+    }
+    
+    switch(value) {
+      case FITTING_OPTION.HEIGHT:
+        return 'fa-arrows-alt-v';
+      case FITTING_OPTION.WIDTH:
+        return 'fa-arrows-alt-h';
+      case FITTING_OPTION.ORIGINAL:
+        return 'fa-expand-arrows-alt';
+    }
   }
 
   toggleMenu() {
@@ -341,9 +479,15 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
       // Move to next volume/chapter automatically
       if (!this.nextPageDisabled) {
         this.isLoading = true;
-        this.readerService.getNextChapter(this.seriesId, this.volumeId, this.chapterId).subscribe(chapterId => {
-          this.loadChapter(chapterId, 'next');
-        });
+        if (this.nextChapterId === CHAPTER_ID_NOT_FETCHED) {
+          this.readerService.getNextChapter(this.seriesId, this.volumeId, this.chapterId).subscribe(chapterId => {
+            this.nextChapterId = chapterId;
+            this.loadChapter(chapterId, 'next');
+          });
+        } else {
+          this.loadChapter(this.nextChapterId, 'next');
+        }
+        
       }
       return;
     }
@@ -381,10 +525,15 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
             return;
           }
         }
-        
-        this.readerService.getPrevChapter(this.seriesId, this.volumeId, this.chapterId).subscribe(chapterId => {
-          this.loadChapter(chapterId, 'prev');
-        });  
+
+        if (this.prevChapterId === CHAPTER_ID_NOT_FETCHED) {
+          this.readerService.getPrevChapter(this.seriesId, this.volumeId, this.chapterId).subscribe(chapterId => {
+            this.prevChapterId = chapterId;
+            this.loadChapter(chapterId, 'prev');
+          });
+        } else {
+          this.loadChapter(this.prevChapterId, 'prev');
+        }
       }
       return;
     }
@@ -408,6 +557,7 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
       window.history.replaceState({}, '', newRoute);
       this.init();
     } else {
+      // This should never happen since we prefetch chapter ids
       this.toastr.warning('Could not find ' + direction + ' chapter')
       this.isLoading = false;
       if (direction === 'prev') {
@@ -488,24 +638,54 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
   setReadingDirection() {
     if (this.readingDirection === ReadingDirection.LeftToRight) {
       this.readingDirection = ReadingDirection.RightToLeft;
+      this.pageOptions.rightToLeft =  true;
     } else {
       this.readingDirection = ReadingDirection.LeftToRight;
+      this.pageOptions.rightToLeft =  false;
+    }
+
+    // Due to change detection rules in Angular, we need to re-create the options object to apply the change
+    const newOptions: Options = Object.assign({}, this.pageOptions);
+    this.pageOptions = newOptions;
+    // TODO: Apply an overlay for a fixed amount of time showing click areas
+  }
+
+  
+
+  sliderPageUpdate(context: ChangeContext) {
+    const page = context.value;
+    
+    if (page > this.pageNum) {
+      this.pagingDirection = PAGING_DIRECTION.FORWARD;
+    } else {
+      this.pagingDirection = PAGING_DIRECTION.BACKWARDS;
+    }
+
+    this.setPageNum(page);
+    this.loadPage();
+  }
+
+  setPageNum(pageNum: number) {
+    this.pageNum = pageNum;
+
+    if (this.pageNum >= this.maxPages - 10) {
+      // Tell server to cache the next chapter
+      if (this.nextChapterId > 0 && !this.nextChapterPrefetched) {
+        this.readerService.getChapterInfo(this.nextChapterId).subscribe(res => {
+          this.nextChapterPrefetched = true;
+        });
+      }
     }
   }
 
-  promptForPage() {
-    const goToPageNum = window.prompt('There are ' + this.maxPages + ' pages. What page would you like to go to?', '');
-    if (goToPageNum === null || goToPageNum.trim().length === 0) { return null; }
-    return goToPageNum;
-  }
-
-  goToPage(pageNum?: number) {
+  goToPage(pageNum: number) {
     let page = pageNum;
-    if (pageNum === null || pageNum === undefined) {
-      const goToPageNum = this.promptForPage();
-      if (goToPageNum === null) { return; }
-      page = parseInt(goToPageNum.trim(), 10);
-    }
+    
+    // if (pageNum === null || pageNum === undefined) {
+    //   const goToPageNum = this.promptForPage();
+    //   if (goToPageNum === null) { return; }
+    //   page = parseInt(goToPageNum.trim(), 10);
+    // }
 
     if (page === undefined || this.pageNum === page) { return; }
 
@@ -525,14 +705,53 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
       this.pagingDirection = PAGING_DIRECTION.BACKWARDS;
     }
 
-    this.pageNum = page;
+    this.setPageNum(page);
     this.loadPage();
-
   }
+
+  // promptForPage() {
+  //   const goToPageNum = window.prompt('There are ' + this.maxPages + ' pages. What page would you like to go to?', '');
+  //   if (goToPageNum === null || goToPageNum.trim().length === 0) { return null; }
+  //   return goToPageNum;
+  // }
 
 
   closeDrawer() {
     this.menuOpen = false;
+  }
+
+
+  get colorOptionName() {
+    switch(this.colorMode) {
+      case COLOR_FILTER.NONE:
+        return 'None';
+      case COLOR_FILTER.DARK:
+        return 'Dark';
+      case COLOR_FILTER.SEPIA:
+        return 'Sepia';
+    }
+  }
+
+  toggleColorMode() {
+    switch(this.colorMode) {
+      case COLOR_FILTER.NONE:
+        this.colorMode = COLOR_FILTER.DARK;
+        break;
+      case COLOR_FILTER.DARK:
+        this.colorMode = COLOR_FILTER.SEPIA;
+        break;
+      case COLOR_FILTER.SEPIA:
+        this.colorMode = COLOR_FILTER.NONE;
+        break;
+    }
+  }
+
+  saveSettings() {
+
+  }
+
+  resetSettings() {
+
   }
 
 }

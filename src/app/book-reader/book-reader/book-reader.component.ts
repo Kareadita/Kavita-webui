@@ -340,7 +340,7 @@ export class BookReaderComponent implements OnInit, AfterViewInit, OnDestroy {
    */
   addLinkClickHandlers() {
     var links = this.readingSectionElemRef.nativeElement.querySelectorAll('a');
-      links.forEach(link => {
+      links.forEach((link: any) => {
         link.addEventListener('click', (e: any) => {
           if (!e.target.attributes.hasOwnProperty('kavita-page')) { return; }
           var page = parseInt(e.target.attributes['kavita-page'].value, 10);
@@ -440,7 +440,7 @@ export class BookReaderComponent implements OnInit, AfterViewInit, OnDestroy {
         this.updateReaderStyles();
         this.topOffset = this.stickyTopElemRef.nativeElement?.offsetHeight;
 
-        Promise.all(Array.from(this.readingSectionElemRef.nativeElement.querySelectorAll('img')).filter(img => !img.complete).map(img => new Promise(resolve => { img.onload = img.onerror = resolve; }))).then(() => {
+        Promise.all(Array.from(this.readingSectionElemRef.nativeElement.querySelectorAll('img')).filter((img: any) => !img.complete).map((img: any) => new Promise(resolve => { img.onload = img.onerror = resolve; }))).then(() => {
           this.isLoading = false;
           this.scrollbarNeeded = this.readingSectionElemRef.nativeElement.scrollHeight > this.readingSectionElemRef.nativeElement.clientHeight;
 

@@ -5,6 +5,7 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { NgbModalModule, NgbButtonsModule, NgbDropdownModule, NgbTooltipModule, NgbRatingModule, NgbProgressbarModule } from '@ng-bootstrap/ng-bootstrap';
 import { MangaReaderRoutingModule } from './manga-reader.router.module';
 import { SharedModule } from '../shared/shared.module';
+import { NgxSliderModule } from '@angular-slider/ngx-slider';
 
 
 
@@ -22,6 +23,7 @@ import { SharedModule } from '../shared/shared.module';
     NgbTooltipModule,
     NgbRatingModule,
     NgbProgressbarModule,
+    NgxSliderModule,
     SharedModule
   ],
   exports: [
