@@ -296,6 +296,7 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
     this.nextChapterDisabled = false;
     this.prevChapterDisabled = false;
     this.nextChapterPrefetched = false;
+    this.pageNum = 1;
 
     forkJoin({
       chapter: this.seriesService.getChapter(this.chapterId),
@@ -308,7 +309,7 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
       this.pageOptions.ceil = this.maxPages;
 
       let page = results.bookmark.pageNum;
-      if (this.pageNum >= this.maxPages) {
+      if (page >= this.maxPages) {
         page = this.maxPages - 1;
       }
       this.setPageNum(page);

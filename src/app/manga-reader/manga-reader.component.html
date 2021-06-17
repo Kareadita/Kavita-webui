@@ -34,13 +34,13 @@
         <div class="form-group" *ngIf="pageOptions != undefined && pageOptions.ceil != undefined && pageOptions.ceil > 0">
             <span class="sr-only" id="slider-info"></span>
             <div class="row no-gutters">
-                <button class="btn btn-small btn-icon col-1" [disabled]="prevChapterDisabled" (click)="loadChapter(this.prevChapterId, 'prev')" title="Prev Chapter/Volume"><i class="fa fa-fast-backward" aria-hidden="true"></i></button>
-                <button class="btn btn-small btn-icon col-1" [disabled]="prevPageDisabled" (click)="goToPage(0)" title="First Page"><i class="fa fa-step-backward" aria-hidden="true"></i></button>
+                <button class="btn btn-small btn-icon col-1" [disabled]="prevChapterDisabled" (click)="loadChapter(this.prevChapterId, 'prev');resetMenuCloseTimer();" title="Prev Chapter/Volume"><i class="fa fa-fast-backward" aria-hidden="true"></i></button>
+                <button class="btn btn-small btn-icon col-1" [disabled]="prevPageDisabled" (click)="goToPage(0);resetMenuCloseTimer();" title="First Page"><i class="fa fa-step-backward" aria-hidden="true"></i></button>
                 <div class="col custom-slider">
                     <ngx-slider [options]="pageOptions" [value]="pageNum" aria-describedby="slider-info" (userChangeEnd)="sliderPageUpdate($event)"></ngx-slider>
                 </div>
-                <button class="btn btn-small btn-icon col-2" [disabled]="nextPageDisabled" (click)="goToPage(this.maxPages)" title="Last Page"><i class="fa fa-step-forward" aria-hidden="true"></i></button>
-                <button class="btn btn-small btn-icon col-1" [disabled]="nextChapterDisabled" (click)="loadChapter(this.nextChapterId, 'next')" title="Next Chapter/Volume"><i class="fa fa-fast-forward" aria-hidden="true"></i></button>
+                <button class="btn btn-small btn-icon col-2" [disabled]="nextPageDisabled" (click)="goToPage(this.maxPages);resetMenuCloseTimer();" title="Last Page"><i class="fa fa-step-forward" aria-hidden="true"></i></button>
+                <button class="btn btn-small btn-icon col-1" [disabled]="nextChapterDisabled" (click)="loadChapter(this.nextChapterId, 'next');resetMenuCloseTimer();" title="Next Chapter/Volume"><i class="fa fa-fast-forward" aria-hidden="true"></i></button>
             </div>
             
             
