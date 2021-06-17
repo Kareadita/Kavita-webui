@@ -6,8 +6,8 @@ import { NgbModalModule, NgbButtonsModule, NgbDropdownModule, NgbTooltipModule, 
 import { MangaReaderRoutingModule } from './manga-reader.router.module';
 import { SharedModule } from '../shared/shared.module';
 import { NgxSliderModule } from '@angular-slider/ngx-slider';
-
-
+import {ScrollingModule} from '@angular/cdk/scrolling';
+import { InfiniteScrollModule } from 'ngx-infinite-scroll';
 
 @NgModule({
   declarations: [
@@ -17,14 +17,19 @@ import { NgxSliderModule } from '@angular-slider/ngx-slider';
     CommonModule,
     MangaReaderRoutingModule,
     ReactiveFormsModule,
+
     NgbModalModule,
     NgbButtonsModule,
     NgbDropdownModule,
     NgbTooltipModule,
     NgbRatingModule,
-    NgbProgressbarModule,
+    //NgbProgressbarModule,
     NgxSliderModule,
-    SharedModule
+    
+    SharedModule,
+
+    ScrollingModule,
+    InfiniteScrollModule
   ],
   exports: [
     MangaReaderComponent

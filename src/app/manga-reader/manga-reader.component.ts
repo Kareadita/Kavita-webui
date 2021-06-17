@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, HostListener, OnDestroy, OnInit, ViewChild, EventEmitter } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, HostListener, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import {Location} from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { take } from 'rxjs/operators';
@@ -12,7 +12,7 @@ import { Chapter } from '../_models/chapter';
 import { ReadingDirection } from '../_models/preferences/reading-direction';
 import { ScalingOption } from '../_models/preferences/scaling-option';
 import { PageSplitOption } from '../_models/preferences/page-split-option';
-import { forkJoin } from 'rxjs';
+import { BehaviorSubject, forkJoin } from 'rxjs';
 import { ToastrService } from 'ngx-toastr';
 import { KEY_CODES } from '../shared/_services/utility.service';
 import { CircularArray } from '../shared/data-structures/circular-array';
@@ -21,6 +21,7 @@ import { Stack } from '../shared/data-structures/stack';
 import { ChangeContext, LabelType, Options } from '@angular-slider/ngx-slider';
 import { trigger, state, style, transition, animate } from '@angular/animations';
 import { ChpaterInfo } from './_models/chapter-info';
+import { IInfiniteScrollEvent } from 'ngx-infinite-scroll';
 
 const PREFETCH_PAGES = 3;
 
@@ -67,6 +68,11 @@ const CHAPTER_ID_DOESNT_EXIST = -1;
 
 const ANIMATION_SPEED = 200;
 const OVERLAY_AUTO_CLOSE_TIME = 6000;
+
+interface WebtoonImage {
+  src: string;
+  page: number;
+}
 
 
 @Component({
@@ -125,6 +131,10 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
 
   cachedImages!: CircularArray<HTMLImageElement>; // This is a circular array of size PREFETCH_PAGES + 2
   continuousChaptersStack: Stack<number> = new Stack();
+  /**
+   * Stores and emits all the src urls
+   */
+  webtoonImages: BehaviorSubject<WebtoonImage[]> = new BehaviorSubject<WebtoonImage[]>([]);
 
   // Temp hack: Override background color for reader and restore it onDestroy
   originalBodyColor: string | undefined;
@@ -163,6 +173,8 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
   // Whether extended settings area is showing
   settingsOpen: boolean = false;
 
+  readerMode: READER_MODE = READER_MODE.WEBTOON; // TODO: Revert this
+
   /**
    * Timeout id for auto-closing menu overlay
    */
@@ -172,6 +184,10 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
    * Whether the click areas show
    */
   showClickOverlay: boolean = false;
+
+
+  // DEBUG:
+  items = Array.from({length: 100000}).map((_, i) => `Item #${i}`);
 
   get splitIconClass() {
     if (this.isSplitLeftToRight()) {
@@ -197,9 +213,13 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
+  get READER_MODE(): typeof READER_MODE {
+    return READER_MODE;
+  }
+
 
   constructor(private route: ActivatedRoute, private router: Router, private accountService: AccountService,
-              private seriesService: SeriesService, private readerService: ReaderService, private location: Location,
+              private seriesService: SeriesService, public readerService: ReaderService, private location: Location,
               private formBuilder: FormBuilder, private navService: NavService, private toastr: ToastrService,
               private memberService: MemberService) {
                 this.navService.hideNavBar();
@@ -287,6 +307,10 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
       this.closeReader();
     } else if (event.key === KEY_CODES.SPACE) {
       this.toggleMenu();
+    } else if (event.key === KEY_CODES.G) {
+      const goToPageNum = this.promptForPage();
+      if (goToPageNum === null) { return; }
+      this.goToPage(parseInt(goToPageNum.trim(), 10));
     }
   }
 
@@ -319,13 +343,6 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
       newOptions.ceil = this.maxPages;
       this.pageOptions = newOptions;
 
-      const images = [];
-      for (let i = 0; i < PREFETCH_PAGES + 2; i++) {
-        images.push(new Image());
-      }
-
-      this.cachedImages = new CircularArray<HTMLImageElement>(images, 0);
-
       this.updateTitle(results.chapterInfo);
 
       this.readerService.getNextChapter(this.seriesId, this.volumeId, this.chapterId).subscribe(chapterId => {
@@ -340,10 +357,23 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
           this.prevChapterDisabled = true;
         }
       });
-      
 
-      this.loadPage();
+      // ! Should I move the prefetching code if we start in webtoon reader mode? 
+      const images = [];
+      for (let i = 0; i < PREFETCH_PAGES + 2; i++) {
+        images.push(new Image());
+      }
 
+      this.cachedImages = new CircularArray<HTMLImageElement>(images, 0);
+
+
+
+      if (this.readerMode === READER_MODE.WEBTOON) {
+        this.initWebtoonReader();
+        this.isLoading = false;
+      } else {
+        this.loadPage();
+      }
     }, () => {
       setTimeout(() => {
         this.closeReader();
@@ -555,10 +585,14 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
     this.pagingDirection = PAGING_DIRECTION.FORWARD;
     if (this.isNoSplit() || notInSplit) {
       this.setPageNum(this.pageNum + 1);
-      this.canvasImage = this.cachedImages.next();
+      if (this.readerMode !== READER_MODE.WEBTOON) {
+        this.canvasImage = this.cachedImages.next();
+      }
     }
 
-    this.loadPage();
+    if (this.readerMode !== READER_MODE.WEBTOON) {
+      this.loadPage();
+    }    
   }
 
   prevPage(event?: any) {
@@ -698,15 +732,10 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
   setReadingDirection() {
     if (this.readingDirection === ReadingDirection.LeftToRight) {
       this.readingDirection = ReadingDirection.RightToLeft;
-      //this.pageOptions.rightToLeft =  true; // This is just confusing
     } else {
       this.readingDirection = ReadingDirection.LeftToRight;
-      //this.pageOptions.rightToLeft =  false;
     }
 
-    // Due to change detection rules in Angular, we need to re-create the options object to apply the change
-    // const newOptions: Options = Object.assign({}, this.pageOptions);
-    // this.pageOptions = newOptions;
     // TODO: Apply an overlay for a fixed amount of time showing click areas
     if (this.menuOpen) {
       this.showClickOverlay = true;
@@ -747,12 +776,6 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
   goToPage(pageNum: number) {
     let page = pageNum;
     
-    // if (pageNum === null || pageNum === undefined) {
-    //   const goToPageNum = this.promptForPage();
-    //   if (goToPageNum === null) { return; }
-    //   page = parseInt(goToPageNum.trim(), 10);
-    // }
-
     if (page === undefined || this.pageNum === page) { return; }
 
     if (page > this.maxPages) {
@@ -775,19 +798,16 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
     this.loadPage();
   }
 
-  // promptForPage() {
-  //   const goToPageNum = window.prompt('There are ' + this.maxPages + ' pages. What page would you like to go to?', '');
-  //   if (goToPageNum === null || goToPageNum.trim().length === 0) { return null; }
-  //   return goToPageNum;
-  // }
+  promptForPage() {
+    const goToPageNum = window.prompt('There are ' + this.maxPages + ' pages. What page would you like to go to?', '');
+    if (goToPageNum === null || goToPageNum.trim().length === 0) { return null; }
+    return goToPageNum;
+  }
 
 
   closeDrawer() {
     this.menuOpen = false;
   }
-
-
-  
 
   toggleColorMode() {
     switch(this.colorMode) {
@@ -801,6 +821,126 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
         this.colorMode = COLOR_FILTER.NONE;
         break;
     }
+  }
+
+  toggleReaderMode() {
+    switch(this.readerMode) {
+      case READER_MODE.MANGA_LR:
+        this.readerMode = READER_MODE.MANGA_UD;
+        this.loadPage();
+        break;
+      case READER_MODE.MANGA_UD:
+        this.readerMode = READER_MODE.WEBTOON;
+        this.initWebtoonReader();
+        break;
+      case READER_MODE.WEBTOON:
+        this.readerMode = READER_MODE.MANGA_LR;
+        this.loadPage();
+        break;
+    }
+  }
+
+  getReaderModeIcon() {
+    // TODO: Refactor to a getter
+    switch(this.readerMode) {
+      case READER_MODE.MANGA_LR:
+        return 'fa-exchange-alt';
+      case READER_MODE.MANGA_UD:
+        return 'fa-exchange-alt fa-rotate-90';
+      case READER_MODE.WEBTOON:
+        return 'fa-arrows-alt-v';
+    }
+  }
+
+  initWebtoonReader() {
+    const prefetchStart = Math.max(this.pageNum - PREFETCH_PAGES, 0);
+    const prefetchMax =  Math.min(this.pageNum + PREFETCH_PAGES, this.maxPages); 
+    console.log('[INIT] Prefetching pages ' + prefetchStart + ' to ' + prefetchMax + '. Current page: ', this.pageNum);
+    for(let i = prefetchStart; i < prefetchMax; i++) {
+      this.prefetchWebtoonImage(i);
+    }
+
+    if (this.readerMode === READER_MODE.WEBTOON) {
+      setTimeout(() => {
+        const elem = document.querySelector('img#page-' + this.pageNum);
+        if (elem) {
+          console.log('top: ', elem.getBoundingClientRect().top);
+          window.scroll({
+            top: elem.getBoundingClientRect().top,
+            behavior: 'smooth'
+          });
+        }
+      }, 200);
+    }
+  }
+
+  prefetchWebtoonImage(page: number) {
+    const data = this.webtoonImages.value.concat({src: this.readerService.getPageUrl(this.chapterId, page), page});
+    this.webtoonImages.next(data);
+    this.maxPrefetchedWebtoonImage++;
+  }
+
+  maxPrefetchedWebtoonImage: number = -1;
+  onScrollUp(event: IInfiniteScrollEvent) {
+    // TODO: Figure out how to go backwards
+
+    // const verticalOffset = (window.pageYOffset 
+    //   || document.documentElement.scrollTop 
+    //   || document.body.scrollTop || 0) + (document.body.offsetHeight / 2);
+
+    // const elems = document.querySelectorAll("img[id^='page-']");
+    // elems.forEach(elem => {
+    //   if (elem.getBoundingClientRect().top <= verticalOffset) {
+    //     // This gets us the current page
+    //     const imagePage = parseInt(elem.attributes.getNamedItem('page')?.value + '', 10);
+    //     console.log('rendering page: ', imagePage)
+    //     if (this.pageNum - 1 === imagePage) {
+    //       console.log('Moving to prev page');
+    //       this.prevPage();
+
+    //       // Load next PREFETCH_PAGES assuming they are not already cached
+
+    //       // const startingIndex = (this.maxPrefetchedWebtoonImage + 1) ;
+    //       // const endingIndex = Math.min(this.maxPrefetchedWebtoonImage + PREFETCH_PAGES, this.maxPages);
+    //       // console.log('[SCROLL DOWN] prefetching pages: ' + startingIndex + ' to ' + endingIndex);
+    //       // for(let i = startingIndex; i < endingIndex; i++) {
+    //       //   this.prefetchWebtoonImage(i);
+    //       // }
+    //     }
+    //     //console.log('page ' + elem.attributes.getNamedItem('page')?.value + ': ', elem.getBoundingClientRect().top);
+    //   }
+    // });
+  }
+
+  onScrollDown(event: IInfiniteScrollEvent) {
+
+    console.log('scroll: ', event.currentScrollPosition);
+    console.log('current page: ', this.pageNum);
+
+    const verticalOffset = (window.pageYOffset 
+      || document.documentElement.scrollTop 
+      || document.body.scrollTop || 0) + (document.body.offsetHeight / 2);
+    
+    const elems = document.querySelectorAll("img[id^='page-']");
+    elems.forEach(elem => {
+      if (elem.getBoundingClientRect().top <= verticalOffset) {
+        // This gets us the current page
+        const imagePage = parseInt(elem.attributes.getNamedItem('page')?.value + '', 10);
+        console.log('image page: ', imagePage);
+        if (this.pageNum + 1 === imagePage) {
+          this.nextPage();
+          this.readerService.bookmark(this.seriesId, this.volumeId, this.chapterId, this.pageNum).subscribe(() => {/* No operation */});
+
+          // Load next PREFETCH_PAGES assuming they are not already cached
+          const startingIndex = (this.pageNum + this.maxPrefetchedWebtoonImage + 1) ;
+          const endingIndex = Math.min(this.pageNum + this.maxPrefetchedWebtoonImage + PREFETCH_PAGES, this.maxPages);
+          console.log('[SCROLL DOWN] prefetching pages: ' + startingIndex + ' to ' + endingIndex);
+          for(let i = startingIndex; i < endingIndex; i++) {
+            this.prefetchWebtoonImage(i);
+          }
+        }
+      }
+    });
   }
 
   saveSettings() {

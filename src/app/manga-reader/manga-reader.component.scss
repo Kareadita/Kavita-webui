@@ -132,12 +132,38 @@ canvas {
     // }
 }
 
+.top {
+    position: fixed;
+    right: 0px;
+    top: 0px;
+    width: 100%;
+    height: $side-width;
+    background: rgba(0, 0, 0, 0);
+    z-index: 2;
+    cursor: pointer;
+
+    // &.colored-overlay {
+    //     background: rgba(0, 255, 0, 0.5);
+    // }
+}
+
 .left {
     position: fixed;
     left: 0px;
     top: 0px;
     width: $side-width;
     height: 100%;
+    background: rgba(0, 0, 0, 0);
+    z-index: 2;
+    cursor: pointer;
+}
+
+.bottom {
+    position: fixed;
+    left: 0px;
+    bottom: 0px;
+    width: 100%;
+    height: $side-width;
     background: rgba(0, 0, 0, 0);
     z-index: 2;
     cursor: pointer;
@@ -223,4 +249,20 @@ canvas {
     .custom-slider .ngx-slider .ngx-slider-tick.ngx-slider-selected {
       background: $primary-color;
     }
+  }
+
+  // DEBUG ONLY
+
+  .example-viewport {
+    height: 100vh;
+    width: 100wh;
+  }
+  
+  .example-item-detail {
+    height: 18px;
+    color: white;
+  }
+  
+  .example-alternate {
+    background: rgba(127, 127, 127, 0.3);
   }

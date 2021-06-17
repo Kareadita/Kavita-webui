@@ -23,10 +23,28 @@
     </ng-container>
 
     <div (click)="toggleMenu()">
-        <canvas #content class="{{getFittingOptionClass()}} {{this.colorMode}}"></canvas>
-        <ng-container *ngIf="true">
-            <div class="right" (click)="handlePageChange($event, 'right')"></div>
-            <div class="left" (click)="handlePageChange($event, 'left')"></div>
+        <canvas #content class="{{getFittingOptionClass()}} {{this.colorMode}} {{readerMode === READER_MODE.MANGA_LR || readerMode === READER_MODE.MANGA_UD ? '' : 'd-none'}}" 
+                ondragstart="return false;" onselectstart="return false;">
+        </canvas>
+        <ng-container *ngIf="readerMode === READER_MODE.WEBTOON">
+            <div
+                class="search-results"
+                infiniteScroll
+                [infiniteScrollDistance]="100"
+                [infiniteScrollThrottle]="50"
+                [alwaysCallback]="true"
+                (scrolled)="onScrollDown($event)"
+                (scrolledUp)="onScrollUp($event)">
+                <ng-container *ngFor="let item of webtoonImages | async; let index = index;">
+                    <h2>Page {{item.page}} - Prefetched {{maxPrefetchedWebtoonImage}} </h2>
+                    <img src="{{item.src}}" id="page-{{item.page}}" [attr.page]="item.page" ondragstart="return false;" onselectstart="return false;">
+                </ng-container>
+            </div>
+
+        </ng-container>
+        <ng-container *ngIf="readerMode === READER_MODE.MANGA_LR || readerMode === READER_MODE.MANGA_UD">
+            <div class="{{readerMode === READER_MODE.MANGA_LR ? 'right' : 'top'}}" (click)="handlePageChange($event, 'right')"></div>
+            <div class="{{readerMode === READER_MODE.MANGA_LR ? 'left' : 'bottom'}}" (click)="handlePageChange($event, 'left')"></div>
         </ng-container>
     </div>
     
@@ -47,8 +65,8 @@
         </div>
         <div class="row pt-2 ml-2 mr-2">
             <div class="col">
-                <button class="btn btn-icon" title="Reading Mode">
-                    <i class="fa fa-exchange-alt" aria-hidden="true"></i>
+                <button class="btn btn-icon" title="Reading Mode" (click)="toggleReaderMode();resetMenuCloseTimer();">
+                    <i class="fa {{getReaderModeIcon()}}" aria-hidden="true"></i>
                     <span class="sr-only">Reading Mode</span>
                 </button>
             </div>
