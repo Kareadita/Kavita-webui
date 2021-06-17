@@ -145,7 +145,6 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
     },
     animate: false
   };
-  manualRefreshSlider: EventEmitter<void> = new EventEmitter<void>();
 
   chapterInfo!: ChpaterInfo;
   title: string = '';
@@ -307,13 +306,17 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
       this.volumeId = results.chapter.volumeId;
       this.maxPages = results.chapter.pages;
       this.pageOptions.ceil = this.maxPages;
-      setTimeout(() => this.manualRefreshSlider.emit());
 
       let page = results.bookmark.pageNum;
       if (this.pageNum >= this.maxPages) {
         page = this.maxPages - 1;
       }
       this.setPageNum(page);
+
+      // Due to change detection rules in Angular, we need to re-create the options object to apply the change
+      const newOptions: Options = Object.assign({}, this.pageOptions);
+      newOptions.ceil = this.maxPages;
+      this.pageOptions = newOptions;
 
       const images = [];
       for (let i = 0; i < PREFETCH_PAGES + 2; i++) {
