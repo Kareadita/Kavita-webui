@@ -66,6 +66,7 @@ const CHAPTER_ID_NOT_FETCHED = -2;
 const CHAPTER_ID_DOESNT_EXIST = -1;
 
 const ANIMATION_SPEED = 200;
+const OVERLAY_AUTO_CLOSE_TIME = 6000;
 
 
 @Component({
@@ -73,11 +74,6 @@ const ANIMATION_SPEED = 200;
   templateUrl: './manga-reader.component.html',
   styleUrls: ['./manga-reader.component.scss'],
   animations: [
-    trigger('fade', [
-      state('true', style({opacity: 1.0})),
-      state('false', style({opacity: 0.0})),
-      transition('false <=> true', animate('4000ms'))
-    ]),
     trigger('slideFromTop', [
       state('in', style({ transform: 'translateY(0)'})),
       transition('void => *', [
@@ -120,7 +116,7 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
   currentImageSplitPart: SPLIT_PAGE_PART = SPLIT_PAGE_PART.NO_SPLIT;
   pagingDirection: PAGING_DIRECTION = PAGING_DIRECTION.FORWARD;
 
-  menuOpen = true;
+  menuOpen = false;
   isLoading = true; 
 
   @ViewChild('content') canvas: ElementRef | undefined;
@@ -136,7 +132,6 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
   prevPageDisabled = false;
   nextPageDisabled = false;
 
-  drawerWidth: number = 45;
   pageOptions: Options = {
     floor: 1,
     ceil: 0,
@@ -168,6 +163,11 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
 
   // Whether extended settings area is showing
   settingsOpen: boolean = false;
+
+  /**
+   * Timeout id for auto-closing menu overlay
+   */
+  menuTimeout: any;
 
   /**
    * Whether the click areas show
@@ -245,7 +245,7 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
         });
         this.memberService.hasReadingProgress(this.libraryId).subscribe(progress => {
           if (!progress) {
-            this.menuOpen = true;
+            this.toggleMenu();
             this.toastr.info('Tap the image at any time to open the menu. You can configure different settings or go to page by clicking progress bar. Tap sides of image move to next/prev page.');
           }
         });
@@ -391,10 +391,6 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
                   || document.documentElement.clientHeight
                   || document.body.clientHeight;
 
-        if (windowWidth < 800) {
-          this.drawerWidth = 75;
-        }
-
         const ratio = windowWidth / windowHeight;
         if (windowHeight > windowWidth) {
           return FITTING_OPTION.WIDTH;
@@ -437,10 +433,21 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
+  
+  
   toggleMenu() {
     this.menuOpen = !this.menuOpen;
-    if (!this.menuOpen) {
+    if (this.menuTimeout) {
+      clearTimeout(this.menuTimeout);
+    }
+
+    if (this.menuOpen) {
+      this.menuTimeout = setTimeout(() => {
+        this.toggleMenu();
+      }, OVERLAY_AUTO_CLOSE_TIME);
+    } else {
       this.showClickOverlay = false;
+      this.settingsOpen = false;
     }
   }
 
@@ -527,7 +534,7 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
 
     this.pagingDirection = PAGING_DIRECTION.FORWARD;
     if (this.isNoSplit() || notInSplit) {
-      this.pageNum++;
+      this.setPageNum(this.pageNum + 1);
       this.canvasImage = this.cachedImages.next();
     }
 
@@ -573,7 +580,7 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
 
     this.pagingDirection = PAGING_DIRECTION.BACKWARDS;
     if (this.isNoSplit() || notInSplit) {
-      this.pageNum--;
+      this.setPageNum(this.pageNum - 1);
       this.canvasImage = this.cachedImages.prev();
     }
 
@@ -671,15 +678,15 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
   setReadingDirection() {
     if (this.readingDirection === ReadingDirection.LeftToRight) {
       this.readingDirection = ReadingDirection.RightToLeft;
-      this.pageOptions.rightToLeft =  true;
+      //this.pageOptions.rightToLeft =  true; // This is just confusing
     } else {
       this.readingDirection = ReadingDirection.LeftToRight;
-      this.pageOptions.rightToLeft =  false;
+      //this.pageOptions.rightToLeft =  false;
     }
 
     // Due to change detection rules in Angular, we need to re-create the options object to apply the change
-    const newOptions: Options = Object.assign({}, this.pageOptions);
-    this.pageOptions = newOptions;
+    // const newOptions: Options = Object.assign({}, this.pageOptions);
+    // this.pageOptions = newOptions;
     // TODO: Apply an overlay for a fixed amount of time showing click areas
     if (this.menuOpen) {
       this.showClickOverlay = true;
