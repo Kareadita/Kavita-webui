@@ -436,6 +436,24 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
+  /**
+   * Whenever the menu is interacted with, restart the timer. However if the settings menu is open, don't restart, just cancel the timeout.
+   */
+  resetMenuCloseTimer() {
+    if (this.menuTimeout) {
+      clearTimeout(this.menuTimeout);
+      if (!this.settingsOpen) {
+        this.startMenuCloseTimer();
+      }
+    }
+  }
+
+  startMenuCloseTimer() {
+    this.menuTimeout = setTimeout(() => {
+      this.toggleMenu();
+    }, OVERLAY_AUTO_CLOSE_TIME);
+  }
+
   
   
   toggleMenu() {
@@ -444,10 +462,8 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
       clearTimeout(this.menuTimeout);
     }
 
-    if (this.menuOpen) {
-      this.menuTimeout = setTimeout(() => {
-        this.toggleMenu();
-      }, OVERLAY_AUTO_CLOSE_TIME);
+    if (this.menuOpen && !this.settingsOpen) {
+      this.startMenuCloseTimer();
     } else {
       this.showClickOverlay = false;
       this.settingsOpen = false;
