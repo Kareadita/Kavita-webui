@@ -28,15 +28,16 @@
         </canvas>
         <ng-container *ngIf="readerMode === READER_MODE.WEBTOON">
             <div
-                class="search-results"
+                class="webtoon-images"
                 infiniteScroll
-                [infiniteScrollDistance]="100"
+                [infiniteScrollDistance]="1"
+                [infiniteScrollUpDistance]="50"
                 [infiniteScrollThrottle]="50"
                 [alwaysCallback]="true"
                 (scrolled)="onScrollDown($event)"
                 (scrolledUp)="onScrollUp($event)">
                 <ng-container *ngFor="let item of webtoonImages | async; let index = index;">
-                    <h2>Page {{item.page}} - Prefetched {{maxPrefetchedWebtoonImage}} </h2>
+                    <h2>Page {{item.page}} - Prefetched {{minPrefetchedWebtoonImage}}-{{maxPrefetchedWebtoonImage}} </h2>
                     <img src="{{item.src}}" id="page-{{item.page}}" [attr.page]="item.page" ondragstart="return false;" onselectstart="return false;">
                 </ng-container>
             </div>
