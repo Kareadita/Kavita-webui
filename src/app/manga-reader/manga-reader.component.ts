@@ -1,7 +1,7 @@
 import { AfterViewInit, Component, ElementRef, HostListener, OnDestroy, OnInit, Renderer2, ViewChild } from '@angular/core';
 import {Location} from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
-import { take } from 'rxjs/operators';
+import { debounceTime, take, takeUntil } from 'rxjs/operators';
 import { User } from '../_models/user';
 import { AccountService } from '../_services/account.service';
 import { ReaderService } from '../_services/reader.service';
@@ -12,7 +12,7 @@ import { Chapter } from '../_models/chapter';
 import { ReadingDirection } from '../_models/preferences/reading-direction';
 import { ScalingOption } from '../_models/preferences/scaling-option';
 import { PageSplitOption } from '../_models/preferences/page-split-option';
-import { BehaviorSubject, forkJoin } from 'rxjs';
+import { BehaviorSubject, forkJoin, fromEvent, Subject } from 'rxjs';
 import { ToastrService } from 'ngx-toastr';
 import { KEY_CODES } from '../shared/_services/utility.service';
 import { CircularArray } from '../shared/data-structures/circular-array';
@@ -187,6 +187,8 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
    */
   showClickOverlay: boolean = false;
 
+  private readonly onDestroy = new Subject<void>();
+
 
 
   get splitIconClass() {
@@ -289,6 +291,7 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
       bodyNode.style.background = this.originalBodyColor;
     }
     this.navService.showNavBar();
+    this.onDestroy.next();
   }
 
   @HostListener('window:keyup', ['$event'])
@@ -868,8 +871,27 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
+  intersectionObserver: IntersectionObserver = new IntersectionObserver((entries) => this.handleIntersection(entries), { threshold: [0, 0.25, 0.5, 0.75, 1] });
+  scrollingDirection: PAGING_DIRECTION = PAGING_DIRECTION.FORWARD;
+  prevScrollPosition: number = 0;
+
   initWebtoonReader() {
     // ? If page is already prefetched, just scroll to it and don't reset the array
+
+    fromEvent(window, 'scroll').pipe(debounceTime(20), takeUntil(this.onDestroy)).subscribe((event) => {
+      const verticalOffset = (window.pageYOffset 
+        || document.documentElement.scrollTop 
+        || document.body.scrollTop || 0);
+      // TODO: capture scroll direction
+      if (verticalOffset > this.prevScrollPosition) {
+        this.scrollingDirection = PAGING_DIRECTION.FORWARD;
+      } else {
+        this.scrollingDirection = PAGING_DIRECTION.BACKWARDS;
+      }
+      //console.log('offset check: ', verticalOffset + ' vs ' + this.prevScrollPosition + ' => ' + (this.scrollingDirection === PAGING_DIRECTION.FORWARD ? 'Forward' : 'Backward'));
+      this.prevScrollPosition = verticalOffset;
+    });
+
     this.minPrefetchedWebtoonImage = this.pageNum;
     this.maxPrefetchedWebtoonImage = -1;
     this.webtoonImages.next([]);
@@ -881,6 +903,30 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
     this.scrollToCurrentPage();
+  }
+
+  handleIntersection(entries: IntersectionObserverEntry[]) {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const imagePage = parseInt(entry.target.attributes.getNamedItem('page')?.value + '', 10);
+        if (entry.intersectionRatio <= 0.5) {
+          console.log(imagePage + ' is partially on screen');
+          //console.log('Scrolling direction: ', this.scrollingDirection === PAGING_DIRECTION.FORWARD ? 'Forward' : 'Backward');
+
+          if (this.pageNum + 1 === imagePage && this.scrollingDirection === PAGING_DIRECTION.FORWARD) {
+            this.nextPage();
+            this.readerService.bookmark(this.seriesId, this.volumeId, this.chapterId, this.pageNum).subscribe(() => {/* No operation */});
+          } else if (this.pageNum - 1 === imagePage && this.scrollingDirection === PAGING_DIRECTION.BACKWARDS) {
+            this.prevPage();
+            this.readerService.bookmark(this.seriesId, this.volumeId, this.chapterId, this.pageNum).subscribe(() => {/* No operation */});
+          } else {
+            return;
+          }
+          
+          this.prefetchWebtoonImages();
+        }
+      }
+    });
   }
 
   loadWebtoonPage(scrollTo: boolean = false) {
@@ -898,7 +944,7 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
       if (elem) {
         window.scroll({
           // ! This needs some adjustment to make sure the page loads at the top of the viewport
-          top: elem.getBoundingClientRect().top,
+          top: elem.getBoundingClientRect().top, // 
           behavior: 'smooth'
         });
       }
@@ -915,103 +961,54 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
       this.minPrefetchedWebtoonImage--;
     }
 
-    //const data = this.webtoonImages.value.concat({src: this.readerService.getPageUrl(this.chapterId, page), page});
     this.webtoonImages.next(data);
+    setTimeout(() => {
+      const image = document.querySelector("img#page-" + page);
+      if (image === null) {
+        return;
+      }
+      this.intersectionObserver.observe(image);
+    }, 10);
   }
 
 
   onScrollUp(event: IInfiniteScrollEvent) {
-
-    // console.log('[UP] scroll position: ', event.currentScrollPosition);
-
-    // const verticalOffset = (window.pageYOffset 
-    //   || document.documentElement.scrollTop 
-    //   || document.body.scrollTop || 0) + (document.body.offsetHeight);
-    // console.log('offset: ', verticalOffset);
-
-    // const elems = document.querySelectorAll("img[id^='page-']");
-    // let page = -1;
-    // elems.forEach(elem => {
-    //   const imagePage = parseInt(elem.attributes.getNamedItem('page')?.value + '', 10);
-    //   console.log('[UP] image page: ' + imagePage + ' top: ', elem.getBoundingClientRect().top);
-    //   console.log('Delta with offset: ', elem.getBoundingClientRect().top - verticalOffset)
-      
-    //   if (this.pageNum === imagePage) {
-    //     this.renderer.addClass(elem, 'active-image');
-    //   } else {
-    //     this.renderer.removeClass(elem, 'acitve-image');
-    //   }
-
-    //   // get the last element with top < offset
-    //   if (elem.getBoundingClientRect().top > 0) {
-    //     console.log('meeting page: ', imagePage);
-    //     page = imagePage;
-    //   }
-    // });
-    // if (page != -1 && page <= this.pageNum - 1) {
-    //   console.log('On page ', page);
-    //   const startingIndex = (this.pageNum - 1) ;
-    //   const endingIndex = Math.max(this.pageNum - PREFETCH_PAGES, 0);
-    //   this.prefetchWebtoonImages(endingIndex, startingIndex);
-    // }
+    this.scrollingDirection = PAGING_DIRECTION.BACKWARDS;
   }
 
   onScrollDown(event: IInfiniteScrollEvent) {
-
-    const verticalOffset = (window.pageYOffset 
-      || document.documentElement.scrollTop 
-      || document.body.scrollTop || 0);
-
-    console.log('scroll: ', event.currentScrollPosition);
-    console.log('offset: ', verticalOffset);
-    
-    const elems = document.querySelectorAll("img[id^='page-']");
-    elems.forEach(elem => this.renderer.removeClass(elem, 'acitve-image'));
-
-    const currentPageElem = document.querySelector('img#page-' + this.pageNum);
-    if (currentPageElem) {
-      // ! This calculation is not right. Focus on getting the math for if a image is on screen or not first.
-      console.log('image offset', Math.abs(currentPageElem.getBoundingClientRect().top));
-      if (Math.abs(currentPageElem.getBoundingClientRect().top) <= verticalOffset) {
-        this.renderer.addClass(currentPageElem, 'active-image');
-      } else {
-        console.log('Current image offscreen');
-      }
-    }
-    
-    //const elems = document.querySelectorAll("img[id^='page-']");
-    // elems.forEach(elem => {
-    //   if (elem.getBoundingClientRect().top <= verticalOffset) {
-    //     // This gets us the current page
-    //     const imagePage = parseInt(elem.attributes.getNamedItem('page')?.value + '', 10);
-    //     console.log('image page: ', imagePage);
-    //     this.renderer.removeClass(elem, 'acitve-image');
-    //     if (this.pageNum === imagePage) {
-    //       this.renderer.addClass(elem, 'active-image');
-    //     }
-
-    //     if (this.pageNum + 1 === imagePage) {
-    //       this.nextPage();
-    //       this.readerService.bookmark(this.seriesId, this.volumeId, this.chapterId, this.pageNum).subscribe(() => {/* No operation */});
-
-    //       // ! I think this code needs to be executed only when we are close to the boundary
-    //       // Load next PREFETCH_PAGES assuming they are not already cached
-    //       if (this.pageNum + PREFETCH_PAGES < this.maxPrefetchedWebtoonImage) {
-    //         return;
-    //       }
-
-    //       const startingIndex = (this.pageNum + this.maxPrefetchedWebtoonImage + 1) ;
-    //       const endingIndex = Math.min(this.pageNum + this.maxPrefetchedWebtoonImage + PREFETCH_PAGES, this.maxPages);
-    //       this.prefetchWebtoonImages(startingIndex, endingIndex);
-    //     }
-    //   }
-    // });
+    this.scrollingDirection = PAGING_DIRECTION.FORWARD;
   }
 
-  prefetchWebtoonImages(startIndex: number, endIndex: number) {
-    console.log('prefetching pages: ' + startIndex + ' to ' + endIndex);
-    for(let i = startIndex; i < endIndex; i++) {
-      this.prefetchWebtoonImage(i);
+  prefetchWebtoonImages() {
+
+    let startingIndex = this.pageNum;
+    let endingIndex = this.pageNum + 1;
+    if (this.scrollingDirection === PAGING_DIRECTION.FORWARD) {
+      startingIndex = (this.pageNum + this.maxPrefetchedWebtoonImage + 1) ;
+      endingIndex = Math.min(this.pageNum + this.maxPrefetchedWebtoonImage + PREFETCH_PAGES, this.maxPages);
+
+      if (this.pageNum + PREFETCH_PAGES <= this.maxPrefetchedWebtoonImage) {
+        return;
+      }
+    } else {
+      startingIndex = (this.pageNum - 1) ;
+      endingIndex = Math.max(this.pageNum - PREFETCH_PAGES, 0);
+
+      if (this.pageNum - PREFETCH_PAGES >= this.minPrefetchedWebtoonImage) {
+        return;
+      }
+    }
+
+
+    if (startingIndex > endingIndex) {
+      const temp = startingIndex;
+      startingIndex = endingIndex;
+      endingIndex = temp;
+    }
+    console.log('prefetching pages: ' + startingIndex + ' to ' + endingIndex);
+    for(let i = startingIndex; i < endingIndex; i++) {
+      this.prefetchWebtoonImage(i, this.scrollingDirection === PAGING_DIRECTION.FORWARD);
     }
   }
 

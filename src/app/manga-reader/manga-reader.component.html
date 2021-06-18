@@ -12,8 +12,6 @@
                     {{subtitle}}
                 </div>
             </div>
-
-            <!-- TODO: If webtoon mode, show a scroll to top here -->
         </div>
     </div>
     <ng-container *ngIf="isLoading">
@@ -22,7 +20,7 @@
         </div>
     </ng-container>
 
-    <div (click)="toggleMenu()">
+    <div (click)="toggleMenu()" class="reading-area">
         <canvas #content class="{{getFittingOptionClass()}} {{this.colorMode}} {{readerMode === READER_MODE.MANGA_LR || readerMode === READER_MODE.MANGA_UD ? '' : 'd-none'}}" 
                 ondragstart="return false;" onselectstart="return false;">
         </canvas>
@@ -30,14 +28,13 @@
             <div
                 class="webtoon-images"
                 infiniteScroll
-                [infiniteScrollDistance]="100"
-                [infiniteScrollUpDistance]="1"
+                [infiniteScrollDistance]="10"
+                [infiniteScrollUpDistance]="10"
                 [infiniteScrollThrottle]="50"
                 [alwaysCallback]="true"
-                [immediateCheck]="true"
-                [scrollWindow]="true"
-                (scrolled)="onScrollDown($event)"
-                (scrolledUp)="onScrollUp($event)">
+                >
+                <!-- (scrolled)="onScrollDown($event)"
+                (scrolledUp)="onScrollUp($event)"-->
                 <ng-container *ngFor="let item of webtoonImages | async; let index = index;">
                     <h2>Page {{item.page}} - Prefetched {{minPrefetchedWebtoonImage}}-{{maxPrefetchedWebtoonImage}}. Current Page: {{pageNum}}</h2>
                     <img src="{{item.src}}" id="page-{{item.page}}" [attr.page]="item.page" ondragstart="return false;" onselectstart="return false;">
