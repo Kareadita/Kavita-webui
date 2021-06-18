@@ -913,20 +913,28 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
         const imagePage = parseInt(entry.target.attributes.getNamedItem('page')?.value + '', 10);
+        console.log('image on screen: ', imagePage);
         // ! This still causes page to increment then decrement quickly. Make sure the logic is solid 
         if (entry.intersectionRatio <= 0.5) {
+          // The problem here is that if we jump really quick, we get out of sync and these conditions don't apply
           if (this.pageNum + 1 === imagePage && this.scrollingDirection === PAGING_DIRECTION.FORWARD) {
             this.nextPage();
             this.readerService.bookmark(this.seriesId, this.volumeId, this.chapterId, this.pageNum).subscribe(() => {/* No operation */});
           } else if (this.pageNum - 1 === imagePage && this.scrollingDirection === PAGING_DIRECTION.BACKWARDS) {
             this.prevPage();
             this.readerService.bookmark(this.seriesId, this.volumeId, this.chapterId, this.pageNum).subscribe(() => {/* No operation */});
+          } else if ((imagePage >= this.pageNum + 2 && this.scrollingDirection === PAGING_DIRECTION.FORWARD) 
+                    || (imagePage <= this.pageNum - 2 && this.scrollingDirection === PAGING_DIRECTION.BACKWARDS)) {
+            console.log('Scroll position got out of sync due to quick scrolling. Forcing page update');
+            // This almost works. When we use gotopage it causes issues
+            this.setPageNum(imagePage);
+            this.readerService.bookmark(this.seriesId, this.volumeId, this.chapterId, this.pageNum).subscribe(() => {/* No operation */});
           } else {
             return;
           }
           
-          this.prefetchWebtoonImages();
         }
+        this.prefetchWebtoonImages();
       }
     });
   }
@@ -978,6 +986,7 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
     }, 10);
   }
 
+  // If I scroll too fast, we don't prefetch enough
   prefetchWebtoonImages() {
 
     let startingIndex = 0;
@@ -1037,5 +1046,8 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
   resetSettings() {
 
   }
+
+  scrollDown() {}
+  scrollUp()  {}
 
 }
