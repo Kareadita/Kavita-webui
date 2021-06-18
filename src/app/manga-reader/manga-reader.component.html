@@ -30,23 +30,31 @@
             <div
                 class="webtoon-images"
                 infiniteScroll
-                [infiniteScrollDistance]="1"
-                [infiniteScrollUpDistance]="50"
+                [infiniteScrollDistance]="100"
+                [infiniteScrollUpDistance]="1"
                 [infiniteScrollThrottle]="50"
                 [alwaysCallback]="true"
+                [immediateCheck]="true"
+                [scrollWindow]="true"
                 (scrolled)="onScrollDown($event)"
                 (scrolledUp)="onScrollUp($event)">
                 <ng-container *ngFor="let item of webtoonImages | async; let index = index;">
-                    <h2>Page {{item.page}} - Prefetched {{minPrefetchedWebtoonImage}}-{{maxPrefetchedWebtoonImage}} </h2>
+                    <h2>Page {{item.page}} - Prefetched {{minPrefetchedWebtoonImage}}-{{maxPrefetchedWebtoonImage}}. Current Page: {{pageNum}}</h2>
                     <img src="{{item.src}}" id="page-{{item.page}}" [attr.page]="item.page" ondragstart="return false;" onselectstart="return false;">
                 </ng-container>
             </div>
 
         </ng-container>
-        <ng-container *ngIf="readerMode === READER_MODE.MANGA_LR || readerMode === READER_MODE.MANGA_UD">
+        <ng-container *ngIf="readerMode === READER_MODE.MANGA_LR || readerMode === READER_MODE.MANGA_UD"> <!--; else webtoonClickArea;-->
             <div class="{{readerMode === READER_MODE.MANGA_LR ? 'right' : 'top'}}" (click)="handlePageChange($event, 'right')"></div>
             <div class="{{readerMode === READER_MODE.MANGA_LR ? 'left' : 'bottom'}}" (click)="handlePageChange($event, 'left')"></div>
         </ng-container>
+        <ng-template #webtoonClickArea>
+            <div class="top" (click)="handlePageChange($event, 'right')"></div>
+            <div class="right" (click)="handlePageChange($event, 'right')"></div>
+            <div class="left" (click)="handlePageChange($event, 'left')"></div>
+            <div class="bottom" (click)="handlePageChange($event, 'left')"></div>
+        </ng-template>
     </div>
     
     <div class="fixed-bottom overlay" *ngIf="menuOpen" [@slideFromBottom]="menuOpen">
