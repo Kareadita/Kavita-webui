@@ -24,24 +24,28 @@
         <canvas #content class="{{getFittingOptionClass()}} {{this.colorMode}} {{readerMode === READER_MODE.MANGA_LR || readerMode === READER_MODE.MANGA_UD ? '' : 'd-none'}}" 
                 ondragstart="return false;" onselectstart="return false;">
         </canvas>
-        <ng-container *ngIf="readerMode === READER_MODE.WEBTOON">
-            <div
+        <div class="webtoon-images" *ngIf="readerMode === READER_MODE.WEBTOON">
+            <!-- The infiniteScroll will handle virtual dom 
+                <div
                 class="webtoon-images"
                 infiniteScroll
                 [infiniteScrollDistance]="10"
                 [infiniteScrollUpDistance]="10"
                 [infiniteScrollThrottle]="50"
-                [alwaysCallback]="true"
-                >
-                <!-- (scrolled)="onScrollDown($event)"
-                (scrolledUp)="onScrollUp($event)"-->
+                [alwaysCallback]="true">
                 <ng-container *ngFor="let item of webtoonImages | async; let index = index;">
                     <h2>Page {{item.page}} - Prefetched {{minPrefetchedWebtoonImage}}-{{maxPrefetchedWebtoonImage}}. Current Page: {{pageNum}}</h2>
                     <img src="{{item.src}}" id="page-{{item.page}}" [attr.page]="item.page" ondragstart="return false;" onselectstart="return false;">
                 </ng-container>
-            </div>
+            </div> -->
 
-        </ng-container>
+            <!-- If i change how webtoonImages works, i can make it a circular array -->
+            <ng-container *ngFor="let item of webtoonImages | async; let index = index;">
+                <h2>Page {{item.page}} - Prefetched {{minPrefetchedWebtoonImage}}-{{maxPrefetchedWebtoonImage}}. Current Page: {{pageNum}}</h2>
+                <img src="{{item.src}}" id="page-{{item.page}}" [attr.page]="item.page" ondragstart="return false;" onselectstart="return false;">
+            </ng-container>
+
+        </div>
         <ng-container *ngIf="readerMode === READER_MODE.MANGA_LR || readerMode === READER_MODE.MANGA_UD"> <!--; else webtoonClickArea;-->
             <div class="{{readerMode === READER_MODE.MANGA_LR ? 'right' : 'top'}}" (click)="handlePageChange($event, 'right')"></div>
             <div class="{{readerMode === READER_MODE.MANGA_LR ? 'left' : 'bottom'}}" (click)="handlePageChange($event, 'left')"></div>

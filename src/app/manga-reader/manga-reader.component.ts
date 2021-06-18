@@ -135,6 +135,7 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
    * Stores and emits all the src urls
    */
   webtoonImages: BehaviorSubject<WebtoonImage[]> = new BehaviorSubject<WebtoonImage[]>([]);
+  webtoonImageArray!: CircularArray<WebtoonImage>;
 
   // Temp hack: Override background color for reader and restore it onDestroy
   originalBodyColor: string | undefined;
@@ -892,6 +893,7 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
       this.prevScrollPosition = verticalOffset;
     });
 
+    this.webtoonImageArray = new CircularArray([], 0);
     this.minPrefetchedWebtoonImage = this.pageNum;
     this.maxPrefetchedWebtoonImage = -1;
     this.webtoonImages.next([]);
@@ -901,6 +903,8 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
     for(let i = prefetchStart; i < prefetchMax; i++) {
       this.prefetchWebtoonImage(i);
     }
+    this.minPrefetchedWebtoonImage = prefetchStart;
+    this.maxPrefetchedWebtoonImage = prefetchMax;
 
     this.scrollToCurrentPage();
   }
@@ -910,9 +914,6 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
       if (entry.isIntersecting) {
         const imagePage = parseInt(entry.target.attributes.getNamedItem('page')?.value + '', 10);
         if (entry.intersectionRatio <= 0.5) {
-          console.log(imagePage + ' is partially on screen');
-          //console.log('Scrolling direction: ', this.scrollingDirection === PAGING_DIRECTION.FORWARD ? 'Forward' : 'Backward');
-
           if (this.pageNum + 1 === imagePage && this.scrollingDirection === PAGING_DIRECTION.FORWARD) {
             this.nextPage();
             this.readerService.bookmark(this.seriesId, this.volumeId, this.chapterId, this.pageNum).subscribe(() => {/* No operation */});
@@ -955,10 +956,10 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
     let data = this.webtoonImages.value;
     if (concat) {
       data = data.concat({src: this.readerService.getPageUrl(this.chapterId, page), page});
-      this.maxPrefetchedWebtoonImage++;
+      this.maxPrefetchedWebtoonImage = page;
     } else {
       data = [{src: this.readerService.getPageUrl(this.chapterId, page), page}].concat(data);
-      this.minPrefetchedWebtoonImage--;
+      this.minPrefetchedWebtoonImage = page;
     }
 
     this.webtoonImages.next(data);
@@ -982,22 +983,36 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
 
   prefetchWebtoonImages() {
 
-    let startingIndex = this.pageNum;
-    let endingIndex = this.pageNum + 1;
+    let startingIndex = 0;
+    let endingIndex = 0;
     if (this.scrollingDirection === PAGING_DIRECTION.FORWARD) {
-      startingIndex = (this.pageNum + this.maxPrefetchedWebtoonImage + 1) ;
-      endingIndex = Math.min(this.pageNum + this.maxPrefetchedWebtoonImage + PREFETCH_PAGES, this.maxPages);
+      startingIndex = Math.min(this.maxPrefetchedWebtoonImage + 1, this.maxPages); // + this.maxPrefetchedWebtoonImage
+      endingIndex = Math.min(this.maxPrefetchedWebtoonImage + 1 + PREFETCH_PAGES, this.maxPages); // + this.maxPrefetchedWebtoonImage
 
-      if (this.pageNum + PREFETCH_PAGES <= this.maxPrefetchedWebtoonImage) {
+      console.log('moving foward, request to prefetch: ' + startingIndex + ' to ' + endingIndex);
+      console.log('    page num: ', this.pageNum);
+      console.log('    max page preloaded: ', this.maxPrefetchedWebtoonImage);
+
+      if (startingIndex === this.maxPages) {
+        console.log('   DENIED');
         return;
       }
     } else {
-      startingIndex = (this.pageNum - 1) ;
-      endingIndex = Math.max(this.pageNum - PREFETCH_PAGES, 0);
+      startingIndex = Math.max(this.minPrefetchedWebtoonImage - 1, 0) ; // this is being hit twice aka overlapping on startingIndex betwen 2 calls
+      endingIndex = Math.max(this.minPrefetchedWebtoonImage - 1 - PREFETCH_PAGES, 0);
 
-      if (this.pageNum - PREFETCH_PAGES >= this.minPrefetchedWebtoonImage) {
+      console.log('moving backwards, request to prefetch: ' + startingIndex + ' to ' + endingIndex);
+      console.log('    page num: ', this.pageNum);
+      console.log('    min page preloaded: ', this.minPrefetchedWebtoonImage);
+
+      if (startingIndex === 0) {
+        console.log('   DENIED');
         return;
       }
+
+      // if (this.pageNum - PREFETCH_PAGES < this.minPrefetchedWebtoonImage) {
+      //   return;
+      // }
     }
 
 
