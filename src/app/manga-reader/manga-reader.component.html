@@ -27,7 +27,6 @@
         <div class="webtoon-images" *ngIf="readerMode === READER_MODE.WEBTOON">
             <!-- The infiniteScroll will handle virtual dom 
                 <div
-                class="webtoon-images"
                 infiniteScroll
                 [infiniteScrollDistance]="10"
                 [infiniteScrollUpDistance]="10"
@@ -39,7 +38,6 @@
                 </ng-container>
             </div> -->
 
-            <!-- If i change how webtoonImages works, i can make it a circular array -->
             <ng-container *ngFor="let item of webtoonImages | async; let index = index;">
                 <h2>Page {{item.page}} - Prefetched {{minPrefetchedWebtoonImage}}-{{maxPrefetchedWebtoonImage}}. Current Page: {{pageNum}}</h2>
                 <img src="{{item.src}}" id="page-{{item.page}}" [attr.page]="item.page" ondragstart="return false;" onselectstart="return false;">
