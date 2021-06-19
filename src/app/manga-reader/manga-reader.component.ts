@@ -21,58 +21,16 @@ import { Stack } from '../shared/data-structures/stack';
 import { ChangeContext, LabelType, Options } from '@angular-slider/ngx-slider';
 import { trigger, state, style, transition, animate } from '@angular/animations';
 import { ChpaterInfo } from './_models/chapter-info';
-import { IInfiniteScrollEvent } from 'ngx-infinite-scroll';
+import { WebtoonImage } from './_models/webtoon-image';
+import { COLOR_FILTER, FITTING_OPTION, PAGING_DIRECTION, READER_MODE, SPLIT_PAGE_PART } from './_models/reader-enums';
 
 const PREFETCH_PAGES = 3;
-
-enum FITTING_OPTION {
-  HEIGHT = 'full-height',
-  WIDTH = 'full-width',
-  ORIGINAL = 'original'
-}
-
-enum SPLIT_PAGE_PART {
-  NO_SPLIT = 'none',
-  LEFT_PART = 'left',
-  RIGHT_PART = 'right'
-}
-
-enum PAGING_DIRECTION {
-  FORWARD = 1,
-  BACKWARDS = -1,
-}
-
-enum COLOR_FILTER {
-  NONE = '',
-  SEPIA = 'filter-sepia',
-  DARK = 'filter-dark'
-}
-
-enum READER_MODE {
-  /**
-   * Manga default left/right to page
-   */
-  MANGA_LR = 0,
-  /**
-   * Manga up and down to page
-   */
-  MANGA_UD = 1,
-  /**
-   * Webtoon reading (scroll) with optional areas to tap
-   */
-  WEBTOON = 2
-}
 
 const CHAPTER_ID_NOT_FETCHED = -2;
 const CHAPTER_ID_DOESNT_EXIST = -1;
 
 const ANIMATION_SPEED = 200;
 const OVERLAY_AUTO_CLOSE_TIME = 6000;
-
-interface WebtoonImage {
-  src: string;
-  page: number;
-}
 
 
 @Component({
@@ -203,7 +161,7 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
 
   get ReadingDirection(): typeof ReadingDirection {
     return ReadingDirection;
-  };
+  }
 
   get colorOptionName() {
     switch(this.colorMode) {
@@ -219,7 +177,6 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
   get READER_MODE(): typeof READER_MODE {
     return READER_MODE;
   }
-
 
   constructor(private route: ActivatedRoute, private router: Router, private accountService: AccountService,
               private seriesService: SeriesService, public readerService: ReaderService, private location: Location,
