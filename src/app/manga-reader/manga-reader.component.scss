@@ -230,12 +230,14 @@ canvas {
   
     .custom-slider .ngx-slider .ngx-slider-bubble {
       bottom: 14px;
+      font-weight: bold;
     }
   
     .custom-slider .ngx-slider .ngx-slider-limit {
       font-weight: bold;
       color: $primary-color;
     }
+
   
     .custom-slider .ngx-slider .ngx-slider-tick {
       width: 1px;

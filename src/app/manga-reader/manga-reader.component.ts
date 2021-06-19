@@ -72,13 +72,15 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
   user!: User;
   fittingForm: FormGroup | undefined;
   splitForm: FormGroup | undefined;
+  generalSettingsForm: FormGroup | undefined;
 
   readingDirection = ReadingDirection.LeftToRight;
   scalingOption = ScalingOption.FitToHeight;
   pageSplitOption = PageSplitOption.SplitRightToLeft;
-
   currentImageSplitPart: SPLIT_PAGE_PART = SPLIT_PAGE_PART.NO_SPLIT;
   pagingDirection: PAGING_DIRECTION = PAGING_DIRECTION.FORWARD;
+  colorMode: COLOR_FILTER = COLOR_FILTER.NONE; // TODO: Move this into User Preferences
+  autoCloseMenu: boolean = true; // TODO: Move this into User Preferences
 
   menuOpen = false;
   isLoading = true; 
@@ -119,7 +121,7 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
   title: string = '';
   subtitle: string = '';
 
-  colorMode: COLOR_FILTER = COLOR_FILTER.NONE; // TODO: Move this into User Preferences
+  
 
   // These are not garunteed to be valid ChapterIds. Prefetch them on page load (non-blocking). -1 means doesn't exist, -2 means not yet fetched.
   nextChapterId: number = CHAPTER_ID_NOT_FETCHED;
@@ -145,6 +147,9 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
    * Whether the click areas show
    */
   showClickOverlay: boolean = false;
+
+  webtoonImageWidth: number = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth; // assume 900 default
+  
 
   private readonly onDestroy = new Subject<void>();
 
@@ -214,6 +219,9 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
         });
         this.splitForm = this.formBuilder.group({
           pageSplitOption: this.pageSplitOption + ''
+        });
+        this.generalSettingsForm = this.formBuilder.group({
+          'autoCloseMenu': this.autoCloseMenu
         });
         // On change of splitting, re-render the page if the page is already split
         this.splitForm.valueChanges.subscribe(changes => {
@@ -428,19 +436,27 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
+  cancelMenuCloseTimer() {
+    if (this.menuTimeout) {
+      clearTimeout(this.menuTimeout);
+    }
+  }
+
   /**
    * Whenever the menu is interacted with, restart the timer. However if the settings menu is open, don't restart, just cancel the timeout.
    */
   resetMenuCloseTimer() {
     if (this.menuTimeout) {
       clearTimeout(this.menuTimeout);
-      if (!this.settingsOpen) {
+      if (!this.settingsOpen && this.autoCloseMenu) {
         this.startMenuCloseTimer();
       }
     }
   }
 
   startMenuCloseTimer() {
+    if (!this.autoCloseMenu) { return; }
+
     this.menuTimeout = setTimeout(() => {
       this.toggleMenu();
     }, OVERLAY_AUTO_CLOSE_TIME);
@@ -450,6 +466,7 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
   
   toggleMenu() {
     this.menuOpen = !this.menuOpen;
+    
     if (this.menuTimeout) {
       clearTimeout(this.menuTimeout);
     }
