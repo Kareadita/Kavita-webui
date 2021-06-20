@@ -137,7 +137,7 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
   // Whether extended settings area is showing
   settingsOpen: boolean = false;
 
-  readerMode: READER_MODE = READER_MODE.MANGA_LR; // TODO: Revert this
+  readerMode: READER_MODE = READER_MODE.WEBTOON;
   minPrefetchedWebtoonImage: number = -1;
   maxPrefetchedWebtoonImage: number = -1;
 
@@ -853,9 +853,20 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
+  mutationObserver: MutationObserver = new MutationObserver((mutations) => this.handleWebtoonImagesLoaded(mutations));
   intersectionObserver: IntersectionObserver = new IntersectionObserver((entries) => this.handleIntersection(entries), { threshold: [0, 0.25, 0.5, 0.75, 1] });
   scrollingDirection: PAGING_DIRECTION = PAGING_DIRECTION.FORWARD;
   prevScrollPosition: number = 0;
+  webtoonImagesLoaded: boolean = false;
+
+  handleWebtoonImagesLoaded(mutations: MutationRecord[]) {
+    mutations.forEach(mutation => {
+      mutation.addedNodes.forEach(addedNode => {
+        console.log('added: ', addedNode.nodeName);
+      })
+    })
+
+  }
 
   initWebtoonReader() {
     // ? If page is already prefetched, just scroll to it and don't reset the array
@@ -864,7 +875,6 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
       const verticalOffset = (window.pageYOffset 
         || document.documentElement.scrollTop 
         || document.body.scrollTop || 0);
-      // TODO: capture scroll direction
       if (verticalOffset > this.prevScrollPosition) {
         this.scrollingDirection = PAGING_DIRECTION.FORWARD;
       } else {
@@ -887,7 +897,21 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
     this.minPrefetchedWebtoonImage = prefetchStart;
     this.maxPrefetchedWebtoonImage = prefetchMax;
 
+    this.webtoonImagesLoaded = false;
+
+    const elem = document.querySelector('.webtoon-images');
+    if (elem) {
+      this.mutationObserver.observe(elem, {childList: true});
+    }
+    
+
     this.scrollToCurrentPage();
+  }
+
+  onImageLoad(event: any, imagePage: number) {
+    if (imagePage === this.pageNum) {
+      
+    }
   }
 
   handleIntersection(entries: IntersectionObserverEntry[]) {
@@ -908,7 +932,12 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
                     || (imagePage <= this.pageNum - 2 && this.scrollingDirection === PAGING_DIRECTION.BACKWARDS)) {
             console.log('Scroll position got out of sync due to quick scrolling. Forcing page update');
             // This almost works. When we use gotopage it causes issues
-            //this.setPageNum(imagePage);
+            if (!this.webtoonImagesLoaded) { 
+              console.log('returned early');
+              return;
+            }
+            console.log('not returned early');
+            this.setPageNum(imagePage);
             this.readerService.bookmark(this.seriesId, this.volumeId, this.chapterId, this.pageNum).subscribe(() => {/* No operation */});
           } else {
             return;
@@ -931,12 +960,24 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
   scrollToCurrentPage() {
     if (this.readerMode !== READER_MODE.WEBTOON) { return }
     setTimeout(() => {
+
+
+      // this.webtoonImagesLoaded = false;
+      // Array.from(document.querySelectorAll('.webtoon-images img')).forEach(elem => this.intersectionObserver.unobserve(elem));
+      // Promise.all(Array.from(document.querySelectorAll('.webtoon-images img')).filter((img: any) => !img.complete)
+      //   .map((img: any) => new Promise(resolve => { img.onload = img.onerror = resolve; }))).then(() => {
+      //     Array.from(document.querySelectorAll('.webtoon-images img')).forEach(elem => this.intersectionObserver.observe(elem));
+      //     this.webtoonImagesLoaded = true;
+      // });
+
       const elem = document.querySelector('img#page-' + this.pageNum);
       if (elem) {
         window.scroll({
           top: elem.getBoundingClientRect().top,
           behavior: 'smooth'
         });
+      } else {
+        this.scrollToCurrentPage();
       }
     }, 400);
   }

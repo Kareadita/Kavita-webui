@@ -42,7 +42,7 @@
 
             <ng-container *ngFor="let item of webtoonImages | async; let index = index;">
                 <h2>Page {{item.page}} - Prefetched {{minPrefetchedWebtoonImage}}-{{maxPrefetchedWebtoonImage}}. Current Page: {{pageNum}}</h2>
-                <img src="{{item.src}}" [width]="webtoonImageWidth" rel="nofollow" alt="image" id="page-{{item.page}}" [attr.page]="item.page" ondragstart="return false;" onselectstart="return false;">
+                <img src="{{item.src}}" [width]="webtoonImageWidth" (load)="onImageLoad($event, item.page)" rel="nofollow" alt="image" id="page-{{item.page}}" [attr.page]="item.page" ondragstart="return false;" onselectstart="return false;">
             </ng-container>
 
             <!-- Can I use the lazy loader here? -->
@@ -77,15 +77,15 @@
         </div>
         <div class="row pt-4 ml-2 mr-2">
             <div class="col">
-                <button class="btn btn-icon" title="Reading Mode" (click)="toggleReaderMode();resetMenuCloseTimer();">
-                    <i class="fa {{getReaderModeIcon()}}" aria-hidden="true"></i>
-                    <span class="sr-only">Reading Mode</span>
-                </button>
-            </div>
-            <div class="col">
                 <button class="btn btn-icon" (click)="setReadingDirection();resetMenuCloseTimer();" aria-describedby="reading-direction" title="Reading Direction: {{readingDirection === ReadingDirection.LeftToRight ? 'Left to Right' : 'Right to Left'}}">
                     <i class="fa fa-angle-double-{{readingDirection === ReadingDirection.LeftToRight ? 'right' : 'left'}}" aria-hidden="true"></i>
                     <span id="reading-direction" class="sr-only">{{readingDirection === ReadingDirection.LeftToRight ? 'Left to Right' : 'Right to Left'}}</span>
+                </button>
+            </div>
+            <div class="col">
+                <button class="btn btn-icon" title="Reading Mode" (click)="toggleReaderMode();resetMenuCloseTimer();">
+                    <i class="fa {{getReaderModeIcon()}}" aria-hidden="true"></i>
+                    <span class="sr-only">Reading Mode</span>
                 </button>
             </div>
             <div class="col">
