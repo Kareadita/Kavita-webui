@@ -3,7 +3,7 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
 import { take } from 'rxjs/operators';
 import { PageSplitOption } from '../_models/preferences/page-split-option';
-import { Preferences } from '../_models/preferences/preferences';
+import { pageSplitOptions, Preferences, readingDirections, scalingOptions } from '../_models/preferences/preferences';
 import { ReadingDirection } from '../_models/preferences/reading-direction';
 import { ScalingOption } from '../_models/preferences/scaling-option';
 import { User } from '../_models/user';
@@ -19,9 +19,9 @@ import { NavService } from '../_services/nav.service';
 })
 export class UserPreferencesComponent implements OnInit, OnDestroy {
 
-  readingDirections = [{text: 'Left to Right', value: ReadingDirection.LeftToRight}, {text: 'Right to Left', value: ReadingDirection.RightToLeft}];
-  scalingOptions = [{text: 'Automatic', value: ScalingOption.Automatic}, {text: 'Fit to Height', value: ScalingOption.FitToHeight}, {text: 'Fit to Width', value: ScalingOption.FitToWidth}, {text: 'Original', value: ScalingOption.Original}];
-  pageSplitOptions = [{text: 'Right to Left', value: PageSplitOption.SplitRightToLeft}, {text: 'Left to Right', value: PageSplitOption.SplitLeftToRight}, {text: 'No Split', value: PageSplitOption.NoSplit}];
+  readingDirections = readingDirections;
+  scalingOptions = scalingOptions;
+  pageSplitOptions = pageSplitOptions;
 
   settingsForm: FormGroup = new FormGroup({});
   passwordChangeForm: FormGroup = new FormGroup({});

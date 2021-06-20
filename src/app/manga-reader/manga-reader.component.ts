@@ -23,6 +23,7 @@ import { trigger, state, style, transition, animate } from '@angular/animations'
 import { ChpaterInfo } from './_models/chapter-info';
 import { WebtoonImage } from './_models/webtoon-image';
 import { COLOR_FILTER, FITTING_OPTION, PAGING_DIRECTION, READER_MODE, SPLIT_PAGE_PART } from './_models/reader-enums';
+import { Preferences, scalingOptions } from '../_models/preferences/preferences';
 
 const PREFETCH_PAGES = 3;
 
@@ -70,9 +71,11 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
   pageNum = 0;
   maxPages = 1;
   user!: User;
-  fittingForm: FormGroup | undefined;
-  splitForm: FormGroup | undefined;
-  generalSettingsForm: FormGroup | undefined;
+  fittingForm!: FormGroup;
+  splitForm!: FormGroup;
+  generalSettingsForm!: FormGroup;
+
+  scalingOptions = scalingOptions;
 
   readingDirection = ReadingDirection.LeftToRight;
   scalingOption = ScalingOption.FitToHeight;
@@ -134,7 +137,7 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
   // Whether extended settings area is showing
   settingsOpen: boolean = false;
 
-  readerMode: READER_MODE = READER_MODE.WEBTOON; // TODO: Revert this
+  readerMode: READER_MODE = READER_MODE.MANGA_LR; // TODO: Revert this
   minPrefetchedWebtoonImage: number = -1;
   maxPrefetchedWebtoonImage: number = -1;
 
@@ -236,6 +239,10 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
             this.toastr.info('Tap the image at any time to open the menu. You can configure different settings or go to page by clicking progress bar. Tap sides of image move to next/prev page.');
           }
         });
+      } else {
+        // If no user, we can't render 
+        this.router.navigateByUrl('/home');
+        return;
       }
     });
 
@@ -901,7 +908,7 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
                     || (imagePage <= this.pageNum - 2 && this.scrollingDirection === PAGING_DIRECTION.BACKWARDS)) {
             console.log('Scroll position got out of sync due to quick scrolling. Forcing page update');
             // This almost works. When we use gotopage it causes issues
-            this.setPageNum(imagePage);
+            //this.setPageNum(imagePage);
             this.readerService.bookmark(this.seriesId, this.volumeId, this.chapterId, this.pageNum).subscribe(() => {/* No operation */});
           } else {
             return;
@@ -1014,11 +1021,36 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   saveSettings() {
+    if (this.user === undefined) return;
+
+    const data: Preferences = {
+      readingDirection: this.readingDirection, 
+      scalingOption: this.scalingOption, 
+      pageSplitOption: this.pageSplitOption, 
+
+      bookReaderDarkMode: this.user.preferences.bookReaderDarkMode,
+      bookReaderFontFamily: this.user.preferences.bookReaderFontFamily,
+      bookReaderFontSize: this.user.preferences.bookReaderFontSize,
+      bookReaderLineSpacing: this.user.preferences.bookReaderLineSpacing,
+      bookReaderMargin: this.user.preferences.bookReaderMargin,
+      bookReaderTapToPaginate: this.user.preferences.bookReaderTapToPaginate,
+      bookReaderReadingDirection: this.readingDirection,
+      siteDarkMode: this.user.preferences.siteDarkMode,
+    };
+    this.accountService.updatePreferences(data).subscribe((updatedPrefs) => {
+      this.toastr.success('User settings updated');
+      if (this.user) {
+        this.user.preferences = updatedPrefs;
+      }
+      this.resetSettings();
+    });
 
   }
 
   resetSettings() {
-
+    this.fittingForm.get('fittingOption')?.setValue(this.translateScalingOption(this.user.preferences.scalingOption));
+    this.splitForm.get('pageSplitOption')?.setValue(this.user.preferences.pageSplitOption + '');
+    this.generalSettingsForm.get('autoCloseMenu')?.setValue(this.autoCloseMenu);
   }
 
   scrollDown() {}

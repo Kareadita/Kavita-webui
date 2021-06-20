@@ -75,7 +75,7 @@
             
             
         </div>
-        <div class="row pt-2 ml-2 mr-2">
+        <div class="row pt-4 ml-2 mr-2">
             <div class="col">
                 <button class="btn btn-icon" title="Reading Mode" (click)="toggleReaderMode();resetMenuCloseTimer();">
                     <i class="fa {{getReaderModeIcon()}}" aria-hidden="true"></i>
@@ -152,11 +152,11 @@
                     </form>
                 </div>
             </div>
-
+<!-- NOTE: For now, let's not allow saving. We don't offer Automatic scaling in this view since we translate it for the user. Not sure how to handle yet.
             <div class="row mt-2">
                 <button type="button" class="btn btn-secondary col mr-2" (click)="resetSettings()">Reset</button>
                 <button type="submit" class="btn btn-primary col align-self-end" (click)="saveSettings()">Save</button>
-            </div>
+            </div> -->
         </div>
     </div>
     
