@@ -35,9 +35,9 @@ export class HomeComponent implements OnInit {
 
       this.accountService.currentUser$.pipe(take(1)).subscribe(user => {
     
-        this.statsService.sendClientInfo(ClientUtils.getClientInfo()).pipe(take(1)).subscribe(resp => {
-
-        });
+        this.statsService.sendClientInfo(ClientUtils.getClientInfo())
+        .pipe(take(1))
+        .subscribe(resp => {/* No Operation */});
 
         if (user) {
           // User is logged in, redirect to libraries

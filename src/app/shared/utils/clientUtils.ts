@@ -9,15 +9,13 @@ const getClientInfo = (): ClientInfo => {
 
     const browser = Bowser.getParser(window.navigator.userAgent);
 
-    const info: ClientInfo = {
+    return {
         os: browser.getOS() as DetailsVersion,
         browser: browser.getBrowser() as DetailsVersion,
         platformType: browser.getPlatformType(),
         kavitaUiVersion: version,
         screenResolution
-    }
-
-    return info;
+    };
 }
 
 export { getClientInfo };
