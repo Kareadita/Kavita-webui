@@ -145,7 +145,7 @@ export class InfiniteScrollerComponent implements OnInit, OnChanges, OnDestroy {
     const imagePage = this.imageUrlToPageNum(event.target.src);
     console.log('Image loaded: ', imagePage);
     // Problem with this is that we cannot control the order in which we insert
-    this.prefetchWebtoonImage(imagePage, imagePage >= this.pageNum);
+    this.prefetchWebtoonImage(imagePage);
 
   }
 
