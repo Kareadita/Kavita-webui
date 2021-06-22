@@ -102,7 +102,7 @@
             </div>
         </div>
         <div class="bottom-menu" *ngIf="settingsOpen">
-            <div class="row" *ngIf="splitForm">
+            <div class="row" *ngIf="generalSettingsForm">
                 <div class="col-6">
                     <label for="page-splitting">Image Splitting</label>&nbsp;
                     <div class="split fa fa-image">
@@ -110,9 +110,8 @@
                     </div>
                 </div>
                 <div class="col-6">
-                    <form [formGroup]="splitForm">
+                    <form [formGroup]="generalSettingsForm">
                         <div class="form-group">
-                            <!-- TODO: Disable [attr.disabled]="" if webtoon mode is on -->
                             <select class="form-control" id="page-splitting" formControlName="pageSplitOption">
                                 <option [value]="1">Right to Left</option>
                                 <option [value]="0">Left to Right</option>
@@ -125,12 +124,12 @@
                 </div>
             </div>
 
-            <div class="row" *ngIf="fittingForm">
+            <div class="row" *ngIf="generalSettingsForm">
                 <div class="col-6">
                     <label for="page-fitting">Image Scaling</label>&nbsp;<i class="fa {{getFittingIcon()}}" aria-hidden="true"></i>
                 </div>
                 <div class="col-6">
-                    <form [formGroup]="fittingForm">
+                    <form [formGroup]="generalSettingsForm">
                         <select class="form-control" id="page-fitting" formControlName="fittingOption">
                             <option value="full-height">Height</option>
                             <option value="full-width">Width</option>
