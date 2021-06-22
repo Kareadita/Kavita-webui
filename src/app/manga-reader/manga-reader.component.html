@@ -101,16 +101,16 @@
                 </button>
             </div>
         </div>
-        <div class="bottom-menu" *ngIf="settingsOpen">
-            <div class="row" *ngIf="generalSettingsForm">
-                <div class="col-6">
-                    <label for="page-splitting">Image Splitting</label>&nbsp;
-                    <div class="split fa fa-image">
-                        <div class="{{splitIconClass}}"></div> 
+        <div class="bottom-menu" *ngIf="settingsOpen && generalSettingsForm">
+            <form [formGroup]="generalSettingsForm">
+                <div class="row">
+                    <div class="col-6">
+                        <label for="page-splitting">Image Splitting</label>&nbsp;
+                        <div class="split fa fa-image">
+                            <div class="{{splitIconClass}}"></div> 
+                        </div>
                     </div>
-                </div>
-                <div class="col-6">
-                    <form [formGroup]="generalSettingsForm">
+                    <div class="col-6">
                         <div class="form-group">
                             <select class="form-control" id="page-splitting" formControlName="pageSplitOption">
                                 <option [value]="1">Right to Left</option>
@@ -118,44 +118,33 @@
                                 <option [value]="2">None</option>
                             </select>
                         </div>
-                    </form>
-
-                    
+                    </div>
                 </div>
-            </div>
 
-            <div class="row" *ngIf="generalSettingsForm">
-                <div class="col-6">
-                    <label for="page-fitting">Image Scaling</label>&nbsp;<i class="fa {{getFittingIcon()}}" aria-hidden="true"></i>
-                </div>
-                <div class="col-6">
-                    <form [formGroup]="generalSettingsForm">
+                <div class="row" *ngIf="generalSettingsForm">
+                    <div class="col-6">
+                        <label for="page-fitting">Image Scaling</label>&nbsp;<i class="fa {{getFittingIcon()}}" aria-hidden="true"></i>
+                    </div>
+                    <div class="col-6">
                         <select class="form-control" id="page-fitting" formControlName="fittingOption">
                             <option value="full-height">Height</option>
                             <option value="full-width">Width</option>
                             <option value="original">Original</option>
                         </select>
-                    </form>
+                    </div>
                 </div>
-            </div>
 
-            <div class="row mt-2 mb-2" *ngIf="generalSettingsForm">
-                <div class="col-6">
-                    <label for="autoCloseMenu" class="form-check-label">Auto Close Menu</label>
-                </div>
-                <div class="col-6">
-                    <form [formGroup]="generalSettingsForm">
+                <div class="row mt-2 mb-2" *ngIf="generalSettingsForm">
+                    <div class="col-6">
+                        <label for="autoCloseMenu" class="form-check-label">Auto Close Menu</label>
+                    </div>
+                    <div class="col-6">
                         <div class="form-check">
                             <input id="autoCloseMenu" type="checkbox" aria-label="Admin" class="form-check-input" formControlName="autoCloseMenu">
                         </div>
-                    </form>
+                    </div>
                 </div>
-            </div>
-<!-- NOTE: For now, let's not allow saving. We don't offer Automatic scaling in this view since we translate it for the user. Not sure how to handle yet.
-            <div class="row mt-2">
-                <button type="button" class="btn btn-secondary col mr-2" (click)="resetSettings()">Reset</button>
-                <button type="submit" class="btn btn-primary col align-self-end" (click)="saveSettings()">Save</button>
-            </div> -->
+            </form>
         </div>
     </div>
     

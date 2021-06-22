@@ -192,7 +192,7 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   constructor(private route: ActivatedRoute, private router: Router, private accountService: AccountService,
-              private seriesService: SeriesService, public readerService: ReaderService, private location: Location,
+              public readerService: ReaderService, private location: Location,
               private formBuilder: FormBuilder, private navService: NavService, private toastr: ToastrService,
               private memberService: MemberService, private renderer: Renderer2) {
                 this.navService.hideNavBar();
@@ -230,6 +230,9 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
           pageSplitOption: this.pageSplitOption + '',
           fittingOption: this.translateScalingOption(this.scalingOption)
         });
+        
+        this.updateForm();
+
         this.generalSettingsForm.valueChanges.pipe(takeUntil(this.onDestroy)).subscribe((changes: SimpleChanges) => {
           // On change of splitting, re-render the page if the page is already split
           const needsSplitting = this.canvasImage.width > this.canvasImage.height;
@@ -827,12 +830,19 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
         break;
     }
 
+    this.updateForm();
+
+    this.render();
+  }
+
+  updateForm() {
     if ( this.readerMode === READER_MODE.WEBTOON) {
       this.generalSettingsForm.get('fittingOption')?.disable()
       this.generalSettingsForm.get('pageSplitOption')?.disable();
+    } else {
+      this.generalSettingsForm.get('fittingOption')?.enable()
+      this.generalSettingsForm.get('pageSplitOption')?.enable();
     }
-
-    this.render();
   }
 
 
@@ -1079,10 +1089,7 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
     this.generalSettingsForm.get('pageSplitOption')?.setValue(this.user.preferences.pageSplitOption + '');
     this.generalSettingsForm.get('autoCloseMenu')?.setValue(this.autoCloseMenu);
 
-    if ( this.readerMode === READER_MODE.WEBTOON) {
-      this.generalSettingsForm.get('fittingOption')?.disable()
-      this.generalSettingsForm.get('pageSplitOption')?.disable();
-    }
+    this.updateForm();
   }
 
   scrollDown() {}
