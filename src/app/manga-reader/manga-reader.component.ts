@@ -546,18 +546,7 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
       if (this.isLoading) { return; }
 
       // Move to next volume/chapter automatically
-      if (!this.nextPageDisabled) {
-        this.isLoading = true;
-        if (this.nextChapterId === CHAPTER_ID_NOT_FETCHED) {
-          this.readerService.getNextChapter(this.seriesId, this.volumeId, this.chapterId).pipe(take(1)).subscribe(chapterId => {
-            this.nextChapterId = chapterId;
-            this.loadChapter(chapterId, 'next');
-          });
-        } else {
-          this.loadChapter(this.nextChapterId, 'next');
-        }
-        
-      }
+      this.loadNextChapter();
       return;
     }
 
@@ -587,27 +576,7 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
       if (this.isLoading) { return; }
 
       // Move to next volume/chapter automatically
-      if (!this.prevPageDisabled) {
-        this.isLoading = true;
-        this.continuousChaptersStack.pop();
-        const prevChapter = this.continuousChaptersStack.peek();
-        if (prevChapter != this.chapterId) {
-          if (prevChapter !== undefined) {
-            this.chapterId = prevChapter;
-            this.init();
-            return;
-          }
-        }
-
-        if (this.prevChapterId === CHAPTER_ID_NOT_FETCHED) {
-          this.readerService.getPrevChapter(this.seriesId, this.volumeId, this.chapterId).pipe(take(1)).subscribe(chapterId => {
-            this.prevChapterId = chapterId;
-            this.loadChapter(chapterId, 'prev');
-          });
-        } else {
-          this.loadChapter(this.prevChapterId, 'prev');
-        }
-      }
+      this.loadPrevChapter();
       return;
     }
 
@@ -622,12 +591,45 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
     }  
   }
 
+  loadNextChapter() {
+    if (this.nextPageDisabled) { return; }
+    this.isLoading = true;
+    if (this.nextChapterId === CHAPTER_ID_NOT_FETCHED) {
+      this.readerService.getNextChapter(this.seriesId, this.volumeId, this.chapterId).pipe(take(1)).subscribe(chapterId => {
+        this.nextChapterId = chapterId;
+        this.loadChapter(chapterId, 'next');
+      });
+    } else {
+      this.loadChapter(this.nextChapterId, 'next');
+    }
+  }
+
+  loadPrevChapter() {
+    if (this.prevPageDisabled) { return; }
+    this.isLoading = true;
+    this.continuousChaptersStack.pop();
+    const prevChapter = this.continuousChaptersStack.peek();
+    if (prevChapter != this.chapterId) {
+      if (prevChapter !== undefined) {
+        this.chapterId = prevChapter;
+        this.init();
+        return;
+      }
+    }
+
+    if (this.prevChapterId === CHAPTER_ID_NOT_FETCHED) {
+      this.readerService.getPrevChapter(this.seriesId, this.volumeId, this.chapterId).pipe(take(1)).subscribe(chapterId => {
+        this.prevChapterId = chapterId;
+        this.loadChapter(chapterId, 'prev');
+      });
+    } else {
+      this.loadChapter(this.prevChapterId, 'prev');
+    }
+  }
+
   loadChapter(chapterId: number, direction: 'next' | 'prev') {
     if (chapterId >= 0) {
       this.chapterId = chapterId;
-      // if (direction === 'next') {
-      //   this.continuousChaptersStack.pop();
-      // }
       this.continuousChaptersStack.push(chapterId); 
       // Load chapter Id onto route but don't reload
       const lastSlashIndex = this.router.url.lastIndexOf('/');
@@ -635,8 +637,7 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
       window.history.replaceState({}, '', newRoute);
       this.init();
     } else {
-      // This will only happen if we spam click the load chapter button so chapter doesn't have time to prefetch
-      const currentChapterId = this.continuousChaptersStack.peek();
+      // This will only happen if no actual chapter can be found
       this.toastr.warning('Could not find ' + direction + ' chapter');
       this.isLoading = false;
       if (direction === 'prev') {
@@ -842,8 +843,6 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   handleWebtoonPageChange(updatedPageNum: number) {
-    //console.log('pageNum: ', this.pageNum);
-    //console.log('updated: ', updatedPageNum);
     console.log('[MangaReader] Handling Page Change');
 
     this.pageNum = updatedPageNum;
