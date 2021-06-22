@@ -25,38 +25,17 @@
                 ondragstart="return false;" onselectstart="return false;">
         </canvas>
         <div class="webtoon-images" *ngIf="readerMode === READER_MODE.WEBTOON">
-            <!-- The infiniteScroll will handle virtual dom 
-                <div
-                infiniteScroll
-                [infiniteScrollDistance]="10"
-                [infiniteScrollUpDistance]="10"
-                [infiniteScrollThrottle]="50"
-                [alwaysCallback]="true"
-                (scrolled)="scrollDown()"
-                (scrolledUp)="scrollUp()">
-                <ng-container *ngFor="let item of webtoonImages | async; let index = index;">
-                    <h2>Page {{item.page}} - Prefetched {{minPrefetchedWebtoonImage}}-{{maxPrefetchedWebtoonImage}}. Current Page: {{pageNum}}</h2>
-                    <img src="{{item.src}}" rel="nofollow" alt="image" id="page-{{item.page}}" [attr.page]="item.page" ondragstart="return false;" onselectstart="return false;">
-                </ng-container>
-            </div> -->
-
-            <ng-container *ngFor="let item of webtoonImages | async; let index = index;">
-                <h2>Page {{item.page}} - Prefetched {{minPrefetchedWebtoonImage}}-{{maxPrefetchedWebtoonImage}}. Current Page: {{pageNum}}</h2>
-                <img src="{{item.src}}" [width]="webtoonImageWidth" (load)="onImageLoad($event, item.page)" rel="nofollow" alt="image" id="page-{{item.page}}" [attr.page]="item.page" ondragstart="return false;" onselectstart="return false;">
-            </ng-container>
-
-            <!-- Can I use the lazy loader here? -->
-
+            <app-infinite-scroller [pageNum]="pageNum" [buffferPages]="5" (pageNumberChange)="handleWebtoonPageChange($event)" [totalPages]="maxPages" [urlProvider]="getPageUrl"></app-infinite-scroller>
         </div>
         <ng-container *ngIf="readerMode === READER_MODE.MANGA_LR || readerMode === READER_MODE.MANGA_UD"> <!--; else webtoonClickArea;-->
-            <div class="{{readerMode === READER_MODE.MANGA_LR ? 'right' : 'top'}}" (click)="handlePageChange($event, 'right')"></div>
-            <div class="{{readerMode === READER_MODE.MANGA_LR ? 'left' : 'bottom'}}" (click)="handlePageChange($event, 'left')"></div>
+            <div class="{{readerMode === READER_MODE.MANGA_LR ? 'right' : 'top'}} {{clickOverlayClass('right')}}" (click)="handlePageChange($event, 'right')"></div>
+            <div class="{{readerMode === READER_MODE.MANGA_LR ? 'left' : 'bottom'}} {{clickOverlayClass('left')}}" (click)="handlePageChange($event, 'left')"></div>
         </ng-container>
         <ng-template #webtoonClickArea>
-            <div class="top" (click)="handlePageChange($event, 'right')"></div>
-            <div class="right" (click)="handlePageChange($event, 'right')"></div>
-            <div class="left" (click)="handlePageChange($event, 'left')"></div>
-            <div class="bottom" (click)="handlePageChange($event, 'left')"></div>
+            <div class="top {{clickOverlayClass('right')}}" (click)="handlePageChange($event, 'right')"></div>
+            <div class="right {{clickOverlayClass('right')}}" (click)="handlePageChange($event, 'right')"></div>
+            <div class="left {{clickOverlayClass('left')}}" (click)="handlePageChange($event, 'left')"></div>
+            <div class="bottom {{clickOverlayClass('left')}}" (click)="handlePageChange($event, 'left')"></div>
         </ng-template>
     </div>
     

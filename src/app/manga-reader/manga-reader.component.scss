@@ -49,22 +49,20 @@ canvas {
 }
 
 .filter-dark {
-    filter: brightness(0.85);
+    filter: brightness(0.65);
 }
 
 .filter-sepia {
-    //filter: sepia(90%) brightness(0.85);
-    filter: sepia(80%) hue-rotate(349deg) saturate(200%);
+    filter: sepia(80%) hue-rotate(349deg) saturate(200%) brightness(0.65);
 }
 
 .bottom-menu {
-    //padding-bottom: 20px;
     padding: 20px 20px;
 }
 
 
 .overlay {
-  background-color: rgba(0,0,0,0.5);// royalblue; // rgba(0,0,0,0.5);
+  background-color: rgba(0,0,0,0.5);
   color: white;
 }
 
@@ -255,6 +253,15 @@ canvas {
 
   .webtoon-images {
       text-align: center;
+  }
+
+  .highlight {
+      background-color: rgba(65, 105, 225, 0.5) !important;
+      animation: fadein .5s both;
+  }
+  .highlight-2 {
+    background-color: rgba(65, 225, 100, 0.5) !important;
+    animation: fadein .5s both;
   }
 
   // DEBUG

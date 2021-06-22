@@ -1,17 +1,16 @@
 import { AfterViewInit, Component, ElementRef, HostListener, OnDestroy, OnInit, Renderer2, SimpleChanges, ViewChild } from '@angular/core';
-import {Location} from '@angular/common';
+import { Location } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
-import { debounceTime, take, takeUntil } from 'rxjs/operators';
+import { take, takeUntil } from 'rxjs/operators';
 import { User } from '../_models/user';
 import { AccountService } from '../_services/account.service';
 import { ReaderService } from '../_services/reader.service';
-import { SeriesService } from '../_services/series.service';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { NavService } from '../_services/nav.service';
 import { ReadingDirection } from '../_models/preferences/reading-direction';
 import { ScalingOption } from '../_models/preferences/scaling-option';
 import { PageSplitOption } from '../_models/preferences/page-split-option';
-import { BehaviorSubject, forkJoin, fromEvent, Subject } from 'rxjs';
+import { forkJoin, Subject } from 'rxjs';
 import { ToastrService } from 'ngx-toastr';
 import { KEY_CODES } from '../shared/_services/utility.service';
 import { CircularArray } from '../shared/data-structures/circular-array';
@@ -20,7 +19,6 @@ import { Stack } from '../shared/data-structures/stack';
 import { ChangeContext, LabelType, Options } from '@angular-slider/ngx-slider';
 import { trigger, state, style, transition, animate } from '@angular/animations';
 import { ChapterInfo } from './_models/chapter-info';
-import { WebtoonImage } from './_models/webtoon-image';
 import { COLOR_FILTER, FITTING_OPTION, PAGING_DIRECTION, SPLIT_PAGE_PART } from './_models/reader-enums';
 import { Preferences, scalingOptions } from '../_models/preferences/preferences';
 import { READER_MODE } from '../_models/preferences/reader-mode';
@@ -32,6 +30,7 @@ const CHAPTER_ID_DOESNT_EXIST = -1;
 
 const ANIMATION_SPEED = 200;
 const OVERLAY_AUTO_CLOSE_TIME = 6000;
+const CLICK_OVERLAY_TIMEOUT = 3000;
 
 
 @Component({
@@ -89,11 +88,7 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
 
   cachedImages!: CircularArray<HTMLImageElement>; // This is a circular array of size PREFETCH_PAGES + 2
   continuousChaptersStack: Stack<number> = new Stack();
-  /**
-   * Stores and emits all the src urls
-   */
-  webtoonImages: BehaviorSubject<WebtoonImage[]> = new BehaviorSubject<WebtoonImage[]>([]);
-  webtoonImageArray!: CircularArray<WebtoonImage>;
+  
 
   // Menu overlay variables
   menuOpen = false;
@@ -139,18 +134,24 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
   // Whether extended settings area is showing
   settingsOpen: boolean = false;
 
-  readerMode: READER_MODE = READER_MODE.WEBTOON;
-  minPrefetchedWebtoonImage: number = -1;
-  maxPrefetchedWebtoonImage: number = -1;
-
-  
-
-  webtoonImageWidth: number = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
+  readerMode: READER_MODE = READER_MODE.MANGA_LR;
+  // minPrefetchedWebtoonImage: number = -1;
+  // maxPrefetchedWebtoonImage: number = -1;
+  // webtoonImageWidth: number = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
   
 
   private readonly onDestroy = new Subject<void>();
 
+  clickOverlayClass(side: 'right' | 'left') {
+    if (!this.showClickOverlay) {
+      return '';
+    }
 
+    if (this.readingDirection === ReadingDirection.LeftToRight) {
+      return side === 'right' ? 'highlight' : 'highlight-2';
+    }
+    return side === 'right' ? 'highlight-2' : 'highlight';
+  }
 
   get splitIconClass() {
     if (this.isSplitLeftToRight()) {
@@ -223,6 +224,7 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
         this.scalingOption = this.user.preferences.scalingOption;
         this.pageSplitOption = this.user.preferences.pageSplitOption;
         this.autoCloseMenu = this.user.preferences.autoCloseMenu;
+        this.readerMode = this.user.preferences.readerMode;
 
 
         this.generalSettingsForm = this.formBuilder.group({
@@ -230,7 +232,7 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
           pageSplitOption: this.pageSplitOption + '',
           fittingOption: this.translateScalingOption(this.scalingOption)
         });
-        
+
         this.updateForm();
 
         this.generalSettingsForm.valueChanges.pipe(takeUntil(this.onDestroy)).subscribe((changes: SimpleChanges) => {
@@ -356,7 +358,7 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
 
   render() {
     if (this.readerMode === READER_MODE.WEBTOON) {
-      this.initWebtoonReader();
+      //this.initWebtoonReader();
     } else {
       this.loadPage();
     }
@@ -468,8 +470,7 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
     }, OVERLAY_AUTO_CLOSE_TIME);
   }
 
-  
-  
+ 
   toggleMenu() {
     this.menuOpen = !this.menuOpen;
     
@@ -660,6 +661,7 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
   renderPage() {
     if (this.ctx && this.canvas) {
       this.canvasImage.onload = null;
+      this.ctx.imageSmoothingEnabled = true;
       this.canvas.nativeElement.width = this.canvasImage.width;
       this.canvas.nativeElement.height = this.canvasImage.height;
       const needsSplitting = this.canvasImage.width > this.canvasImage.height;
@@ -733,9 +735,9 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
     // TODO: Apply an overlay for a fixed amount of time showing click areas
     if (this.menuOpen) {
       this.showClickOverlay = true;
-      // setTimeout(() => {
-      //   this.showClickOverlay = false;
-      // }, 3000);
+      setTimeout(() => {
+        this.showClickOverlay = false;
+      }, CLICK_OVERLAY_TIMEOUT);
     }
   }
 
@@ -846,213 +848,26 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
 
-  mutationObserver: MutationObserver = new MutationObserver((mutations) => this.handleWebtoonImagesLoaded(mutations));
-  intersectionObserver: IntersectionObserver = new IntersectionObserver((entries) => this.handleIntersection(entries), { threshold: [0, 0.25, 0.5, 0.75, 1] });
-  scrollingDirection: PAGING_DIRECTION = PAGING_DIRECTION.FORWARD;
-  prevScrollPosition: number = 0;
-  webtoonImagesLoaded: boolean = false;
+  getPageUrl = (pageNum: number) => this.readerService.getPageUrl(this.chapterId, pageNum);
+  
+  handleWebtoonPageChange(updatedPageNum: number) {
+    //console.log('pageNum: ', this.pageNum);
+    //console.log('updated: ', updatedPageNum);
+    console.log('[MangaReader] Handling Page Change');
 
-  handleWebtoonImagesLoaded(mutations: MutationRecord[]) {
-    mutations.forEach(mutation => {
-      mutation.addedNodes.forEach(addedNode => {
-        console.log('added: ', addedNode.nodeName);
-      })
-    })
+    this.pageNum = updatedPageNum;
 
-  }
-
-  initWebtoonReader() {
-    // ? If page is already prefetched, just scroll to it and don't reset the array
-
-    fromEvent(window, 'scroll').pipe(debounceTime(20), takeUntil(this.onDestroy)).subscribe((event) => {
-      const verticalOffset = (window.pageYOffset 
-        || document.documentElement.scrollTop 
-        || document.body.scrollTop || 0);
-      if (verticalOffset > this.prevScrollPosition) {
-        this.scrollingDirection = PAGING_DIRECTION.FORWARD;
-      } else {
-        this.scrollingDirection = PAGING_DIRECTION.BACKWARDS;
-      }
-      //console.log('offset check: ', verticalOffset + ' vs ' + this.prevScrollPosition + ' => ' + (this.scrollingDirection === PAGING_DIRECTION.FORWARD ? 'Forward' : 'Backward'));
-      this.prevScrollPosition = verticalOffset;
-    });
-
-    this.webtoonImageArray = new CircularArray([], 0);
-    this.minPrefetchedWebtoonImage = this.pageNum;
-    this.maxPrefetchedWebtoonImage = -1;
-    this.webtoonImages.next([]);
-    const prefetchStart = Math.max(this.pageNum - PREFETCH_PAGES, 0);
-    const prefetchMax =  Math.min(this.pageNum + PREFETCH_PAGES, this.maxPages); 
-    console.log('[INIT] Prefetching pages ' + prefetchStart + ' to ' + prefetchMax + '. Current page: ', this.pageNum);
-    for(let i = prefetchStart; i < prefetchMax; i++) {
-      this.prefetchWebtoonImage(i);
-    }
-    this.minPrefetchedWebtoonImage = prefetchStart;
-    this.maxPrefetchedWebtoonImage = prefetchMax;
-
-    this.webtoonImagesLoaded = false;
-
-    const elem = document.querySelector('.webtoon-images');
-    if (elem) {
-      this.mutationObserver.observe(elem, {childList: true});
-    }
-    
-
-    this.scrollToCurrentPage();
-  }
-
-  onImageLoad(event: any, imagePage: number) {
-    if (imagePage === this.pageNum) {
-      
-    }
-  }
-
-  handleIntersection(entries: IntersectionObserverEntry[]) {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        const imagePage = parseInt(entry.target.attributes.getNamedItem('page')?.value + '', 10);
-        console.log('image on screen: ', imagePage);
-        // ! This still causes page to increment then decrement quickly. Make sure the logic is solid 
-        if (entry.intersectionRatio <= 0.5) {
-          // The problem here is that if we jump really quick, we get out of sync and these conditions don't apply
-          if (this.pageNum + 1 === imagePage && this.scrollingDirection === PAGING_DIRECTION.FORWARD) {
-            this.nextPage();
-            this.readerService.bookmark(this.seriesId, this.volumeId, this.chapterId, this.pageNum).pipe(take(1)).subscribe(() => {/* No operation */});
-          } else if (this.pageNum - 1 === imagePage && this.scrollingDirection === PAGING_DIRECTION.BACKWARDS) {
-            this.prevPage();
-            this.readerService.bookmark(this.seriesId, this.volumeId, this.chapterId, this.pageNum).pipe(take(1)).subscribe(() => {/* No operation */});
-          } else if ((imagePage >= this.pageNum + 2 && this.scrollingDirection === PAGING_DIRECTION.FORWARD) 
-                    || (imagePage <= this.pageNum - 2 && this.scrollingDirection === PAGING_DIRECTION.BACKWARDS)) {
-            console.log('Scroll position got out of sync due to quick scrolling. Forcing page update');
-            // This almost works. When we use gotopage it causes issues
-            if (!this.webtoonImagesLoaded) { 
-              console.log('returned early');
-              return;
-            }
-            console.log('not returned early');
-            this.setPageNum(imagePage);
-            this.readerService.bookmark(this.seriesId, this.volumeId, this.chapterId, this.pageNum).pipe(take(1)).subscribe(() => {/* No operation */});
-          } else {
-            return;
-          }
-          
-        }
-        this.prefetchWebtoonImages();
-      }
-    });
-  }
-
-  // loadWebtoonPage(scrollTo: boolean = false) {
-
-  //   this.readerService.bookmark(this.seriesId, this.volumeId, this.chapterId, this.pageNum).pipe(take(1)).subscribe(() => {/* No operation */});
-  //   if (scrollTo) {
-  //     this.scrollToCurrentPage();
-  //   }
-  // }
-
-  scrollToCurrentPage() {
-    if (this.readerMode !== READER_MODE.WEBTOON) { return }
-    setTimeout(() => {
-
-
-      // this.webtoonImagesLoaded = false;
-      // Array.from(document.querySelectorAll('.webtoon-images img')).forEach(elem => this.intersectionObserver.unobserve(elem));
-      // Promise.all(Array.from(document.querySelectorAll('.webtoon-images img')).filter((img: any) => !img.complete)
-      //   .map((img: any) => new Promise(resolve => { img.onload = img.onerror = resolve; }))).then(() => {
-      //     Array.from(document.querySelectorAll('.webtoon-images img')).forEach(elem => this.intersectionObserver.observe(elem));
-      //     this.webtoonImagesLoaded = true;
-      // });
-
-      const elem = document.querySelector('img#page-' + this.pageNum);
-      if (elem) {
-        window.scroll({
-          top: elem.getBoundingClientRect().top,
-          behavior: 'smooth'
+    this.readerService.bookmark(this.seriesId, this.volumeId, this.chapterId, this.pageNum).pipe(take(1)).subscribe(() => {/* No operation */});
+    if (this.pageNum >= this.maxPages - 10) {
+      // Tell server to cache the next chapter
+      if (this.nextChapterId > 0 && !this.nextChapterPrefetched) {
+        this.readerService.getChapterInfo(this.nextChapterId).pipe(take(1)).subscribe(res => {
+          this.nextChapterPrefetched = true;
         });
-      } else {
-        this.scrollToCurrentPage();
       }
-    }, 400);
+    }
   }
-
-  prefetchWebtoonImage(page: number, concat: boolean = true) {
-    let data = this.webtoonImages.value;
-    if (concat) {
-      data = data.concat({src: this.readerService.getPageUrl(this.chapterId, page), page});
-      if (page > this.maxPrefetchedWebtoonImage) {
-        this.maxPrefetchedWebtoonImage = page;
-      }
-    } else {
-      data.unshift({src: this.readerService.getPageUrl(this.chapterId, page), page});
-      //data = [{src: this.readerService.getPageUrl(this.chapterId, page), page}].concat(data);
-      if (page < this.minPrefetchedWebtoonImage) {
-        this.minPrefetchedWebtoonImage = page;
-      }
-    }
-
-    this.webtoonImages.next(data);
-    setTimeout(() => {
-      const image = document.querySelector('img#page-' + page);
-      if (image === null) {
-        console.error('Could not find ' + ('img#page-' + page) + ' to apply intersection observer to');
-        return;
-      }
-      this.intersectionObserver.observe(image);
-    }, 10);
-  }
-
-  // If I scroll too fast, we don't prefetch enough
-  prefetchWebtoonImages() {
-
-    let startingIndex = 0;
-    let endingIndex = 0;
-    if (this.scrollingDirection === PAGING_DIRECTION.FORWARD) {
-      startingIndex = Math.min(this.maxPrefetchedWebtoonImage + 1, this.maxPages);
-      endingIndex = Math.min(this.maxPrefetchedWebtoonImage + 1 + PREFETCH_PAGES, this.maxPages); 
-
-      console.log('moving foward, request to prefetch: ' + startingIndex + ' to ' + endingIndex);
-      console.log('    page num: ', this.pageNum);
-      console.log('    max page preloaded: ', this.maxPrefetchedWebtoonImage);
-
-      if (startingIndex === this.maxPages) {
-        console.log('   DENIED');
-        return;
-      }
-    } else {
-      startingIndex = Math.max(this.minPrefetchedWebtoonImage - 1, 0) ;
-      endingIndex = Math.max(this.minPrefetchedWebtoonImage - 1 - PREFETCH_PAGES, 0);
-
-      console.log('moving backwards, request to prefetch: ' + startingIndex + ' to ' + endingIndex);
-      console.log('    page num: ', this.pageNum);
-      console.log('    min page preloaded: ', this.minPrefetchedWebtoonImage);
-
-      if (startingIndex <= 0) {
-        console.log('   DENIED');
-        return;
-      }
-    }
-
-
-    if (startingIndex > endingIndex) {
-      const temp = startingIndex;
-      startingIndex = endingIndex;
-      endingIndex = temp;
-    }
-    console.log('prefetching pages: ' + startingIndex + ' to ' + endingIndex);
-    if (this.scrollingDirection === PAGING_DIRECTION.FORWARD) {
-      for(let i = startingIndex; i < endingIndex; i++) {
-        this.prefetchWebtoonImage(i, this.scrollingDirection === PAGING_DIRECTION.FORWARD);
-      }
-    } else {
-      for(let i = endingIndex; i > startingIndex; i--) {
-        this.prefetchWebtoonImage(i, false);
-      }
-    }
-
-    
-    console.log('    min page preloaded: ', this.minPrefetchedWebtoonImage);
-    console.log('    max page preloaded: ', this.maxPrefetchedWebtoonImage);
-  }
+  
 
   saveSettings() {
     if (this.user === undefined) return;

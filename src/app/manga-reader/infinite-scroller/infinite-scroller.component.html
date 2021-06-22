@@ -1,0 +1,27 @@
+<!-- The infiniteScroll will handle virtual dom 
+        <div
+        infiniteScroll
+        [infiniteScrollDistance]="10"
+        [infiniteScrollUpDistance]="10"
+        [infiniteScrollThrottle]="50"
+        [alwaysCallback]="true"
+        (scrolled)="scrollDown()"
+        (scrolledUp)="scrollUp()">
+        <ng-container *ngFor="let item of webtoonImages | async; let index = index;">
+            <h2>Page {{item.page}} - Prefetched {{minPrefetchedWebtoonImage}}-{{maxPrefetchedWebtoonImage}}. Current Page: {{pageNum}}</h2>
+            <img src="{{item.src}}" rel="nofollow" alt="image" id="page-{{item.page}}" [attr.page]="item.page" ondragstart="return false;" onselectstart="return false;">
+        </ng-container>
+        (load)="onImageLoad($event, item.page)"
+    </div> -->
+
+    <ng-container *ngFor="let item of webtoonImages | async; let index = index;">
+        <h2>Page {{item.page}} - Prefetched {{minPrefetchedWebtoonImage}}-{{maxPrefetchedWebtoonImage}}. Current Page: {{pageNum}}</h2>
+        <img src="{{item.src}}" [width]="webtoonImageWidth" rel="nofollow" alt="image" id="page-{{item.page}}" [attr.page]="item.page" ondragstart="return false;" onselectstart="return false;">
+    </ng-container>
+
+    <!-- Circular Array implementation -->
+    <!-- <img src="{{images.prev().src}}" [width]="webtoonImageWidth" rel="nofollow" alt="image" id="page-{{images.prev().id}}" ondragstart="return false;" onselectstart="return false;">
+    <img src="{{images.peek().src}}" [width]="webtoonImageWidth"  rel="nofollow" alt="image" id="page-{{images.peek().id}}"  ondragstart="return false;" onselectstart="return false;">
+    <img src="{{images.next().src}}" [width]="webtoonImageWidth" rel="nofollow" alt="image" id="page-{{images.next().id}}"  ondragstart="return false;" onselectstart="return false;"> -->
+
+    
