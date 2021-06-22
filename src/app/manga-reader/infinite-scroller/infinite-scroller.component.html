@@ -15,8 +15,8 @@
     </div> -->
 
     <ng-container *ngFor="let item of webtoonImages | async; let index = index;">
-        <h2>Page {{item.page}} - Prefetched {{minPrefetchedWebtoonImage}}-{{maxPrefetchedWebtoonImage}}. Current Page: {{pageNum}}</h2>
-        <img src="{{item.src}}" [width]="webtoonImageWidth" rel="nofollow" alt="image" id="page-{{item.page}}" [attr.page]="item.page" ondragstart="return false;" onselectstart="return false;">
+        <h2>Page {{item.page}} - Prefetched {{minPrefetchedWebtoonImage}}-{{maxPrefetchedWebtoonImage}}. Current Page: {{pageNum}}. Width: {{webtoonImageWidth}}</h2>
+        <img src="{{item.src}}" rel="nofollow" alt="image" id="page-{{item.page}}" [attr.page]="item.page" ondragstart="return false;" onselectstart="return false;">
     </ng-container>
 
     <!-- Circular Array implementation -->
