@@ -671,17 +671,13 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
     this.isLoading = false;
   }
 
-  imageUrlToPageNum(imageSrc: string) {
-    if (imageSrc === undefined || imageSrc === '') { return -1; }
-    return parseInt(imageSrc.split('&page=')[1], 10);
-  }
 
   prefetch() {
     let index = 1;
 
     this.cachedImages.applyFor((item, i) => {
       const offsetIndex = this.pageNum + index;
-      const urlPageNum = this.imageUrlToPageNum(item.src);
+      const urlPageNum = this.readerService.imageUrlToPageNum(item.src);
       if (urlPageNum === offsetIndex) {
         index += 1;
         return;
@@ -707,7 +703,7 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
 
     this.isLoading = true;
     this.canvasImage = this.cachedImages.current();
-    if (this.imageUrlToPageNum(this.canvasImage.src) !== this.pageNum || this.canvasImage.src === '' || !this.canvasImage.complete) {
+    if (this.readerService.imageUrlToPageNum(this.canvasImage.src) !== this.pageNum || this.canvasImage.src === '' || !this.canvasImage.complete) {
       this.canvasImage.src = this.readerService.getPageUrl(this.chapterId, this.pageNum);
       this.canvasImage.onload = () => this.renderPage();
     } else {

@@ -11,12 +11,13 @@
             <h2>Page {{item.page}} - Prefetched {{minPrefetchedWebtoonImage}}-{{maxPrefetchedWebtoonImage}}. Current Page: {{pageNum}}</h2>
             <img src="{{item.src}}" rel="nofollow" alt="image" id="page-{{item.page}}" [attr.page]="item.page" ondragstart="return false;" onselectstart="return false;">
         </ng-container>
-        (load)="onImageLoad($event, item.page)"
+        
     </div> -->
 
+    <!-- TODO: We can splice the data so that we only render pageNum +- 5 (aka 11 images at a time)-->
     <ng-container *ngFor="let item of webtoonImages | async; let index = index;">
         <h2>Page {{item.page}} - Prefetched {{minPrefetchedWebtoonImage}}-{{maxPrefetchedWebtoonImage}}. Current Page: {{pageNum}}. Width: {{webtoonImageWidth}}</h2>
-        <img src="{{item.src}}" rel="nofollow" alt="image" id="page-{{item.page}}" [attr.page]="item.page" ondragstart="return false;" onselectstart="return false;">
+        <img src="{{item.src}}" rel="nofollow" alt="image" (load)="onImageLoad($event)" id="page-{{item.page}}" [attr.page]="item.page" ondragstart="return false;" onselectstart="return false;">
     </ng-container>
 
     <!-- Circular Array implementation -->

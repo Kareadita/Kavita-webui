@@ -93,4 +93,14 @@ export class ReaderService {
       bodyNode.style.background = this.originalBodyColor;
     }
   }
+
+  /**
+   * Parses out the page number from a Image src url
+   * @param imageSrc Src attribute of Image
+   * @returns 
+   */
+  imageUrlToPageNum(imageSrc: string) {
+    if (imageSrc === undefined || imageSrc === '') { return -1; }
+    return parseInt(imageSrc.split('&page=')[1], 10);
+  }
 }
