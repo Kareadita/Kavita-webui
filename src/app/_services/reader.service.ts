@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { environment } from 'src/environments/environment';
-import { ChpaterInfo } from '../manga-reader/_models/chapter-info';
+import { ChapterInfo } from '../manga-reader/_models/chapter-info';
 import { UtilityService } from '../shared/_services/utility.service';
 import { Bookmark } from '../_models/bookmark';
 import { Chapter } from '../_models/chapter';
@@ -28,7 +28,7 @@ export class ReaderService {
   }
 
   getChapterInfo(chapterId: number) {
-    return this.httpClient.get<ChpaterInfo>(this.baseUrl + 'reader/chapter-info?chapterId=' + chapterId);
+    return this.httpClient.get<ChapterInfo>(this.baseUrl + 'reader/chapter-info?chapterId=' + chapterId);
   }
 
   bookmark(seriesId: number, volumeId: number, chapterId: number, page: number, bookScrollId: string | null = null) {

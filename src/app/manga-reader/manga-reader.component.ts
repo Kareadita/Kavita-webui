@@ -19,7 +19,7 @@ import { MemberService } from '../_services/member.service';
 import { Stack } from '../shared/data-structures/stack';
 import { ChangeContext, LabelType, Options } from '@angular-slider/ngx-slider';
 import { trigger, state, style, transition, animate } from '@angular/animations';
-import { ChpaterInfo } from './_models/chapter-info';
+import { ChapterInfo } from './_models/chapter-info';
 import { WebtoonImage } from './_models/webtoon-image';
 import { COLOR_FILTER, FITTING_OPTION, PAGING_DIRECTION, SPLIT_PAGE_PART } from './_models/reader-enums';
 import { Preferences, scalingOptions } from '../_models/preferences/preferences';
@@ -66,7 +66,6 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
   seriesId!: number;
   volumeId!: number;
   chapterId!: number;
-  //chapter!: Chapter;
 
   pageNum = 0;
   maxPages = 1;
@@ -74,7 +73,6 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
   generalSettingsForm!: FormGroup;
 
   scalingOptions = scalingOptions;
-
   readingDirection = ReadingDirection.LeftToRight;
   scalingOption = ScalingOption.FitToHeight;
   pageSplitOption = PageSplitOption.SplitRightToLeft;
@@ -82,8 +80,7 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
   pagingDirection: PAGING_DIRECTION = PAGING_DIRECTION.FORWARD;
   colorMode: COLOR_FILTER = COLOR_FILTER.NONE;
   autoCloseMenu: boolean = true;
-
-  menuOpen = false;
+  
   isLoading = true; 
 
   @ViewChild('content') canvas: ElementRef | undefined;
@@ -98,10 +95,10 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
   webtoonImages: BehaviorSubject<WebtoonImage[]> = new BehaviorSubject<WebtoonImage[]>([]);
   webtoonImageArray!: CircularArray<WebtoonImage>;
 
-
+  // Menu overlay variables
+  menuOpen = false;
   prevPageDisabled = false;
   nextPageDisabled = false;
-
   pageOptions: Options = {
     floor: 1,
     ceil: 0,
@@ -116,9 +113,18 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
     animate: false
   };
 
-  chapterInfo!: ChpaterInfo;
+  chapterInfo!: ChapterInfo;
   title: string = '';
   subtitle: string = '';
+  /**
+   * Timeout id for auto-closing menu overlay
+   */
+   menuTimeout: any;
+
+   /**
+    * Whether the click areas show
+    */
+   showClickOverlay: boolean = false;
 
   
 
@@ -137,17 +143,9 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
   minPrefetchedWebtoonImage: number = -1;
   maxPrefetchedWebtoonImage: number = -1;
 
-  /**
-   * Timeout id for auto-closing menu overlay
-   */
-  menuTimeout: any;
+  
 
-  /**
-   * Whether the click areas show
-   */
-  showClickOverlay: boolean = false;
-
-  webtoonImageWidth: number = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth; // assume 900 default
+  webtoonImageWidth: number = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
   
 
   private readonly onDestroy = new Subject<void>();
@@ -163,8 +161,15 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
     return 'right-side';
   }
 
-  get ReadingDirection(): typeof ReadingDirection {
-    return ReadingDirection;
+  get readerModeIcon() {
+    switch(this.readerMode) {
+      case READER_MODE.MANGA_LR:
+        return 'fa-exchange-alt';
+      case READER_MODE.MANGA_UD:
+        return 'fa-exchange-alt fa-rotate-90';
+      case READER_MODE.WEBTOON:
+        return 'fa-arrows-alt-v';
+    }
   }
 
   get colorOptionName() {
@@ -180,6 +185,10 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
 
   get READER_MODE(): typeof READER_MODE {
     return READER_MODE;
+  }
+
+  get ReadingDirection(): typeof ReadingDirection {
+    return ReadingDirection;
   }
 
   constructor(private route: ActivatedRoute, private router: Router, private accountService: AccountService,
@@ -205,7 +214,6 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
 
     this.continuousChaptersStack.push(this.chapterId);
 
-    //this.setOverrideStyles();
     this.readerService.setOverrideStyles();
 
     this.accountService.currentUser$.pipe(take(1)).subscribe(user => {
@@ -228,7 +236,6 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
           if (needsSplitting) {
             this.loadPage();
           }
-          return;
         });
 
         this.memberService.hasReadingProgress(this.libraryId).pipe(take(1)).subscribe(progress => {
@@ -258,10 +265,6 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
 
   ngOnDestroy() {
     this.readerService.resetOverrideStyles();
-    // const bodyNode = document.querySelector('body');
-    // if (bodyNode !== undefined && bodyNode !== null && this.originalBodyColor !== undefined) {
-    //   bodyNode.style.background = this.originalBodyColor;
-    // }
     this.navService.showNavBar();
     this.onDestroy.next();
   }
@@ -298,13 +301,11 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
     this.pageNum = 1;
 
     forkJoin({
-      chapter: this.seriesService.getChapter(this.chapterId),
       bookmark: this.readerService.getBookmark(this.chapterId),
       chapterInfo: this.readerService.getChapterInfo(this.chapterId)
     }).pipe(take(1)).subscribe(results => {
-      //this.chapter = results.chapter;
-      this.volumeId = results.chapter.volumeId;
-      this.maxPages = results.chapter.pages;
+      this.volumeId = results.chapterInfo.volumeId;
+      this.maxPages = results.chapterInfo.pages;
       this.pageOptions.ceil = this.maxPages;
 
       let page = results.bookmark.pageNum;
@@ -362,16 +363,7 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
     this.location.back();
   }
 
-  setOverrideStyles() {
-    this.readerService.setOverrideStyles();
-    // const bodyNode = document.querySelector('body');
-    // if (bodyNode !== undefined && bodyNode !== null) {
-    //   this.originalBodyColor = bodyNode.style.background;
-    //   bodyNode.setAttribute('style', 'background-color: black !important');
-    // }
-  }
-
-  updateTitle(chapterInfo: ChpaterInfo) {
+  updateTitle(chapterInfo: ChapterInfo) {
     this.chapterInfo = chapterInfo;
       this.title = chapterInfo.seriesName;
       if (this.chapterInfo.chapterTitle.length > 0) {
@@ -492,12 +484,10 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
 
   isSplitLeftToRight() {
     return (this.generalSettingsForm?.get('pageSplitOption')?.value + '') === (PageSplitOption.SplitLeftToRight + '');
-    //return (this.splitForm?.get('pageSplitOption')?.value + '') === (PageSplitOption.SplitLeftToRight + '');
   }
 
   isNoSplit() {
     return (this.generalSettingsForm?.get('pageSplitOption')?.value + '') === (PageSplitOption.NoSplit + '');
-    //return (this.splitForm?.get('pageSplitOption')?.value + '') === (PageSplitOption.NoSplit + '');
   }
 
   updateSplitPage() {
@@ -797,11 +787,6 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
 
     this.setPageNum(page);
     this.render();
-    // if (this.readerMode === READER_MODE.WEBTOON) {
-    //   this.initWebtoonReader();
-    // } else {
-    //   this.loadPage();
-    // }
   }
 
   promptForPage() {
@@ -833,31 +818,23 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
     switch(this.readerMode) {
       case READER_MODE.MANGA_LR:
         this.readerMode = READER_MODE.MANGA_UD;
-        //this.loadPage();
         break;
       case READER_MODE.MANGA_UD:
         this.readerMode = READER_MODE.WEBTOON;
-        //this.initWebtoonReader();
         break;
       case READER_MODE.WEBTOON:
         this.readerMode = READER_MODE.MANGA_LR;
-        //this.loadPage();
         break;
     }
+
+    if ( this.readerMode === READER_MODE.WEBTOON) {
+      this.generalSettingsForm.get('fittingOption')?.disable()
+      this.generalSettingsForm.get('pageSplitOption')?.disable();
+    }
+
     this.render();
   }
 
-  getReaderModeIcon() {
-    // TODO: Refactor to a getter
-    switch(this.readerMode) {
-      case READER_MODE.MANGA_LR:
-        return 'fa-exchange-alt';
-      case READER_MODE.MANGA_UD:
-        return 'fa-exchange-alt fa-rotate-90';
-      case READER_MODE.WEBTOON:
-        return 'fa-arrows-alt-v';
-    }
-  }
 
   mutationObserver: MutationObserver = new MutationObserver((mutations) => this.handleWebtoonImagesLoaded(mutations));
   intersectionObserver: IntersectionObserver = new IntersectionObserver((entries) => this.handleIntersection(entries), { threshold: [0, 0.25, 0.5, 0.75, 1] });
@@ -1084,7 +1061,7 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
       bookReaderMargin: this.user.preferences.bookReaderMargin,
       bookReaderTapToPaginate: this.user.preferences.bookReaderTapToPaginate,
       bookReaderReadingDirection: this.readingDirection,
-      
+
       siteDarkMode: this.user.preferences.siteDarkMode,
     };
     this.accountService.updatePreferences(data).pipe(take(1)).subscribe((updatedPrefs) => {
@@ -1098,14 +1075,11 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   resetSettings() {
-    //this.fittingForm.get('fittingOption')?.setValue(this.translateScalingOption(this.user.preferences.scalingOption));
     this.generalSettingsForm.get('fittingOption')?.value.get('fittingOption')?.setValue(this.translateScalingOption(this.user.preferences.scalingOption));
-    //this.splitForm.get('pageSplitOption')?.setValue(this.user.preferences.pageSplitOption + '');
     this.generalSettingsForm.get('pageSplitOption')?.setValue(this.user.preferences.pageSplitOption + '');
     this.generalSettingsForm.get('autoCloseMenu')?.setValue(this.autoCloseMenu);
 
     if ( this.readerMode === READER_MODE.WEBTOON) {
-      //this.fittingForm.get('fittingOption')?.disable()
       this.generalSettingsForm.get('fittingOption')?.disable()
       this.generalSettingsForm.get('pageSplitOption')?.disable();
     }
