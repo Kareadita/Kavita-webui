@@ -108,7 +108,6 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
     animate: false
   };
 
-  chapterInfo!: ChapterInfo;
   title: string = '';
   subtitle: string = '';
   /**
@@ -135,23 +134,10 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
   settingsOpen: boolean = false;
 
   readerMode: READER_MODE = READER_MODE.MANGA_LR;
-  // minPrefetchedWebtoonImage: number = -1;
-  // maxPrefetchedWebtoonImage: number = -1;
-  // webtoonImageWidth: number = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
+
   
 
   private readonly onDestroy = new Subject<void>();
-
-  clickOverlayClass(side: 'right' | 'left') {
-    if (!this.showClickOverlay) {
-      return '';
-    }
-
-    if (this.readingDirection === ReadingDirection.LeftToRight) {
-      return side === 'right' ? 'highlight' : 'highlight-2';
-    }
-    return side === 'right' ? 'highlight-2' : 'highlight';
-  }
 
   get splitIconClass() {
     if (this.isSplitLeftToRight()) {
@@ -369,22 +355,21 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   updateTitle(chapterInfo: ChapterInfo) {
-    this.chapterInfo = chapterInfo;
       this.title = chapterInfo.seriesName;
-      if (this.chapterInfo.chapterTitle.length > 0) {
-        this.title + ' - ' + this.chapterInfo.chapterTitle;
+      if (chapterInfo.chapterTitle.length > 0) {
+        this.title + ' - ' + chapterInfo.chapterTitle;
       }
 
       this.subtitle = '';
-      if (this.chapterInfo.isSpecial && this.chapterInfo.volumeNumber === '0') {
-        this.subtitle = this.chapterInfo.fileName;
-      } else if (!this.chapterInfo.isSpecial && this.chapterInfo.volumeNumber === '0') {
-        this.subtitle = 'Chapter ' + this.chapterInfo.chapterNumber;
+      if (chapterInfo.isSpecial && chapterInfo.volumeNumber === '0') {
+        this.subtitle = chapterInfo.fileName;
+      } else if (!chapterInfo.isSpecial && chapterInfo.volumeNumber === '0') {
+        this.subtitle = 'Chapter ' + chapterInfo.chapterNumber;
       } else {
-        this.subtitle = 'Volume ' + this.chapterInfo.volumeNumber;
+        this.subtitle = 'Volume ' + chapterInfo.volumeNumber;
 
-        if (this.chapterInfo.chapterNumber !== '0') {
-          this.subtitle += ' Chapter ' + this.chapterInfo.chapterNumber;
+        if (chapterInfo.chapterNumber !== '0') {
+          this.subtitle += ' Chapter ' + chapterInfo.chapterNumber;
         }
       }
   }
@@ -739,6 +724,17 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
         this.showClickOverlay = false;
       }, CLICK_OVERLAY_TIMEOUT);
     }
+  }
+
+  clickOverlayClass(side: 'right' | 'left') {
+    if (!this.showClickOverlay) {
+      return '';
+    }
+
+    if (this.readingDirection === ReadingDirection.LeftToRight) {
+      return side === 'right' ? 'highlight' : 'highlight-2';
+    }
+    return side === 'right' ? 'highlight-2' : 'highlight';
   }
 
   
