@@ -134,6 +134,7 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
   settingsOpen: boolean = false;
 
   readerMode: READER_MODE = READER_MODE.MANGA_LR;
+  getPageUrl = (pageNum: number) => this.readerService.getPageUrl(this.chapterId, pageNum);
 
   
 
@@ -624,14 +625,18 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
   loadChapter(chapterId: number, direction: 'next' | 'prev') {
     if (chapterId >= 0) {
       this.chapterId = chapterId;
-      this.continuousChaptersStack.push(chapterId);
+      // if (direction === 'next') {
+      //   this.continuousChaptersStack.pop();
+      // }
+      this.continuousChaptersStack.push(chapterId); 
       // Load chapter Id onto route but don't reload
       const lastSlashIndex = this.router.url.lastIndexOf('/');
       const newRoute = this.router.url.substring(0, lastSlashIndex + 1) + this.chapterId + '';
       window.history.replaceState({}, '', newRoute);
       this.init();
     } else {
-      // This should never happen since we prefetch chapter ids
+      // This will only happen if we spam click the load chapter button so chapter doesn't have time to prefetch
+      const currentChapterId = this.continuousChaptersStack.peek();
       this.toastr.warning('Could not find ' + direction + ' chapter');
       this.isLoading = false;
       if (direction === 'prev') {
@@ -737,8 +742,6 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
     return side === 'right' ? 'highlight-2' : 'highlight';
   }
 
-  
-
   sliderPageUpdate(context: ChangeContext) {
     const page = context.value;
     
@@ -796,11 +799,6 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
     return goToPageNum;
   }
 
-
-  closeDrawer() {
-    this.menuOpen = false;
-  }
-
   toggleColorMode() {
     switch(this.colorMode) {
       case COLOR_FILTER.NONE:
@@ -843,9 +841,6 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
-
-  getPageUrl = (pageNum: number) => this.readerService.getPageUrl(this.chapterId, pageNum);
-  
   handleWebtoonPageChange(updatedPageNum: number) {
     //console.log('pageNum: ', this.pageNum);
     //console.log('updated: ', updatedPageNum);
@@ -863,7 +858,6 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
       }
     }
   }
-  
 
   saveSettings() {
     if (this.user === undefined) return;
@@ -902,8 +896,4 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
 
     this.updateForm();
   }
-
-  scrollDown() {}
-  scrollUp()  {}
-
 }
