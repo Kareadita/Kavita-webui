@@ -626,6 +626,8 @@ export class BookReaderComponent implements OnInit, AfterViewInit, OnDestroy {
       readingDirection: this.user.preferences.readingDirection, 
       scalingOption: this.user.preferences.scalingOption, 
       pageSplitOption: this.user.preferences.pageSplitOption, 
+      autoCloseMenu: this.user.preferences.autoCloseMenu,
+      readerMode: this.user.preferences.readerMode,
       bookReaderDarkMode: this.darkMode,
       bookReaderFontFamily: modelSettings.bookReaderFontFamily,
       bookReaderFontSize: parseInt(this.pageStyles['font-size'].substr(0, this.pageStyles['font-size'].length - 1), 10),

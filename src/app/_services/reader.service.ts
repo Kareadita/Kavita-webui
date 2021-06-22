@@ -14,6 +14,9 @@ export class ReaderService {
 
   baseUrl = environment.apiUrl;
 
+  // Override background color for reader and restore it onDestroy
+  private originalBodyColor!: string;
+
   constructor(private httpClient: HttpClient, private utilityService: UtilityService) { }
 
   getBookmark(chapterId: number) {
@@ -71,5 +74,23 @@ export class ReaderService {
     }
 
     return currentlyReadingChapter;
+  }
+
+  /**
+   * Captures current body color and forces background color to be black. Call @see resetOverrideStyles() on destroy of component to revert changes
+   */
+  setOverrideStyles() {
+    const bodyNode = document.querySelector('body');
+    if (bodyNode !== undefined && bodyNode !== null) {
+      this.originalBodyColor = bodyNode.style.background;
+      bodyNode.setAttribute('style', 'background-color: black !important');
+    }
+  }
+
+  resetOverrideStyles() {
+    const bodyNode = document.querySelector('body');
+    if (bodyNode !== undefined && bodyNode !== null && this.originalBodyColor !== undefined) {
+      bodyNode.style.background = this.originalBodyColor;
+    }
   }
 }
