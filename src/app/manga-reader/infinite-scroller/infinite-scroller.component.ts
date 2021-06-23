@@ -145,7 +145,6 @@ export class InfiniteScrollerComponent implements OnInit, OnChanges, OnDestroy {
         .map((img: any) => new Promise(resolve => { img.onload = img.onerror = resolve; })))
         .then(() => {
           this.allImagesLoaded = true;
-          debugger;
           this.scrollToCurrentPage();
       });
     }
@@ -194,7 +193,7 @@ export class InfiniteScrollerComponent implements OnInit, OnChanges, OnDestroy {
     setTimeout(() => {
       const elem = document.querySelector('img#page-' + this.pageNum);
       if (elem) {
-        console.log('[Scroll] Scrolling to Page: ', this.pageNum);
+        //console.log('[Scroll] Scrolling to Page: ', this.pageNum);
         // Update prevScrollPosition, so the next scroll event properly calculates direction
         this.prevScrollPosition = elem.getBoundingClientRect().top;
         this.isScrolling = true;
@@ -245,7 +244,7 @@ export class InfiniteScrollerComponent implements OnInit, OnChanges, OnDestroy {
       startingIndex = Math.min(this.maxPrefetchedWebtoonImage + 1, this.totalPages);
       endingIndex = Math.min(this.maxPrefetchedWebtoonImage + 1 + this.buffferPages, this.totalPages); 
 
-      // console.log('[Prefetch] moving foward, request to prefetch: ' + startingIndex + ' to ' + endingIndex);
+      // console.log('[Prefetch] request to prefetch: ' + startingIndex + ' to ' + endingIndex);
       // console.log('     [Prefetch] page num: ', this.pageNum);
       // console.log('     [Prefetch] max page preloaded: ', this.maxPrefetchedWebtoonImage);
 
@@ -274,14 +273,27 @@ export class InfiniteScrollerComponent implements OnInit, OnChanges, OnDestroy {
       endingIndex = temp;
     }
     console.log('[Prefetch] prefetching pages: ' + startingIndex + ' to ' + endingIndex);
+    console.log('     [Prefetch] page num: ', this.pageNum);
     // If a request comes in to prefetch over current page +/- bufferPages (+ 1 due to requesting from next/prev page), then deny it
-    if (startingIndex < this.pageNum - (this.buffferPages + 1) || endingIndex > this.pageNum + (this.buffferPages + 1)) {
+    console.log('     [Prefetch] Caps: ' + (this.pageNum - (this.buffferPages + 1)) + ' - ' + (this.pageNum + (this.buffferPages + 1)));
+    if (this.isScrollingForwards() && startingIndex > this.pageNum + (this.buffferPages + 1)) {
+      console.log('[Prefetch] A request that is too far outside buffer range has been declined', this.pageNum);
+      return;
+    }
+    if (!this.isScrollingForwards() && endingIndex < (this.pageNum - (this.buffferPages + 1))) {
       console.log('[Prefetch] A request that is too far outside buffer range has been declined', this.pageNum);
       return;
     }
     for(let i = startingIndex; i < endingIndex; i++) {
       this.prefetchWebtoonImage(i);
     }
+
+    Promise.all(Array.from(document.querySelectorAll('img'))
+      .filter((img: any) => !img.complete)
+      .map((img: any) => new Promise(resolve => { img.onload = img.onerror = resolve; })))
+      .then(() => {
+        this.allImagesLoaded = true;
+    });
 
 
     
