@@ -105,15 +105,6 @@ canvas {
     padding-right: 10px;
 }
 
-.colored-overlay {
-    &.left {
-        background: rgba(255, 0, 0, 0.5);
-    }
-
-    &.right {
-        background: rgba(0, 255, 0, 0.5);
-    }
-}
 
 .right {
     position: fixed;
@@ -124,10 +115,6 @@ canvas {
     background: rgba(0, 0, 0, 0);
     z-index: 2;
     cursor: pointer;
-
-    // &.colored-overlay {
-    //     background: rgba(0, 255, 0, 0.5);
-    // }
 }
 
 .top {
@@ -139,10 +126,6 @@ canvas {
     background: rgba(0, 0, 0, 0);
     z-index: 2;
     cursor: pointer;
-
-    // &.colored-overlay {
-    //     background: rgba(0, 255, 0, 0.5);
-    // }
 }
 
 .left {

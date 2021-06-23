@@ -48,6 +48,13 @@ export class InfiniteScrollerComponent implements OnInit, OnChanges, OnDestroy {
   maxPrefetchedWebtoonImage: number = Number.MIN_SAFE_INTEGER;
   webtoonImageWidth: number = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
 
+  /**
+   * Used to tell if a scrollTo() operation is in progress
+   */
+  isScrolling: boolean = false;
+
+  allImagesLoaded: boolean = false;
+
   private readonly onDestroy = new Subject<void>();
 
   constructor(private readerService: ReaderService) { }
@@ -81,6 +88,16 @@ export class InfiniteScrollerComponent implements OnInit, OnChanges, OnDestroy {
       const verticalOffset = (window.pageYOffset 
         || document.documentElement.scrollTop 
         || document.body.scrollTop || 0);
+      
+        if (this.prevScrollPosition === verticalOffset) {
+          console.log('Scroll To is done');
+          this.isScrolling = false;
+        }
+        if (this.isScrolling) {
+          console.log('prevScroll: ', this.prevScrollPosition);
+          console.log('offset: ', verticalOffset);
+        }
+      
       if (verticalOffset > this.prevScrollPosition) {
         this.scrollingDirection = PAGING_DIRECTION.FORWARD;
       } else {
@@ -123,17 +140,29 @@ export class InfiniteScrollerComponent implements OnInit, OnChanges, OnDestroy {
 
     if (imagePage === this.pageNum) {
       console.log('! Loaded current page !');
-      this.scrollToCurrentPage();
+      Promise.all(Array.from(document.querySelectorAll('img'))
+        .filter((img: any) => !img.complete)
+        .map((img: any) => new Promise(resolve => { img.onload = img.onerror = resolve; })))
+        .then(() => {
+          this.allImagesLoaded = true;
+          debugger;
+          this.scrollToCurrentPage();
+      });
     }
 
   }
 
   handleIntersection(entries: IntersectionObserverEntry[]) {
+
+    if (!this.allImagesLoaded || this.isScrolling) {
+      console.log('Images are not loaded (or performing scrolling action), skipping any scroll calculations');
+      return;
+    }
+
     entries.forEach(entry => {
       if (entry.isIntersecting) {
         const imagePage = parseInt(entry.target.attributes.getNamedItem('page')?.value + '', 10);
         console.log('[Intersection] ! Page ' + imagePage + ' just entered screen');
-        console.log('[Intersection] ! Scrolling ' + (this.isScrollingForwards() ? 'Forward': 'Backwards'));
         
         // The problem here is that if we jump really quick, we get out of sync and these conditions don't apply
         if (this.pageNum + 1 === imagePage && this.isScrollingForwards()) {
@@ -166,12 +195,10 @@ export class InfiniteScrollerComponent implements OnInit, OnChanges, OnDestroy {
       const elem = document.querySelector('img#page-' + this.pageNum);
       if (elem) {
         console.log('[Scroll] Scrolling to Page: ', this.pageNum);
-        window.scroll({
-          top: elem.getBoundingClientRect().top,
-          behavior: 'smooth'
-        });
         // Update prevScrollPosition, so the next scroll event properly calculates direction
         this.prevScrollPosition = elem.getBoundingClientRect().top;
+        this.isScrolling = true;
+        elem.scrollIntoView({behavior: 'smooth'});
       }
     }, 600);
   }
@@ -193,6 +220,7 @@ export class InfiniteScrollerComponent implements OnInit, OnChanges, OnDestroy {
     if (page > this.maxPrefetchedWebtoonImage) {
       this.maxPrefetchedWebtoonImage = page;
     }
+    this.allImagesLoaded = false;
 
     this.webtoonImages.next(data);
     this.attachIntersectionObserver(page);
@@ -217,24 +245,24 @@ export class InfiniteScrollerComponent implements OnInit, OnChanges, OnDestroy {
       startingIndex = Math.min(this.maxPrefetchedWebtoonImage + 1, this.totalPages);
       endingIndex = Math.min(this.maxPrefetchedWebtoonImage + 1 + this.buffferPages, this.totalPages); 
 
-      console.log('[Prefetch] moving foward, request to prefetch: ' + startingIndex + ' to ' + endingIndex);
-      console.log('     [Prefetch] page num: ', this.pageNum);
-      console.log('     [Prefetch] max page preloaded: ', this.maxPrefetchedWebtoonImage);
+      // console.log('[Prefetch] moving foward, request to prefetch: ' + startingIndex + ' to ' + endingIndex);
+      // console.log('     [Prefetch] page num: ', this.pageNum);
+      // console.log('     [Prefetch] max page preloaded: ', this.maxPrefetchedWebtoonImage);
 
       if (startingIndex === this.totalPages) {
-        console.log('    [Prefetch] DENIED');
+        // console.log('    [Prefetch] DENIED');
         return;
       }
     } else {
       startingIndex = Math.max(this.minPrefetchedWebtoonImage - 1, 0) ;
       endingIndex = Math.max(this.minPrefetchedWebtoonImage - 1 - this.buffferPages, 0);
 
-      console.log('[Prefetch] moving backwards, request to prefetch: ' + startingIndex + ' to ' + endingIndex);
-      console.log('    [Prefetch] page num: ', this.pageNum);
-      console.log('    [Prefetch] min page preloaded: ', this.minPrefetchedWebtoonImage);
+      // console.log('[Prefetch] moving backwards, request to prefetch: ' + startingIndex + ' to ' + endingIndex);
+      // console.log('    [Prefetch] page num: ', this.pageNum);
+      // console.log('    [Prefetch] min page preloaded: ', this.minPrefetchedWebtoonImage);
 
       if (startingIndex <= 0) {
-        console.log('   [Prefetch] DENIED');
+        // console.log('   [Prefetch] DENIED');
         return;
       }
     }
@@ -255,15 +283,6 @@ export class InfiniteScrollerComponent implements OnInit, OnChanges, OnDestroy {
       this.prefetchWebtoonImage(i);
     }
 
-    // if (this.isScrollingForwards()) {
-    //   for(let i = startingIndex; i < endingIndex; i++) {
-    //     this.prefetchWebtoonImage(i);
-    //   }
-    // } else {
-    //   for(let i = endingIndex; i > startingIndex; i--) {
-    //     this.prefetchWebtoonImage(i);
-    //   }
-    // }
 
     
     console.log('    [Prefetch] min page preloaded: ', this.minPrefetchedWebtoonImage);

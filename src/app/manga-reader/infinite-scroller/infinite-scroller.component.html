@@ -1,28 +1,12 @@
-<!-- The infiniteScroll will handle virtual dom 
-        <div
-        infiniteScroll
-        [infiniteScrollDistance]="10"
-        [infiniteScrollUpDistance]="10"
-        [infiniteScrollThrottle]="50"
-        [alwaysCallback]="true"
-        (scrolled)="scrollDown()"
-        (scrolledUp)="scrollUp()">
-        <ng-container *ngFor="let item of webtoonImages | async; let index = index;">
-            <h2>Page {{item.page}} - Prefetched {{minPrefetchedWebtoonImage}}-{{maxPrefetchedWebtoonImage}}. Current Page: {{pageNum}}</h2>
-            <img src="{{item.src}}" rel="nofollow" alt="image" id="page-{{item.page}}" [attr.page]="item.page" ondragstart="return false;" onselectstart="return false;">
-        </ng-container>
-        
-    </div> -->
 
-    <!-- TODO: We can splice the data so that we only render pageNum +- 5 (aka 11 images at a time)-->
-    <ng-container *ngFor="let item of webtoonImages | async; let index = index;">
-        <h2>Page {{item.page}} - Prefetched {{minPrefetchedWebtoonImage}}-{{maxPrefetchedWebtoonImage}}. Current Page: {{pageNum}}. Width: {{webtoonImageWidth}}</h2>
-        <img src="{{item.src}}" rel="nofollow" alt="image" (load)="onImageLoad($event)" id="page-{{item.page}}" [attr.page]="item.page" ondragstart="return false;" onselectstart="return false;">
-    </ng-container>
+<div class="fixed-top overlay">
+    Is Scrolling: {{isScrollingForwards() ? 'Forwards' : 'Backwards'}} {{this.isScrolling}}
+    All Images Loaded: {{this.allImagesLoaded}}
+    Prefetched {{minPrefetchedWebtoonImage}}-{{maxPrefetchedWebtoonImage}}. Current Page: {{pageNum}}. Width: {{webtoonImageWidth}}
+</div>
 
-    <!-- Circular Array implementation -->
-    <!-- <img src="{{images.prev().src}}" [width]="webtoonImageWidth" rel="nofollow" alt="image" id="page-{{images.prev().id}}" ondragstart="return false;" onselectstart="return false;">
-    <img src="{{images.peek().src}}" [width]="webtoonImageWidth"  rel="nofollow" alt="image" id="page-{{images.peek().id}}"  ondragstart="return false;" onselectstart="return false;">
-    <img src="{{images.next().src}}" [width]="webtoonImageWidth" rel="nofollow" alt="image" id="page-{{images.next().id}}"  ondragstart="return false;" onselectstart="return false;"> -->
-
-    
+<!-- TODO: We can splice the data so that we only render pageNum +- 5 (aka 11 images at a time)-->
+<ng-container *ngFor="let item of webtoonImages | async; let index = index;">
+    <h2>Page {{item.page}}</h2>
+    <img src="{{item.src}}" class="{{pageNum === item.page ? 'active': ''}}" rel="nofollow" alt="image" (load)="onImageLoad($event)" id="page-{{item.page}}" [attr.page]="item.page" ondragstart="return false;" onselectstart="return false;">
+</ng-container>
