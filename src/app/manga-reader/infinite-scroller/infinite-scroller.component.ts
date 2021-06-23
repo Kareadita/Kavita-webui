@@ -163,14 +163,15 @@ export class InfiniteScrollerComponent implements OnInit, OnChanges, OnDestroy {
         const imagePage = parseInt(entry.target.attributes.getNamedItem('page')?.value + '', 10);
         console.log('[Intersection] ! Page ' + imagePage + ' just entered screen');
         
-        // The problem here is that if we jump really quick, we get out of sync and these conditions don't apply
+        // The problem here is that if we jump really quick, we get out of sync and these conditions don't apply, hence the forcing of page number
         if (this.pageNum + 1 === imagePage && this.isScrollingForwards()) {
           this.setPageNum(this.pageNum + 1);
         } else if (this.pageNum - 1 === imagePage && !this.isScrollingForwards()) {
           this.setPageNum(this.pageNum - 1);
         } else if ((imagePage >= this.pageNum + 2 && this.isScrollingForwards()) 
                   || (imagePage <= this.pageNum - 2 && !this.isScrollingForwards())) {
-          //console.log('[Intersection] Scroll position got out of sync due to quick scrolling. Forcing page update');
+          console.log('[Intersection] Scroll position got out of sync due to quick scrolling. Forcing page update');
+          this.setPageNum(imagePage);
         } else {
           return;
         }
@@ -187,7 +188,6 @@ export class InfiniteScrollerComponent implements OnInit, OnChanges, OnDestroy {
   isScrollingForwards() {
     return this.scrollingDirection === PAGING_DIRECTION.FORWARD;
   }
-
 
   scrollToCurrentPage() {
     setTimeout(() => {
@@ -234,34 +234,21 @@ export class InfiniteScrollerComponent implements OnInit, OnChanges, OnDestroy {
     }, 10);
   }
 
-  // If I scroll too fast, we don't prefetch enough
   prefetchWebtoonImages() {
-    // ! Bug: This doesn't properly ensure we load pages around us. Some pages might be skipped
-
     let startingIndex = 0;
     let endingIndex = 0;
     if (this.isScrollingForwards()) {
       startingIndex = Math.min(this.maxPrefetchedWebtoonImage + 1, this.totalPages);
       endingIndex = Math.min(this.maxPrefetchedWebtoonImage + 1 + this.buffferPages, this.totalPages); 
 
-      // console.log('[Prefetch] request to prefetch: ' + startingIndex + ' to ' + endingIndex);
-      // console.log('     [Prefetch] page num: ', this.pageNum);
-      // console.log('     [Prefetch] max page preloaded: ', this.maxPrefetchedWebtoonImage);
-
       if (startingIndex === this.totalPages) {
-        // console.log('    [Prefetch] DENIED');
         return;
       }
     } else {
       startingIndex = Math.max(this.minPrefetchedWebtoonImage - 1, 0) ;
       endingIndex = Math.max(this.minPrefetchedWebtoonImage - 1 - this.buffferPages, 0);
 
-      // console.log('[Prefetch] moving backwards, request to prefetch: ' + startingIndex + ' to ' + endingIndex);
-      // console.log('    [Prefetch] page num: ', this.pageNum);
-      // console.log('    [Prefetch] min page preloaded: ', this.minPrefetchedWebtoonImage);
-
       if (startingIndex <= 0) {
-        // console.log('   [Prefetch] DENIED');
         return;
       }
     }
