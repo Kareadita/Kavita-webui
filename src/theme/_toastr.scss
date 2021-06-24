@@ -103,7 +103,7 @@
     background-position: 15px center;
     background-repeat: no-repeat;
     background-size: 24px;
-    box-shadow: 0 0 12px #999999;
+    //box-shadow: 0 0 12px #999999;
     color: #FFFFFF;
   }
   .toast-container .ngx-toastr:hover {
@@ -144,7 +144,7 @@
     pointer-events: auto;
   }
   .toast-success {
-    background-color: #51A351;
+    background-color: $primary-color; //#51A351;
   }
   .toast-error {
     background-color: #BD362F;
