@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, Renderer2, SimpleChanges } from '@angular/core';
+import { Component, ContentChild, ElementRef, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, Renderer2, SimpleChanges } from '@angular/core';
 import { BehaviorSubject, fromEvent, Subject } from 'rxjs';
 import { debounceTime, takeUntil } from 'rxjs/operators';
 import { ReaderService } from 'src/app/_services/reader.service';
@@ -70,13 +70,16 @@ export class InfiniteScrollerComponent implements OnInit, OnChanges, OnDestroy {
    */
   allImagesLoaded: boolean = false;
 
+  /**
+   * Debug mode. Will show extra information
+   */
+  debug: boolean = false;
+
   private readonly onDestroy = new Subject<void>();
 
   constructor(private readerService: ReaderService, private renderer: Renderer2) { }
 
   ngOnChanges(changes: SimpleChanges): void {
-     // ! BUG: This gets called multiple times and makes first load unstable?
-    console.log('changes: ', changes);
     if (changes.hasOwnProperty('pageNum') && changes['pageNum'].previousValue != changes['pageNum'].currentValue) {
       // Manually update pageNum as we are getting notified from a parent component, hence we shouldn't invoke update
       this.setPageNum(changes['pageNum'].currentValue);
@@ -104,12 +107,7 @@ export class InfiniteScrollerComponent implements OnInit, OnChanges, OnDestroy {
         || document.body.scrollTop || 0);
       
         if (this.prevScrollPosition === verticalOffset) {
-          console.log('Scroll To is done');
           this.isScrolling = false;
-        }
-        if (this.isScrolling) {
-          console.log('prevScroll: ', this.prevScrollPosition);
-          console.log('offset: ', verticalOffset);
         }
       
       if (verticalOffset > this.prevScrollPosition) {
@@ -134,7 +132,7 @@ export class InfiniteScrollerComponent implements OnInit, OnChanges, OnDestroy {
 
     const prefetchStart = Math.max(this.pageNum - this.buffferPages, 0);
     const prefetchMax =  Math.min(this.pageNum + this.buffferPages, this.totalPages); 
-    console.log('[INIT] Prefetching pages ' + prefetchStart + ' to ' + prefetchMax + '. Current page: ', this.pageNum);
+    //console.log('[INIT] Prefetching pages ' + prefetchStart + ' to ' + prefetchMax + '. Current page: ', this.pageNum);
     for(let i = prefetchStart; i < prefetchMax; i++) {
       this.prefetchWebtoonImage(i);
     }
@@ -150,9 +148,9 @@ export class InfiniteScrollerComponent implements OnInit, OnChanges, OnDestroy {
    */
   onImageLoad(event: any) {
     const imagePage = this.readerService.imageUrlToPageNum(event.target.src);
-    console.log('Image loaded: ', imagePage);
+    //console.log('Image loaded: ', imagePage);
 
-    console.log(event.target.width);
+
     if (event.target.width < this.webtoonImageWidth) {
       this.webtoonImageWidth = event.target.width;
     }
@@ -160,7 +158,7 @@ export class InfiniteScrollerComponent implements OnInit, OnChanges, OnDestroy {
     this.renderer.setAttribute(event.target, 'width', this.webtoonImageWidth + '');
 
     if (imagePage === this.pageNum) {
-      console.log('! Loaded current page !');
+      //console.log('! Loaded current page !');
       Promise.all(Array.from(document.querySelectorAll('img'))
         .filter((img: any) => !img.complete)
         .map((img: any) => new Promise(resolve => { img.onload = img.onerror = resolve; })))
@@ -175,14 +173,14 @@ export class InfiniteScrollerComponent implements OnInit, OnChanges, OnDestroy {
   handleIntersection(entries: IntersectionObserverEntry[]) {
 
     if (!this.allImagesLoaded || this.isScrolling) {
-      console.log('Images are not loaded (or performing scrolling action), skipping any scroll calculations');
+      //console.log('Images are not loaded (or performing scrolling action), skipping any scroll calculations');
       return;
     }
 
     entries.forEach(entry => {
       if (entry.isIntersecting) {
         const imagePage = parseInt(entry.target.attributes.getNamedItem('page')?.value + '', 10);
-        console.log('[Intersection] ! Page ' + imagePage + ' just entered screen');
+        //console.log('[Intersection] ! Page ' + imagePage + ' just entered screen');
         
         // The problem here is that if we jump really quick, we get out of sync and these conditions don't apply, hence the forcing of page number
         if (this.pageNum + 1 === imagePage && this.isScrollingForwards()) {
@@ -191,7 +189,7 @@ export class InfiniteScrollerComponent implements OnInit, OnChanges, OnDestroy {
           this.setPageNum(this.pageNum - 1);
         } else if ((imagePage >= this.pageNum + 2 && this.isScrollingForwards()) 
                   || (imagePage <= this.pageNum - 2 && !this.isScrollingForwards())) {
-          console.log('[Intersection] Scroll position got out of sync due to quick scrolling. Forcing page update');
+          //console.log('[Intersection] Scroll position got out of sync due to quick scrolling. Forcing page update');
           this.setPageNum(imagePage);
         } else {
           return;
@@ -214,7 +212,6 @@ export class InfiniteScrollerComponent implements OnInit, OnChanges, OnDestroy {
     setTimeout(() => {
       const elem = document.querySelector('img#page-' + this.pageNum);
       if (elem) {
-        //console.log('[Scroll] Scrolling to Page: ', this.pageNum);
         // Update prevScrollPosition, so the next scroll event properly calculates direction
         this.prevScrollPosition = elem.getBoundingClientRect().top;
         this.isScrolling = true;
@@ -280,16 +277,16 @@ export class InfiniteScrollerComponent implements OnInit, OnChanges, OnDestroy {
       startingIndex = endingIndex;
       endingIndex = temp;
     }
-    console.log('[Prefetch] prefetching pages: ' + startingIndex + ' to ' + endingIndex);
-    console.log('     [Prefetch] page num: ', this.pageNum);
+    // console.log('[Prefetch] prefetching pages: ' + startingIndex + ' to ' + endingIndex);
+    // console.log('     [Prefetch] page num: ', this.pageNum);
     // If a request comes in to prefetch over current page +/- bufferPages (+ 1 due to requesting from next/prev page), then deny it
-    console.log('     [Prefetch] Caps: ' + (this.pageNum - (this.buffferPages + 1)) + ' - ' + (this.pageNum + (this.buffferPages + 1)));
+    // console.log('     [Prefetch] Caps: ' + (this.pageNum - (this.buffferPages + 1)) + ' - ' + (this.pageNum + (this.buffferPages + 1)));
     if (this.isScrollingForwards() && startingIndex > this.pageNum + (this.buffferPages + 1)) {
-      console.log('[Prefetch] A request that is too far outside buffer range has been declined', this.pageNum);
+      // console.log('[Prefetch] A request that is too far outside buffer range has been declined', this.pageNum);
       return;
     }
     if (!this.isScrollingForwards() && endingIndex < (this.pageNum - (this.buffferPages + 1))) {
-      console.log('[Prefetch] A request that is too far outside buffer range has been declined', this.pageNum);
+      // console.log('[Prefetch] A request that is too far outside buffer range has been declined', this.pageNum);
       return;
     }
     for(let i = startingIndex; i < endingIndex; i++) {
@@ -302,11 +299,6 @@ export class InfiniteScrollerComponent implements OnInit, OnChanges, OnDestroy {
       .then(() => {
         this.allImagesLoaded = true;
     });
-
-
-    
-    console.log('    [Prefetch] min page preloaded: ', this.minPrefetchedWebtoonImage);
-    console.log('    [Prefetch] max page preloaded: ', this.maxPrefetchedWebtoonImage);
   }
 
 }

@@ -1,14 +1,12 @@
 
-<div class="fixed-top overlay">
+<div class="fixed-top overlay" *ngIf="debug">
     Is Scrolling: {{isScrollingForwards() ? 'Forwards' : 'Backwards'}} {{this.isScrolling}}
     All Images Loaded: {{this.allImagesLoaded}}
     Prefetched {{minPrefetchedWebtoonImage}}-{{maxPrefetchedWebtoonImage}}. Current Page: {{pageNum}}. Width: {{webtoonImageWidth}}
 </div>
 
-<!-- TODO: We can splice the data so that we only render pageNum +- 5 (aka 11 images at a time)-->
-<div class="{{allImagesLoaded ? '' : ''}}">
+<div class="">
     <ng-container *ngFor="let item of webtoonImages | async; let index = index;">
-        <h2>Page {{item.page}}</h2>
-        <img src="{{item.src}}" class="{{pageNum === item.page ? 'active': ''}}" rel="nofollow" alt="image" (load)="onImageLoad($event)" id="page-{{item.page}}" [attr.page]="item.page" ondragstart="return false;" onselectstart="return false;">
+        <img src="{{item.src}}" style="display: block" class="mx-auto {{pageNum === item.page && debug ? 'active': ''}}" rel="nofollow" alt="image" (load)="onImageLoad($event)" id="page-{{item.page}}" [attr.page]="item.page" ondragstart="return false;" onselectstart="return false;">
     </ng-container>
 </div>
