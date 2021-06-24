@@ -88,7 +88,6 @@ export class InfiniteScrollerComponent implements OnInit, OnChanges, OnDestroy {
 
     if (changes.hasOwnProperty('totalPages') && changes['totalPages'].previousValue != changes['totalPages'].currentValue) {
       this.totalPages = changes['totalPages'].currentValue;
-      //this.initWebtoonReader();
       shouldInit = true;
     }
     if (changes.hasOwnProperty('pageNum') && changes['pageNum'].previousValue != changes['pageNum'].currentValue) {
@@ -199,7 +198,6 @@ export class InfiniteScrollerComponent implements OnInit, OnChanges, OnDestroy {
       const imagePage = parseInt(entry.target.attributes.getNamedItem('page')?.value + '', 10);
       this.debugLog('[Intersection] Page ' + imagePage + ' is visible: ', entry.isIntersecting);
       if (entry.isIntersecting) {
-        //const imagePage = parseInt(entry.target.attributes.getNamedItem('page')?.value + '', 10);
         this.debugLog('[Intersection] ! Page ' + imagePage + ' just entered screen');
         
         // The problem here is that if we jump really quick, we get out of sync and these conditions don't apply, hence the forcing of page number
