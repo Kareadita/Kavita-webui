@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, Renderer2, SimpleChanges } from '@angular/core';
 import { BehaviorSubject, fromEvent, Subject } from 'rxjs';
 import { debounceTime, takeUntil, take } from 'rxjs/operators';
 import { CircularArray } from 'src/app/shared/data-structures/circular-array';
@@ -57,10 +57,10 @@ export class InfiniteScrollerComponent implements OnInit, OnChanges, OnDestroy {
 
   private readonly onDestroy = new Subject<void>();
 
-  constructor(private readerService: ReaderService) { }
+  constructor(private readerService: ReaderService, private renderer: Renderer2) { }
 
   ngOnChanges(changes: SimpleChanges): void {
-     // ! BUG: This gets called multiple times and makes first load unstable
+     // ! BUG: This gets called multiple times and makes first load unstable?
     console.log('changes: ', changes);
     if (changes.hasOwnProperty('pageNum') && changes['pageNum'].previousValue != changes['pageNum'].currentValue) {
       // Manually update pageNum as we are getting notified from a parent component, hence we shouldn't invoke update
@@ -72,7 +72,6 @@ export class InfiniteScrollerComponent implements OnInit, OnChanges, OnDestroy {
 
     }
     if (changes.hasOwnProperty('totalPages') && changes['totalPages'].previousValue != changes['totalPages'].currentValue) {
-      // ! This needs work. On first load, totalpages needs time to be set for prefetching to work.
       this.totalPages = changes['totalPages'].currentValue;
       this.initWebtoonReader();
     }
@@ -137,6 +136,13 @@ export class InfiniteScrollerComponent implements OnInit, OnChanges, OnDestroy {
   onImageLoad(event: any) {
     const imagePage = this.readerService.imageUrlToPageNum(event.target.src);
     console.log('Image loaded: ', imagePage);
+
+    console.log(event.target.width);
+    if (event.target.width < this.webtoonImageWidth) {
+      this.webtoonImageWidth = event.target.width;
+    }
+
+    this.renderer.setAttribute(event.target, 'width', this.webtoonImageWidth + '');
 
     if (imagePage === this.pageNum) {
       console.log('! Loaded current page !');
