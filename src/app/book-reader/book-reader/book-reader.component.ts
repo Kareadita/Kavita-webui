@@ -340,7 +340,6 @@ export class BookReaderComponent implements OnInit, AfterViewInit, OnDestroy {
             this.allowScrollPartBookmark = true;
           }, SCROLL_PART_TIMEOUT);
         }
-        return;
     }
   }
 
@@ -773,16 +772,15 @@ export class BookReaderComponent implements OnInit, AfterViewInit, OnDestroy {
 
   getXPathTo(element: any): string {
     if (element === null) return '';
-    if (element.id!=='') { return 'id("' + element.id + '")'; }
+    if (element.id !== '') { return 'id("' + element.id + '")'; }
     if (element === document.body) { return element.tagName; }
           
   
-    let ix= 0;
+    let ix = 0;
     const siblings = element.parentNode?.childNodes || [];
-    for (var i= 0; i< siblings.length; i++) {
-        var sibling = siblings[i];
+    for (let sibling of siblings) {
         if (sibling === element) {
-          return this.getXPathTo(element.parentNode)+'/'+element.tagName+'['+(ix+1)+']';
+          return this.getXPathTo(element.parentNode) + '/' + element.tagName + '[' + (ix + 1) + ']';
         }
         if (sibling.nodeType === 1 && sibling.tagName === element.tagName) {
           ix++;
