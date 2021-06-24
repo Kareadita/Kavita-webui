@@ -1,8 +1,6 @@
 import { Component, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, Renderer2, SimpleChanges } from '@angular/core';
 import { BehaviorSubject, fromEvent, Subject } from 'rxjs';
-import { debounceTime, takeUntil, take } from 'rxjs/operators';
-import { CircularArray } from 'src/app/shared/data-structures/circular-array';
-import { READER_MODE } from 'src/app/_models/preferences/reader-mode';
+import { debounceTime, takeUntil } from 'rxjs/operators';
 import { ReaderService } from 'src/app/_services/reader.service';
 import { PAGING_DIRECTION } from '../_models/reader-enums';
 import { WebtoonImage } from '../_models/webtoon-image';
@@ -36,23 +34,40 @@ export class InfiniteScrollerComponent implements OnInit, OnChanges, OnDestroy {
    * Stores and emits all the src urls
    */
   webtoonImages: BehaviorSubject<WebtoonImage[]> = new BehaviorSubject<WebtoonImage[]>([]);
-  
-  images: CircularArray<HTMLImageElement> = new CircularArray<HTMLImageElement>([], 0);
 
+  /**
+   * Responsible for calculating current page on screen and uses hooks to trigger prefetching
+   */
   intersectionObserver: IntersectionObserver = new IntersectionObserver((entries) => this.handleIntersection(entries), { threshold: [0.25] });
+  /**
+   * Direction we are scrolling. Controls calculations for prefetching
+   */
   scrollingDirection: PAGING_DIRECTION = PAGING_DIRECTION.FORWARD;
+  /**
+   * Temp variable to keep track of scrolling position between scrolls to caclulate direction
+   */
   prevScrollPosition: number = 0;
 
-  
+  /**
+   * The min page number that has been prefetched
+   */
   minPrefetchedWebtoonImage: number = Number.MAX_SAFE_INTEGER;
+  /**
+   * The max page number that has been prefetched
+   */
   maxPrefetchedWebtoonImage: number = Number.MIN_SAFE_INTEGER;
+  /**
+   * The minimum width of images in webtoon. On image loading, this is checked and updated. All images will get this assigned to them for rendering.
+   */
   webtoonImageWidth: number = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
 
   /**
    * Used to tell if a scrollTo() operation is in progress
    */
   isScrolling: boolean = false;
-
+  /**
+   * Whether all prefetched images have loaded on the screen (not neccesarily in viewport)
+   */
   allImagesLoaded: boolean = false;
 
   private readonly onDestroy = new Subject<void>();
