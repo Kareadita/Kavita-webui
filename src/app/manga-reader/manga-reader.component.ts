@@ -239,7 +239,6 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
       } else {
         // If no user, we can't render 
         this.router.navigateByUrl('/home');
-        return;
       }
     });
 
@@ -345,7 +344,7 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
 
   render() {
     if (this.readerMode === READER_MODE.WEBTOON) {
-      //this.initWebtoonReader();
+      this.isLoading = false;
     } else {
       this.loadPage();
     }

@@ -1,4 +1,4 @@
-import { Component, ContentChild, ElementRef, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, Renderer2, SimpleChanges } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, Renderer2, SimpleChanges } from '@angular/core';
 import { BehaviorSubject, fromEvent, Subject } from 'rxjs';
 import { debounceTime, takeUntil } from 'rxjs/operators';
 import { ReaderService } from 'src/app/_services/reader.service';
@@ -73,13 +73,14 @@ export class InfiniteScrollerComponent implements OnInit, OnChanges, OnDestroy {
   /**
    * Debug mode. Will show extra information
    */
-  debug: boolean = false;
+  debug: boolean = true;
 
   private readonly onDestroy = new Subject<void>();
 
   constructor(private readerService: ReaderService, private renderer: Renderer2) { }
 
   ngOnChanges(changes: SimpleChanges): void {
+    // ! TODO: This is being called multiple times if first load and webtoon reader is active. Other cases, this code works fine.
     if (changes.hasOwnProperty('pageNum') && changes['pageNum'].previousValue != changes['pageNum'].currentValue) {
       // Manually update pageNum as we are getting notified from a parent component, hence we shouldn't invoke update
       this.setPageNum(changes['pageNum'].currentValue);

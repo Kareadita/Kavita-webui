@@ -124,7 +124,7 @@ export class UserPreferencesComponent implements OnInit, OnDestroy {
       scalingOption: parseInt(modelSettings.scalingOption, 10), 
       pageSplitOption: parseInt(modelSettings.pageSplitOption, 10), 
       autoCloseMenu: modelSettings.autoCloseMenu, 
-      readerMode: modelSettings.readerMode, 
+      readerMode: parseInt(modelSettings.readerMode), 
       bookReaderDarkMode: modelSettings.bookReaderDarkMode,
       bookReaderFontFamily: modelSettings.bookReaderFontFamily,
       bookReaderLineSpacing: modelSettings.bookReaderLineSpacing,
