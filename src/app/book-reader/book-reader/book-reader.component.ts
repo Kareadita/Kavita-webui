@@ -342,26 +342,7 @@ export class BookReaderComponent implements OnInit, AfterViewInit, OnDestroy {
         }
         return;
     }
-    // entries.forEach(entry => {
-    //   if (entry.isIntersecting) {
-    //     let path = this.getXPathTo(entry.target);
-    //     if (path === '') { return; }
-    //     if (!path.startsWith('id')) {
-    //       path = '//html[1]/' + path;
-    //     }
-
-    //     if (this.allowScrollPartBookmark) {
-    //       this.readerService.bookmark(this.seriesId, this.volumeId, this.chapterId, this.pageNum, path).subscribe(() => {/* No operation */});
-    //       this.allowScrollPartBookmark = false;
-    //       setTimeout(() => {
-    //         this.allowScrollPartBookmark = true;
-    //       }, SCROLL_PART_TIMEOUT);
-    //     }
-    //   }
-    // });
   }
-
-
 
   loadChapter(pageNum: number, part: string) {
     this.setPageNum(pageNum);
