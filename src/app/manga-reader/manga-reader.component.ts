@@ -718,7 +718,6 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
       this.readingDirection = ReadingDirection.LeftToRight;
     }
 
-    // TODO: Apply an overlay for a fixed amount of time showing click areas
     if (this.menuOpen) {
       this.showClickOverlay = true;
       setTimeout(() => {

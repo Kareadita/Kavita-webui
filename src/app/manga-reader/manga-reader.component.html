@@ -24,10 +24,10 @@
         <canvas #content class="{{getFittingOptionClass()}} {{this.colorMode}} {{readerMode === READER_MODE.MANGA_LR || readerMode === READER_MODE.MANGA_UD ? '' : 'd-none'}}" 
                 ondragstart="return false;" onselectstart="return false;">
         </canvas>
-        <div class="webtoon-images" *ngIf="readerMode === READER_MODE.WEBTOON">
+        <div class="webtoon-images" *ngIf="readerMode === READER_MODE.WEBTOON && !isLoading">
             <app-infinite-scroller [pageNum]="pageNum" [buffferPages]="5" (pageNumberChange)="handleWebtoonPageChange($event)" [totalPages]="maxPages" [urlProvider]="getPageUrl"></app-infinite-scroller>
         </div>
-        <ng-container *ngIf="readerMode === READER_MODE.MANGA_LR || readerMode === READER_MODE.MANGA_UD"> <!--; else webtoonClickArea;-->
+        <ng-container *ngIf="readerMode === READER_MODE.MANGA_LR || readerMode === READER_MODE.MANGA_UD"> <!--; else webtoonClickArea; TODO: See if people want this mode WEBTOON_WITH_CLICKS-->
             <div class="{{readerMode === READER_MODE.MANGA_LR ? 'right' : 'top'}} {{clickOverlayClass('right')}}" (click)="handlePageChange($event, 'right')"></div>
             <div class="{{readerMode === READER_MODE.MANGA_LR ? 'left' : 'bottom'}} {{clickOverlayClass('left')}}" (click)="handlePageChange($event, 'left')"></div>
         </ng-container>
@@ -68,7 +68,7 @@
                 </button>
             </div>
             <div class="col">
-                <button class="btn btn-icon {{this.colorMode}}" title="Color Options: {{colorOptionName}}" (click)="toggleColorMode();resetMenuCloseTimer();">
+                <button class="btn btn-icon {{this.colorMode}}" [disabled]="readerMode === READER_MODE.WEBTOON" title="Color Options: {{colorOptionName}}" (click)="toggleColorMode();resetMenuCloseTimer();">
                     <i class="fa fa-palette" aria-hidden="true"></i>
                     <span class="sr-only"></span>
                 </button>
@@ -100,7 +100,7 @@
                     </div>
                 </div>
 
-                <div class="row" *ngIf="generalSettingsForm">
+                <div class="row">
                     <div class="col-6">
                         <label for="page-fitting">Image Scaling</label>&nbsp;<i class="fa {{getFittingIcon()}}" aria-hidden="true"></i>
                     </div>
@@ -113,7 +113,7 @@
                     </div>
                 </div>
 
-                <div class="row mt-2 mb-2" *ngIf="generalSettingsForm">
+                <div class="row mt-2 mb-2">
                     <div class="col-6">
                         <label for="autoCloseMenu" class="form-check-label">Auto Close Menu</label>
                     </div>

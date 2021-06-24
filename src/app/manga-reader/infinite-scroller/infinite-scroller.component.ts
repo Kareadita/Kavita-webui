@@ -38,7 +38,7 @@ export class InfiniteScrollerComponent implements OnInit, OnChanges, OnDestroy {
   /**
    * Responsible for calculating current page on screen and uses hooks to trigger prefetching
    */
-  intersectionObserver: IntersectionObserver = new IntersectionObserver((entries) => this.handleIntersection(entries), { threshold: [0.25] });
+  intersectionObserver: IntersectionObserver = new IntersectionObserver((entries) => this.handleIntersection(entries), { threshold: [0.1, 0.25, 0.5, 0.75] });
   /**
    * Direction we are scrolling. Controls calculations for prefetching
    */
@@ -73,30 +73,40 @@ export class InfiniteScrollerComponent implements OnInit, OnChanges, OnDestroy {
   /**
    * Debug mode. Will show extra information
    */
-  debug: boolean = true;
+  debug: boolean = false;
 
   private readonly onDestroy = new Subject<void>();
 
   constructor(private readerService: ReaderService, private renderer: Renderer2) { }
 
   ngOnChanges(changes: SimpleChanges): void {
-    // ! TODO: This is being called multiple times if first load and webtoon reader is active. Other cases, this code works fine.
+    let shouldInit = false;
+    if (changes.hasOwnProperty('totalPages') && changes['totalPages'].currentValue === 0) {
+      this.debugLog('Swallowing variable change due to totalPages being 0');
+      return;
+    }
+
+    if (changes.hasOwnProperty('totalPages') && changes['totalPages'].previousValue != changes['totalPages'].currentValue) {
+      this.totalPages = changes['totalPages'].currentValue;
+      //this.initWebtoonReader();
+      shouldInit = true;
+    }
     if (changes.hasOwnProperty('pageNum') && changes['pageNum'].previousValue != changes['pageNum'].currentValue) {
       // Manually update pageNum as we are getting notified from a parent component, hence we shouldn't invoke update
       this.setPageNum(changes['pageNum'].currentValue);
       if (Math.abs(changes['pageNum'].currentValue - changes['pageNum'].previousValue) > 2) {
         // Go to page has occured
-        this.initWebtoonReader();
+        shouldInit = true;
       }
-
     }
-    if (changes.hasOwnProperty('totalPages') && changes['totalPages'].previousValue != changes['totalPages'].currentValue) {
-      this.totalPages = changes['totalPages'].currentValue;
+
+    if (shouldInit) {
       this.initWebtoonReader();
     }
   }
 
   ngOnDestroy(): void {
+    this.intersectionObserver.disconnect();
     this.onDestroy.next();
     this.onDestroy.complete();
   }
@@ -106,9 +116,15 @@ export class InfiniteScrollerComponent implements OnInit, OnChanges, OnDestroy {
       const verticalOffset = (window.pageYOffset 
         || document.documentElement.scrollTop 
         || document.body.scrollTop || 0);
+
+        if (this.debug && this.isScrolling) {
+          this.debugLog('prevScrollPosition: ', this.prevScrollPosition)
+          this.debugLog('verticalOffset: ', verticalOffset)
+        }
+        
       
         // We need an adition check for if we are at the top of the page as offsets wont match
-        if (this.prevScrollPosition === verticalOffset || this.pageNum === 0) {
+        if (Math.floor(this.prevScrollPosition) === Math.floor(verticalOffset) || this.pageNum === 0) {
           this.isScrolling = false;
         }
       
@@ -122,14 +138,11 @@ export class InfiniteScrollerComponent implements OnInit, OnChanges, OnDestroy {
   }
 
 
-
   initWebtoonReader() {
 
     this.minPrefetchedWebtoonImage = this.pageNum;
     this.maxPrefetchedWebtoonImage = Number.MIN_SAFE_INTEGER;
     this.webtoonImages.next([]);
-    // Disconnect all the observers until we re-render everything
-    this.intersectionObserver.disconnect();
 
 
     const prefetchStart = Math.max(this.pageNum - this.buffferPages, 0);
@@ -158,13 +171,16 @@ export class InfiniteScrollerComponent implements OnInit, OnChanges, OnDestroy {
     }
 
     this.renderer.setAttribute(event.target, 'width', this.webtoonImageWidth + '');
+    this.renderer.setAttribute(event.target, 'height', event.target.height + '');
+
+    this.attachIntersectionObserverElem(event.target);
 
     if (imagePage === this.pageNum) {
-      this.debugLog('! Loaded current page !');
       Promise.all(Array.from(document.querySelectorAll('img'))
         .filter((img: any) => !img.complete)
         .map((img: any) => new Promise(resolve => { img.onload = img.onerror = resolve; })))
         .then(() => {
+          this.debugLog('! Loaded current page !');
           this.allImagesLoaded = true;
           this.scrollToCurrentPage();
       });
@@ -180,8 +196,10 @@ export class InfiniteScrollerComponent implements OnInit, OnChanges, OnDestroy {
     }
 
     entries.forEach(entry => {
+      const imagePage = parseInt(entry.target.attributes.getNamedItem('page')?.value + '', 10);
+      this.debugLog('[Intersection] Page ' + imagePage + ' is visible: ', entry.isIntersecting);
       if (entry.isIntersecting) {
-        const imagePage = parseInt(entry.target.attributes.getNamedItem('page')?.value + '', 10);
+        //const imagePage = parseInt(entry.target.attributes.getNamedItem('page')?.value + '', 10);
         this.debugLog('[Intersection] ! Page ' + imagePage + ' just entered screen');
         
         // The problem here is that if we jump really quick, we get out of sync and these conditions don't apply, hence the forcing of page number
@@ -242,16 +260,15 @@ export class InfiniteScrollerComponent implements OnInit, OnChanges, OnDestroy {
     this.allImagesLoaded = false;
 
     this.webtoonImages.next(data);
-    this.attachIntersectionObserver(page);
   }
 
-  attachIntersectionObserver(page: number) {
-    setTimeout(() => {
-      const image = document.querySelector('img#page-' + page);
-      if (image !== null) {
-        this.intersectionObserver.observe(image);
-      }
-    }, 10);
+  attachIntersectionObserverElem(elem: HTMLImageElement) {
+    if (elem !== null) {
+      this.intersectionObserver.observe(elem);
+      this.debugLog('Attached Intersection Observer to page', this.readerService.imageUrlToPageNum(elem.src));
+    } else {
+      console.error('Could not attach observer on elem');
+    }
   }
 
   prefetchWebtoonImages() {
@@ -305,11 +322,11 @@ export class InfiniteScrollerComponent implements OnInit, OnChanges, OnDestroy {
 
   debugLog(message: string, extraData?: any) {
     if (!this.debug) { return; }
+
     if (extraData) {
       console.log(message, extraData);  
     } else {
       console.log(message);
     }
   }
-
 }
