@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, HostListener, OnDestroy, OnInit, Renderer2, SimpleChanges, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, HostListener, OnDestroy, OnInit, SimpleChanges, ViewChild } from '@angular/core';
 import { Location } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { take, takeUntil } from 'rxjs/operators';
@@ -181,8 +181,8 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
 
   constructor(private route: ActivatedRoute, private router: Router, private accountService: AccountService,
               public readerService: ReaderService, private location: Location,
-              private formBuilder: FormBuilder, private navService: NavService, private toastr: ToastrService,
-              private memberService: MemberService, private renderer: Renderer2) {
+              private formBuilder: FormBuilder, private navService: NavService, 
+              private toastr: ToastrService, private memberService: MemberService) {
                 this.navService.hideNavBar();
   }
 
