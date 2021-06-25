@@ -53,12 +53,12 @@ export class LibraryComponent implements OnInit {
   }
 
   reloadSeries() {
-    this.seriesService.getRecentlyAdded(0, 0, 20).subscribe(series => {
-      this.recentlyAdded = series.result;
+    this.seriesService.getRecentlyAdded(0, 0, 20).subscribe(updatedSeries => {
+      this.recentlyAdded = updatedSeries.result;
     });
 
-    this.seriesService.getInProgress().subscribe((series) => {
-      this.inProgress = series;
+    this.seriesService.getInProgress().subscribe((updatedSeries) => {
+      this.inProgress = updatedSeries;
     });
 
     this.reloadTags();
@@ -73,8 +73,8 @@ export class LibraryComponent implements OnInit {
       return;
     }
 
-    this.seriesService.getInProgress().subscribe((series) => {
-      this.inProgress = series;
+    this.seriesService.getInProgress().subscribe((updatedSeries) => {
+      this.inProgress = updatedSeries;
     });
     
     this.reloadTags();
