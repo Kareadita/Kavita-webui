@@ -32,6 +32,8 @@ export class LibraryComponent implements OnInit {
   collectionTags: CollectionTag[] = [];
   collectionTagActions: ActionItem<CollectionTag>[] = [];
 
+  seriesTrackBy = (index: number, item: any) => `${item.name}_${item.pagesRead}`;
+
   constructor(public accountService: AccountService, private libraryService: LibraryService, private seriesService: SeriesService, private actionFactoryService: ActionFactoryService, private collectionService: CollectionTagService, private router: Router, private modalService: NgbModal) { }
 
   ngOnInit(): void {
@@ -59,6 +61,22 @@ export class LibraryComponent implements OnInit {
       this.inProgress = series;
     });
 
+    this.reloadTags();
+  }
+
+  reloadInProgress(series: Series | boolean) {
+    if (series === true || series === false) {
+      if (!series) {return;}
+    }
+
+    if ((series as Series).pagesRead !== (series as Series).pages && (series as Series).pagesRead !== 0) {
+      return;
+    }
+
+    this.seriesService.getInProgress().subscribe((series) => {
+      this.inProgress = series;
+    });
+    
     this.reloadTags();
   }
 
