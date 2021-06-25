@@ -11,7 +11,7 @@
 
     &::before {
         content: "";
-        background-image: url('../../assets/images/alfons-morales-YLSwjSy7stw-unsplash-min.jpg');
+        background-image: url('../../assets/images/login-bg.jpg');
         background-size: cover;
         position: absolute;
         top: 0;
@@ -61,7 +61,7 @@
 
         .alt:focus {
             background-color: #343c59;
-            box-shadow: 0 0 0 0.2rem rgb(68 79 117 / 50%)
+            box-shadow: 0 0 0 0.2rem rgb(68 79 117 / 50%);
         }
     }
 }
