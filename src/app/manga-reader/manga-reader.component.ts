@@ -652,7 +652,7 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
   renderPage() {
     if (this.ctx && this.canvas) {
       this.canvasImage.onload = null;
-      this.ctx.imageSmoothingEnabled = true;
+      //this.ctx.imageSmoothingEnabled = true;
       this.canvas.nativeElement.width = this.canvasImage.width;
       this.canvas.nativeElement.height = this.canvasImage.height;
       const needsSplitting = this.canvasImage.width > this.canvasImage.height;
