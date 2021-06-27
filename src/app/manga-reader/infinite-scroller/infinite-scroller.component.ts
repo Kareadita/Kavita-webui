@@ -84,6 +84,13 @@ export class InfiniteScrollerComponent implements OnInit, OnChanges, OnDestroy {
    */
   scrollEndTimer: any;
 
+
+  /**
+   * Each pages height mapped to page number as key
+   */
+  pageHeights:{[key: number]: number} = {};
+
+
   private readonly onDestroy = new Subject<void>();
 
   constructor(private readerService: ReaderService, private renderer: Renderer2) { }
@@ -130,18 +137,31 @@ export class InfiniteScrollerComponent implements OnInit, OnChanges, OnDestroy {
       || document.documentElement.scrollTop 
       || document.body.scrollTop || 0);
 
-      clearTimeout(this.scrollEndTimer);
-      this.scrollEndTimer = setTimeout(() => this.handleScrollEnd(), 150);
 
-      if (this.debug && this.isScrolling) {
-        this.debugLog('verticalOffset: ', verticalOffset);
-        this.debugLog('scroll to element offset: ', this.currentPageElem?.getBoundingClientRect().top);
-      }
+    clearTimeout(this.scrollEndTimer);
+    this.scrollEndTimer = setTimeout(() => this.handleScrollEnd(), 150);
 
-      if (this.currentPageElem != null && this.isElementVisible(this.currentPageElem)) {
-        console.log('Image is visible from scroll, isScrolling is now false');
-        this.isScrolling = false;
-      }
+    if (this.debug && this.isScrolling) {
+      this.debugLog('verticalOffset: ', verticalOffset);
+      this.debugLog('scroll to element offset: ', this.currentPageElem?.getBoundingClientRect().top);
+    }
+
+    if (this.currentPageElem != null && this.isElementVisible(this.currentPageElem)) {
+      console.log('Image is visible from scroll, isScrolling is now false');
+      this.isScrolling = false;
+    }
+
+    // if (this.pageNum + 1 === imagePage && this.isScrollingForwards()) {
+    //   this.setPageNum(this.pageNum + 1);
+    // } else if (this.pageNum - 1 === imagePage && !this.isScrollingForwards()) {
+    //   this.setPageNum(this.pageNum - 1);
+    // } else if ((imagePage >= this.pageNum + 2 && this.isScrollingForwards()) 
+    //           || (imagePage <= this.pageNum - 2 && !this.isScrollingForwards())) {
+    //   this.debugLog('[Intersection] Scroll position got out of sync due to quick scrolling. Forcing page update');
+    //   this.setPageNum(imagePage);
+    // }
+
+
     
     if (verticalOffset > this.prevScrollPosition) {
       this.scrollingDirection = PAGING_DIRECTION.FORWARD;
@@ -209,6 +229,8 @@ export class InfiniteScrollerComponent implements OnInit, OnChanges, OnDestroy {
       this.webtoonImageWidth = event.target.width;
     }
 
+    this.pageHeights[imagePage] = event.target.getBoundingClientRect().height;
+
     this.renderer.setAttribute(event.target, 'width', this.webtoonImageWidth + '');
     this.renderer.setAttribute(event.target, 'height', event.target.height + '');
 
@@ -234,6 +256,7 @@ export class InfiniteScrollerComponent implements OnInit, OnChanges, OnDestroy {
       return;
     }
 
+
     entries.forEach(entry => {
       const imagePage = parseInt(entry.target.attributes.getNamedItem('page')?.value + '', 10);
       this.debugLog('[Intersection] Page ' + imagePage + ' is visible: ', entry.isIntersecting);
@@ -241,17 +264,18 @@ export class InfiniteScrollerComponent implements OnInit, OnChanges, OnDestroy {
         this.debugLog('[Intersection] ! Page ' + imagePage + ' just entered screen');
         
         // The problem here is that if we jump really quick, we get out of sync and these conditions don't apply, hence the forcing of page number
-        if (this.pageNum + 1 === imagePage && this.isScrollingForwards()) {
-          this.setPageNum(this.pageNum + 1);
-        } else if (this.pageNum - 1 === imagePage && !this.isScrollingForwards()) {
-          this.setPageNum(this.pageNum - 1);
-        } else if ((imagePage >= this.pageNum + 2 && this.isScrollingForwards()) 
-                  || (imagePage <= this.pageNum - 2 && !this.isScrollingForwards())) {
-          this.debugLog('[Intersection] Scroll position got out of sync due to quick scrolling. Forcing page update');
-          this.setPageNum(imagePage);
-        } else {
-          return;
-        }
+        // if (this.pageNum + 1 === imagePage && this.isScrollingForwards()) {
+        //   this.setPageNum(this.pageNum + 1);
+        // } else if (this.pageNum - 1 === imagePage && !this.isScrollingForwards()) {
+        //   this.setPageNum(this.pageNum - 1);
+        // } else if ((imagePage >= this.pageNum + 2 && this.isScrollingForwards()) 
+        //           || (imagePage <= this.pageNum - 2 && !this.isScrollingForwards())) {
+        //   this.debugLog('[Intersection] Scroll position got out of sync due to quick scrolling. Forcing page update');
+        //   this.setPageNum(imagePage);
+        // } else {
+        //   return;
+        // }
+        this.setPageNum(imagePage);
         this.prefetchWebtoonImages();
       }
     });
@@ -355,7 +379,6 @@ export class InfiniteScrollerComponent implements OnInit, OnChanges, OnDestroy {
       .map((img: any) => new Promise(resolve => { img.onload = img.onerror = resolve; })))
       .then(() => {
         this.allImagesLoaded = true;
-        //this.handleScrollEvent();
     });
   }
 
