@@ -36,9 +36,10 @@ export class InfiniteScrollerComponent implements OnInit, OnChanges, OnDestroy {
   webtoonImages: BehaviorSubject<WebtoonImage[]> = new BehaviorSubject<WebtoonImage[]>([]);
 
   /**
-   * Responsible for calculating current page on screen and uses hooks to trigger prefetching
+   * Responsible for calculating current page on screen and uses hooks to trigger prefetching.
+   * Note: threshold will fire differently due to size of images. 1 requires full image on screen.
    */
-  intersectionObserver: IntersectionObserver = new IntersectionObserver((entries) => this.handleIntersection(entries), { threshold: [0.1, 0.25, 0.5, 0.75] });
+  intersectionObserver: IntersectionObserver = new IntersectionObserver((entries) => this.handleIntersection(entries), { threshold: [0] });
   /**
    * Direction we are scrolling. Controls calculations for prefetching
    */
@@ -47,7 +48,10 @@ export class InfiniteScrollerComponent implements OnInit, OnChanges, OnDestroy {
    * Temp variable to keep track of scrolling position between scrolls to caclulate direction
    */
   prevScrollPosition: number = 0;
-
+  /**
+   * Temp variable to keep track of when the scrollTo() finishes, so we can start capturing scroll events again
+   */
+  currentPageElem: Element | null = null;
   /**
    * The min page number that has been prefetched
    */
@@ -73,7 +77,7 @@ export class InfiniteScrollerComponent implements OnInit, OnChanges, OnDestroy {
   /**
    * Debug mode. Will show extra information
    */
-  debug: boolean = false;
+  debug: boolean = true;
 
   private readonly onDestroy = new Subject<void>();
 
@@ -119,11 +123,10 @@ export class InfiniteScrollerComponent implements OnInit, OnChanges, OnDestroy {
         if (this.debug && this.isScrolling) {
           this.debugLog('prevScrollPosition: ', this.prevScrollPosition)
           this.debugLog('verticalOffset: ', verticalOffset)
+          this.debugLog('scroll to element offset: ', this.currentPageElem?.getBoundingClientRect().top);
         }
-        
-      
-        // We need an adition check for if we are at the top of the page as offsets wont match
-        if (Math.floor(this.prevScrollPosition) === Math.floor(verticalOffset) || this.pageNum === 0) {
+
+        if (this.currentPageElem?.getBoundingClientRect().top === 0) {
           this.isScrolling = false;
         }
       
@@ -179,7 +182,7 @@ export class InfiniteScrollerComponent implements OnInit, OnChanges, OnDestroy {
         .filter((img: any) => !img.complete)
         .map((img: any) => new Promise(resolve => { img.onload = img.onerror = resolve; })))
         .then(() => {
-          this.debugLog('! Loaded current page !');
+          this.debugLog('! Loaded current page !', this.pageNum);
           this.allImagesLoaded = true;
           this.scrollToCurrentPage();
       });
@@ -197,7 +200,7 @@ export class InfiniteScrollerComponent implements OnInit, OnChanges, OnDestroy {
     entries.forEach(entry => {
       const imagePage = parseInt(entry.target.attributes.getNamedItem('page')?.value + '', 10);
       this.debugLog('[Intersection] Page ' + imagePage + ' is visible: ', entry.isIntersecting);
-      if (entry.isIntersecting) {
+      if (entry.isIntersecting) { // ! Should I add entry.isVisible as well?
         this.debugLog('[Intersection] ! Page ' + imagePage + ' just entered screen');
         
         // The problem here is that if we jump really quick, we get out of sync and these conditions don't apply, hence the forcing of page number
@@ -228,12 +231,12 @@ export class InfiniteScrollerComponent implements OnInit, OnChanges, OnDestroy {
 
   scrollToCurrentPage() {
     setTimeout(() => {
-      const elem = document.querySelector('img#page-' + this.pageNum);
-      if (elem) {
+      this.currentPageElem = document.querySelector('img#page-' + this.pageNum);
+      if (this.currentPageElem) {
         // Update prevScrollPosition, so the next scroll event properly calculates direction
-        this.prevScrollPosition = elem.getBoundingClientRect().top;
+        this.prevScrollPosition = this.currentPageElem.getBoundingClientRect().top;
         this.isScrolling = true;
-        elem.scrollIntoView({behavior: 'smooth'});
+        this.currentPageElem.scrollIntoView({behavior: 'smooth'});
       }
     }, 600);
   }
@@ -321,7 +324,7 @@ export class InfiniteScrollerComponent implements OnInit, OnChanges, OnDestroy {
   debugLog(message: string, extraData?: any) {
     if (!this.debug) { return; }
 
-    if (extraData) {
+    if (extraData !== undefined) {
       console.log(message, extraData);  
     } else {
       console.log(message);
