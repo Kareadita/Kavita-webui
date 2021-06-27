@@ -134,19 +134,14 @@ export class InfiniteScrollerComponent implements OnInit, OnChanges, OnDestroy {
       this.scrollEndTimer = setTimeout(() => this.handleScrollEnd(), 150);
 
       if (this.debug && this.isScrolling) {
-        //this.debugLog('prevScrollPosition: ', this.prevScrollPosition);
         this.debugLog('verticalOffset: ', verticalOffset);
         this.debugLog('scroll to element offset: ', this.currentPageElem?.getBoundingClientRect().top);
       }
 
       if (this.currentPageElem != null && this.isElementVisible(this.currentPageElem)) {
-        console.log('Image is visible');
+        console.log('Image is visible from scroll, isScrolling is now false');
         this.isScrolling = false;
       }
-
-      // if (this.currentPageElem?.getBoundingClientRect().top === 0) {
-      //   this.isScrolling = false;
-      // }
     
     if (verticalOffset > this.prevScrollPosition) {
       this.scrollingDirection = PAGING_DIRECTION.FORWARD;
@@ -159,8 +154,6 @@ export class InfiniteScrollerComponent implements OnInit, OnChanges, OnDestroy {
   // ! This will fire twice from an automatic scroll
   handleScrollEnd() {
     //console.log('!!! Scroll End Event !!!');
-    //this.isScrolling = false;
-
   }
 
 
