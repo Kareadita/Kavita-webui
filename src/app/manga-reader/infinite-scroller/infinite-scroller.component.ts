@@ -79,6 +79,11 @@ export class InfiniteScrollerComponent implements OnInit, OnChanges, OnDestroy {
    */
   debug: boolean = true;
 
+  /**
+   * Timer to help detect when a scroll end event has occured
+   */
+  scrollEndTimer: any;
+
   private readonly onDestroy = new Subject<void>();
 
   constructor(private readerService: ReaderService, private renderer: Renderer2) { }
@@ -115,28 +120,67 @@ export class InfiniteScrollerComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   ngOnInit(): void {
-    fromEvent(window, 'scroll').pipe(debounceTime(20), takeUntil(this.onDestroy)).subscribe((event) => {
-      const verticalOffset = (window.pageYOffset 
-        || document.documentElement.scrollTop 
-        || document.body.scrollTop || 0);
+    fromEvent(window, 'scroll')
+    .pipe(debounceTime(20), takeUntil(this.onDestroy))
+    .subscribe((event) => this.handleScrollEvent(event));
+  }
 
-        if (this.debug && this.isScrolling) {
-          this.debugLog('prevScrollPosition: ', this.prevScrollPosition)
-          this.debugLog('verticalOffset: ', verticalOffset)
-          this.debugLog('scroll to element offset: ', this.currentPageElem?.getBoundingClientRect().top);
-        }
+  handleScrollEvent(event?: any) {
+    const verticalOffset = (window.pageYOffset 
+      || document.documentElement.scrollTop 
+      || document.body.scrollTop || 0);
 
-        if (this.currentPageElem?.getBoundingClientRect().top === 0) {
-          this.isScrolling = false;
-        }
-      
-      if (verticalOffset > this.prevScrollPosition) {
-        this.scrollingDirection = PAGING_DIRECTION.FORWARD;
-      } else {
-        this.scrollingDirection = PAGING_DIRECTION.BACKWARDS;
+      clearTimeout(this.scrollEndTimer);
+      this.scrollEndTimer = setTimeout(() => this.handleScrollEnd(), 150);
+
+      if (this.debug && this.isScrolling) {
+        //this.debugLog('prevScrollPosition: ', this.prevScrollPosition);
+        this.debugLog('verticalOffset: ', verticalOffset);
+        this.debugLog('scroll to element offset: ', this.currentPageElem?.getBoundingClientRect().top);
       }
-      this.prevScrollPosition = verticalOffset;
-    });
+
+      if (this.currentPageElem != null && this.isElementVisible(this.currentPageElem)) {
+        console.log('Image is visible');
+        this.isScrolling = false;
+      }
+
+      // if (this.currentPageElem?.getBoundingClientRect().top === 0) {
+      //   this.isScrolling = false;
+      // }
+    
+    if (verticalOffset > this.prevScrollPosition) {
+      this.scrollingDirection = PAGING_DIRECTION.FORWARD;
+    } else {
+      this.scrollingDirection = PAGING_DIRECTION.BACKWARDS;
+    }
+    this.prevScrollPosition = verticalOffset;
+  }
+
+  // ! This will fire twice from an automatic scroll
+  handleScrollEnd() {
+    //console.log('!!! Scroll End Event !!!');
+    //this.isScrolling = false;
+
+  }
+
+
+  /**
+   * Is any part of the element visible in the scrollport. Does not take into account 
+   * style properites, just scroll port visibility. 
+   * Note: use && to ensure the whole images is visible
+   * @param elem 
+   * @returns 
+   */
+  isElementVisible(elem: Element) {
+    if (elem === null || elem === undefined) { return false; }
+
+    const docViewTop = window.pageYOffset;
+    const docViewBottom = docViewTop + window.innerHeight;
+
+    const elemTop = elem.getBoundingClientRect().top;
+    const elemBottom = elemTop + elem.getBoundingClientRect().height;
+
+    return ((elemBottom <= docViewBottom) || (elemTop >= docViewTop));
   }
 
 
@@ -318,6 +362,7 @@ export class InfiniteScrollerComponent implements OnInit, OnChanges, OnDestroy {
       .map((img: any) => new Promise(resolve => { img.onload = img.onerror = resolve; })))
       .then(() => {
         this.allImagesLoaded = true;
+        //this.handleScrollEvent();
     });
   }
 
