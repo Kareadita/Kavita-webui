@@ -1,6 +1,7 @@
 import { Component, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, Renderer2, SimpleChanges } from '@angular/core';
 import { BehaviorSubject, fromEvent, Subject } from 'rxjs';
 import { debounceTime, takeUntil } from 'rxjs/operators';
+import { CircularArray } from 'src/app/shared/data-structures/circular-array';
 import { ReaderService } from 'src/app/_services/reader.service';
 import { PAGING_DIRECTION } from '../_models/reader-enums';
 import { WebtoonImage } from '../_models/webtoon-image';
@@ -80,15 +81,18 @@ export class InfiniteScrollerComponent implements OnInit, OnChanges, OnDestroy {
   debug: boolean = true;
 
   /**
-   * Timer to help detect when a scroll end event has occured
+   * Timer to help detect when a scroll end event has occured  (not used)
    */
   scrollEndTimer: any;
 
 
   /**
-   * Each pages height mapped to page number as key
+   * Each pages height mapped to page number as key (not used)
    */
   pageHeights:{[key: number]: number} = {};
+
+  buffer: CircularArray<HTMLImageElement> = new CircularArray<HTMLImageElement>([], 0);
+
 
 
   private readonly onDestroy = new Subject<void>();
@@ -97,6 +101,7 @@ export class InfiniteScrollerComponent implements OnInit, OnChanges, OnDestroy {
 
   ngOnChanges(changes: SimpleChanges): void {
     let shouldInit = false;
+    console.log('Changes: ', changes);
     if (changes.hasOwnProperty('totalPages') && changes['totalPages'].currentValue === 0) {
       this.debugLog('Swallowing variable change due to totalPages being 0');
       return;
@@ -117,6 +122,17 @@ export class InfiniteScrollerComponent implements OnInit, OnChanges, OnDestroy {
 
     if (shouldInit) {
       this.initWebtoonReader();
+    }
+
+    // This should only execute on initial load or from a gotopage update
+    const currentImage = document.querySelector('img#page-' + this.pageNum);
+    if (currentImage !== null && this.isElementVisible(currentImage)) {
+
+      if ((changes.hasOwnProperty('pageNum') && Math.abs(changes['pageNum'].previousValue - changes['pageNum'].currentValue) <= 0) || !shouldInit) {
+        return;
+      }
+      this.debugLog('Scrolling to page', this.pageNum);
+      this.scrollToCurrentPage();
     }
   }
 
@@ -147,22 +163,10 @@ export class InfiniteScrollerComponent implements OnInit, OnChanges, OnDestroy {
     }
 
     if (this.currentPageElem != null && this.isElementVisible(this.currentPageElem)) {
-      console.log('Image is visible from scroll, isScrolling is now false');
+      this.debugLog('Image is visible from scroll, isScrolling is now false');
       this.isScrolling = false;
     }
 
-    // if (this.pageNum + 1 === imagePage && this.isScrollingForwards()) {
-    //   this.setPageNum(this.pageNum + 1);
-    // } else if (this.pageNum - 1 === imagePage && !this.isScrollingForwards()) {
-    //   this.setPageNum(this.pageNum - 1);
-    // } else if ((imagePage >= this.pageNum + 2 && this.isScrollingForwards()) 
-    //           || (imagePage <= this.pageNum - 2 && !this.isScrollingForwards())) {
-    //   this.debugLog('[Intersection] Scroll position got out of sync due to quick scrolling. Forcing page update');
-    //   this.setPageNum(imagePage);
-    // }
-
-
-    
     if (verticalOffset > this.prevScrollPosition) {
       this.scrollingDirection = PAGING_DIRECTION.FORWARD;
     } else {
@@ -203,6 +207,8 @@ export class InfiniteScrollerComponent implements OnInit, OnChanges, OnDestroy {
     this.maxPrefetchedWebtoonImage = Number.MIN_SAFE_INTEGER;
     this.webtoonImages.next([]);
 
+    
+
 
     const prefetchStart = Math.max(this.pageNum - this.buffferPages, 0);
     const prefetchMax =  Math.min(this.pageNum + this.buffferPages, this.totalPages); 
@@ -210,9 +216,17 @@ export class InfiniteScrollerComponent implements OnInit, OnChanges, OnDestroy {
     for(let i = prefetchStart; i < prefetchMax; i++) {
       this.prefetchWebtoonImage(i);
     }
+
+    const images = [];
+    for (let i = prefetchStart; i < prefetchMax; i++) {
+      images.push(new Image());
+    }
+    this.buffer = new CircularArray<HTMLImageElement>(images, this.buffferPages);
     
     this.minPrefetchedWebtoonImage = prefetchStart;
     this.maxPrefetchedWebtoonImage = prefetchMax;
+
+    this.debugLog('Buffer: ', this.buffer.arr.map(img => this.readerService.imageUrlToPageNum(img.src)));
   }
 
   /**
@@ -243,10 +257,8 @@ export class InfiniteScrollerComponent implements OnInit, OnChanges, OnDestroy {
         .then(() => {
           this.debugLog('! Loaded current page !', this.pageNum);
           this.allImagesLoaded = true;
-          this.scrollToCurrentPage();
       });
     }
-
   }
 
   handleIntersection(entries: IntersectionObserverEntry[]) {
@@ -260,21 +272,8 @@ export class InfiniteScrollerComponent implements OnInit, OnChanges, OnDestroy {
     entries.forEach(entry => {
       const imagePage = parseInt(entry.target.attributes.getNamedItem('page')?.value + '', 10);
       this.debugLog('[Intersection] Page ' + imagePage + ' is visible: ', entry.isIntersecting);
-      if (entry.isIntersecting) { // ! Should I add entry.isVisible as well?
+      if (entry.isIntersecting) {
         this.debugLog('[Intersection] ! Page ' + imagePage + ' just entered screen');
-        
-        // The problem here is that if we jump really quick, we get out of sync and these conditions don't apply, hence the forcing of page number
-        // if (this.pageNum + 1 === imagePage && this.isScrollingForwards()) {
-        //   this.setPageNum(this.pageNum + 1);
-        // } else if (this.pageNum - 1 === imagePage && !this.isScrollingForwards()) {
-        //   this.setPageNum(this.pageNum - 1);
-        // } else if ((imagePage >= this.pageNum + 2 && this.isScrollingForwards()) 
-        //           || (imagePage <= this.pageNum - 2 && !this.isScrollingForwards())) {
-        //   this.debugLog('[Intersection] Scroll position got out of sync due to quick scrolling. Forcing page update');
-        //   this.setPageNum(imagePage);
-        // } else {
-        //   return;
-        // }
         this.setPageNum(imagePage);
         this.prefetchWebtoonImages();
       }
@@ -284,6 +283,8 @@ export class InfiniteScrollerComponent implements OnInit, OnChanges, OnDestroy {
   setPageNum(pageNum: number) {
     this.pageNum = pageNum;
     this.pageNumberChange.emit(this.pageNum);
+
+    //TODO: Perform check here to see if prefetching or DOM removal is needed
   }
 
   isScrollingForwards() {
@@ -291,12 +292,14 @@ export class InfiniteScrollerComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   scrollToCurrentPage() {
+    this.currentPageElem = document.querySelector('img#page-' + this.pageNum);
+    if (!this.currentPageElem) { return; }
+    // Update prevScrollPosition, so the next scroll event properly calculates direction
+    this.prevScrollPosition = this.currentPageElem.getBoundingClientRect().top;
+    this.isScrolling = true;
+
     setTimeout(() => {
-      this.currentPageElem = document.querySelector('img#page-' + this.pageNum);
       if (this.currentPageElem) {
-        // Update prevScrollPosition, so the next scroll event properly calculates direction
-        this.prevScrollPosition = this.currentPageElem.getBoundingClientRect().top;
-        this.isScrolling = true;
         this.currentPageElem.scrollIntoView({behavior: 'smooth'});
       }
     }, 600);
@@ -322,6 +325,23 @@ export class InfiniteScrollerComponent implements OnInit, OnChanges, OnDestroy {
     this.allImagesLoaded = false;
 
     this.webtoonImages.next(data);
+
+    let index = 1;
+
+    this.buffer.applyFor((item, i) => {
+      const offsetIndex = this.pageNum + index;
+      const urlPageNum = this.readerService.imageUrlToPageNum(item.src);
+      if (urlPageNum === offsetIndex) {
+        index += 1;
+        return;
+      }
+      if (offsetIndex < this.totalPages - 1) {
+        item.src = this.urlProvider(offsetIndex);
+        index += 1;
+      }
+    }, this.buffer.size() - 3);
+
+
   }
 
   attachIntersectionObserverElem(elem: HTMLImageElement) {
