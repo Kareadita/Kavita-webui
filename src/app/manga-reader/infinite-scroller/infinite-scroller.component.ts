@@ -78,7 +78,7 @@ export class InfiniteScrollerComponent implements OnInit, OnChanges, OnDestroy {
   /**
    * Debug mode. Will show extra information
    */
-  debug: boolean = true;
+  debug: boolean = false;
 
   /**
    * Timer to help detect when a scroll end event has occured  (not used)
